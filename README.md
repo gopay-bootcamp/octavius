@@ -1,5 +1,5 @@
 # OCTAVIUS
-The new version of proctor, primarily used for automating tasks in kubernetes cluster.
+The new version of proctor, primarily used for automating tasks in kubernetes cluster. The architecture is inspired by Kubernetes in terms of Control Plane, Storage (single Etcd), API Server, and CLI Client. It is also inspired by Gitlab Runner in terms of Decentralized executor.
 
 
 ## Prerequisites
