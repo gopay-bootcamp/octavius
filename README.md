@@ -52,7 +52,7 @@ To create the binaries -:
 
 To run the server -:
 
-`_output/bin/server start`
+`_output/bin/controlPlane start`
 
 To run the client -:
 
