@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"octavius/internal/cli/printer"
