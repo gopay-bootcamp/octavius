@@ -1,0 +1,29 @@
+syntax = "proto3";
+option go_package = "octavius/pkg/protobuf";
+
+message Proc{
+    string ID=1;
+    string name=2;
+    string author=3;
+}
+
+message ProcID{
+    string value=1;
+    string message=2;
+}
+
+message ProcList {
+    repeated Proc procs = 1;
+}
+message RequestForCreateProc{
+    string name=1;
+    string author=2;
+}
+
+
+message RequestForReadAllProcs{}
+
+service ProcService{
+    rpc CreateProc(RequestForCreateProc) returns (ProcID);
+    rpc ReadAllProcs(RequestForReadAllProcs) returns (ProcList);
+}
