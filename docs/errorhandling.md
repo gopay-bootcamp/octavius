@@ -11,7 +11,7 @@
        - 3: for Etcd Database
        - 4: for Executor   
     - return the `errorMessage` using `Constant.<constant-name> `
-    - If `<constant-name>` is not in the package `Constant`, define your constant with the description in `pkg/constant/constant.go`
+    - If `<constant-name>` is not in the package `constant`, define your constant with the description in `pkg/constant/constant.go`
 
 3. For mapping error code to it's description
     - import `"octavius/pkg/constant"`
