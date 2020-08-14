@@ -10,6 +10,7 @@ message Proc{
 message Error{
     int64 errorCode=1;
     string errorMessage=2;
+
 }
 
 message ProcID{
@@ -19,7 +20,9 @@ message ProcID{
 
 message ProcList {
     repeated Proc procs = 1;
+    Error error=2;
 }
+
 message RequestForCreateProc{
     string name=1;
     string author=2;
@@ -29,6 +32,6 @@ message RequestForCreateProc{
 message RequestForReadAllProcs{}
 
 service ProcService{
-    rpc CreateProc(RequestForCreateProc) returns (ProcID);
+    rpc CreateProc(RequestForCreateProc) returns (Proc);
     rpc ReadAllProcs(RequestForReadAllProcs) returns (ProcList);
 }
