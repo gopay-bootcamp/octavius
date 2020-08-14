@@ -1,13 +1,15 @@
 package cli
 
 import (
-	"octavius/internal/cli/printer"
 	"octavius/internal/cli/command"
+	"octavius/internal/cli/printer"
 )
 
 
 
 func main() {
+
+
 	printer.InitPrinter()
 	command.Execute()
 }
