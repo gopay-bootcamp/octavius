@@ -4,33 +4,11 @@ option go_package = "octavius/pkg/protobuf";
 message secret {
     string name=1;
     string description=2;
-<<<<<<< HEAD
 }
-<<<<<<< HEAD
-
 message Error{
     int64 errorCode=1;
     string errorMessage=2;
-=======
->>>>>>> dfaa364959347836f63617bf589704c99a99370f
 }
-message arg {
-    string name=1;
-    string description=2;
-}
-message env_vars {
-    repeated secret secrets=1;
-    repeated arg args=2;
-}
-
-<<<<<<< HEAD
-message ProcList {
-    repeated Proc procs = 1;
-    Error error=2;
-}
-
-message RequestForCreateProc{
-=======
 message arg {
     string name=1;
     string description=2;
@@ -45,14 +23,6 @@ message authorized_groups {
 }
 
 message metadata {
->>>>>>> 8935e0f... Added proto file
-=======
-message authorized_groups {
-    repeated string authorized_groups=1;
-}
-
-message metadata {
->>>>>>> dfaa364959347836f63617bf589704c99a99370f
     string name=1;
     string description=2;
     string image_name=3;
@@ -67,34 +37,16 @@ message client_info {
     string client_email=1;
     string acess_token=2;
 }
-<<<<<<< HEAD
 
 message request_for_metadata_post {
     metadata metadata=1;
     client_info client_info=2;
 }
 
-=======
-
-message request_for_metadata_post {
-    metadata metadata=1;
-    client_info client_info=2;
-}
-
->>>>>>> dfaa364959347836f63617bf589704c99a99370f
 message response {
     string status=1;
 }
 
 service ProcService{
-<<<<<<< HEAD
-<<<<<<< HEAD
-    rpc CreateProc(RequestForCreateProc) returns (Proc);
-    rpc ReadAllProcs(RequestForReadAllProcs) returns (ProcList);
-=======
-   rpc create_job(metadata) returns (response);
->>>>>>> 8935e0f... Added proto file
-=======
-   rpc create_job(metadata) returns (response);
->>>>>>> dfaa364959347836f63617bf589704c99a99370f
+   rpc create_job(request_for_metadata_post) returns (response);
 }
