@@ -8,8 +8,8 @@ message Proc{
 }
 
 message Error{
-    int64 code=1;
-    string message=2;
+    int64 errorCode=1;
+    string errorMessage=2;
 }
 
 message ProcID{
