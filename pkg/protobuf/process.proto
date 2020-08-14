@@ -7,6 +7,11 @@ message Proc{
     string author=3;
 }
 
+message Error{
+    int64 errorCode=1;
+    string errorMessage=2;
+}
+
 message ProcID{
     string value=1;
     string message=2;
