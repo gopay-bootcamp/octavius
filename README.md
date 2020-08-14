@@ -31,9 +31,8 @@ The new version of proctor, primarily used for automating tasks in kubernetes cl
 
 ## Development
 
-1. `git clone <url>`
+1. `git clone https://github.com/gopay-bootcamp/octavius.git`
 2. `cd octavius`
-3. `go mod tidy`
 
 
 ## Running 
@@ -49,14 +48,17 @@ To create the binaries -:
 
 `make build`
 
-
 To run the server -:
 
-`_output/bin/controlPlane start`
+`_output/bin/control_plane start`
 
 To run the client -:
 
 `_output/bin/cli <command> <args>`
 
+
+## CONTRIBUTION
+
+Contributions are welcomed! Please read the [contributing.md](./docs/contributing.md) before adding one.
 
 
