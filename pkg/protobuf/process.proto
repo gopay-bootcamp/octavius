@@ -1,11 +1,11 @@
 syntax = "proto3";
 option go_package = "octavius/pkg/protobuf";
 
-message Proc{
-    string ID=1;
-    string name=2;
-    string author=3;
+message secret {
+    string name=1;
+    string description=2;
 }
+<<<<<<< HEAD
 
 message Error{
     int64 errorCode=1;
@@ -23,14 +23,41 @@ message ProcList {
 }
 
 message RequestForCreateProc{
+=======
+message arg {
     string name=1;
-    string author=2;
+    string description=2;
+}
+message env_vars {
+    repeated secret secrets=1;
+    repeated arg args=2;
 }
 
+message authorized_groups {
+    repeated string authorized_groups=1;
+}
 
-message RequestForReadAllProcs{}
+message metadata {
+>>>>>>> 8935e0f... Added proto file
+    string name=1;
+    string description=2;
+    string image_name=3;
+    env_vars env_vars=4;
+    authorized_groups authorized_groups=5;
+    string author=6;
+    string contributors=7;
+    string organization=8;
+}
+
+message response {
+    string status=1;
+}
 
 service ProcService{
+<<<<<<< HEAD
     rpc CreateProc(RequestForCreateProc) returns (Proc);
     rpc ReadAllProcs(RequestForReadAllProcs) returns (ProcList);
+=======
+   rpc create_job(metadata) returns (response);
+>>>>>>> 8935e0f... Added proto file
 }
