@@ -29,6 +29,16 @@ message metadata {
     string organization=8;
 }
 
+message client_info {
+    string client_email=1;
+    string acess_token=2;
+}
+
+message request_for_metadata_post {
+    metadata metadata=1;
+    client_info client_info=2;
+}
+
 message response {
     string status=1;
 }
