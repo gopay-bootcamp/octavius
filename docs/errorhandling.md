@@ -1,6 +1,6 @@
 # Error Handling
 
-1. Add `Error` protobuf into your response protobuf of `pkg/protobuf/process.proto` file.
+1. Add `Error` protobuf(message) into your response protobuf(message) of `pkg/protobuf/process.proto` file.
 
 2. Returning the error in response
     - import `"octavius/pkg/constant"`
