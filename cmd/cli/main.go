@@ -12,6 +12,6 @@ func main() {
 
 
 	printer.InitPrinter()
-	daemon.StartClient()
+	daemon.CreateJob()
 	command.Execute()
 }
