@@ -1,25 +1,19 @@
 syntax = "proto3";
 option go_package = "octavius/pkg/protobuf";
 
-message secret {
-    string name=1;
-    string description=2;
-}
-<<<<<<< HEAD
-message arg {
-    string name=1;
-    string description=2;
-}
-=======
 message Error{
     int64 errorCode=1;
     string errorMessage=2;
 }
+
+message secret {
+    string name=1;
+    string description=2;
+}
 message arg {
     string name=1;
     string description=2;
 }
->>>>>>> d377fb29b6bb49f6c11935eebbf100462bc7e1dc
 message env_vars {
     repeated secret secrets=1;
     repeated arg args=2;
@@ -42,7 +36,7 @@ message metadata {
 
 message client_info {
     string client_email=1;
-    string acess_token=2;
+    string access_token=2;
 }
 
 message request_for_metadata_post {
@@ -54,11 +48,6 @@ message response {
     string status=1;
 }
 
-<<<<<<< HEAD
 service OctaviusServices{
    rpc Create_job(request_for_metadata_post) returns (response);
-=======
-service ProcService{
-   rpc create_job(request_for_metadata_post) returns (response);
->>>>>>> d377fb29b6bb49f6c11935eebbf100462bc7e1dc
 }
