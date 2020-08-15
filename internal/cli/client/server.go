@@ -1,4 +1,4 @@
-package daemon
+package client
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 type server struct {
 }
 
-func (s server) CreateJob(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.Response, error) {
+func (s server) CreateJob(ctx context.Context, metadata *protobuf.RequestForMetadataPost) (*protobuf.Response, error) {
 	return &protobuf.Response{Status: "success"}, nil
 }
 
@@ -21,7 +21,7 @@ func main() {
 
 	srvr := grpc.NewServer()
 
-	protobuf.RegisterProcServiceServer(srvr, &server{})
+	protobuf.RegisterOctaviusServicesServer(srvr, &server{})
 
 	if err == nil {
 		fmt.Println("Server running successfully....")
