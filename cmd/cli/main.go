@@ -5,11 +5,8 @@ import (
 	"octavius/internal/cli/printer"
 )
 
-
-
 func main() {
-
-
 	printer.InitPrinter()
+
 	command.Execute()
 }

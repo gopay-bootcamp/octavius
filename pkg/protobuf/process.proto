@@ -47,6 +47,6 @@ message response {
     string status=1;
 }
 
-service ProcService{
+service OctaviusService{
    rpc create_job(request_for_metadata_post) returns (response);
 }

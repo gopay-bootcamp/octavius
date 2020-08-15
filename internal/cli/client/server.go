@@ -1,19 +1,19 @@
-package main
+package daemon
 
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
-	"octavius/pkg/protobuf"
 	"net"
+	"octavius/pkg/protobuf"
+
+	"google.golang.org/grpc"
 )
 
 type server struct {
-
 }
 
 func (s server) CreateJob(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.Response, error) {
-	return &protobuf.Response{Status: "success"},nil
+	return &protobuf.Response{Status: "success"}, nil
 }
 
 func main() {
