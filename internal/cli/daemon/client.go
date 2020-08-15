@@ -39,7 +39,6 @@ func (c *octaviusClient) StartClient() error {
 		return err
 	}
 
-	fmt.Println("Dialing at: ", c.CPHost)
 	conn, err := grpc.Dial(c.CPHost, grpc.WithInsecure())
 	if err != nil {
 		return err
@@ -47,7 +46,6 @@ func (c *octaviusClient) StartClient() error {
 	grpcClient := protobuf.NewOctaviusServicesClient(conn)
 	client := client.NewGrpcClient(grpcClient)
 	c.grpcClient = client
-	fmt.Println(c)
 	return nil
 }
 

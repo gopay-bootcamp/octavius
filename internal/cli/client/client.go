@@ -24,7 +24,6 @@ func NewGrpcClient(client protobuf.OctaviusServicesClient) Client {
 }
 
 func (g *grpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) error {
-	fmt.Println("Creating job at: ")
 	res, err := g.client.CreateJob(context.Background(), metadataPostRequest)
 	if err != nil {
 		return err
