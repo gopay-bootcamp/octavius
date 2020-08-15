@@ -1,12 +1,14 @@
 package client
 
 import (
+	"context"
+	"fmt"
 	"octavius/pkg/protobuf"
 	"time"
 )
 
 type Client interface {
-	CreateJob()
+	CreateJob(*protobuf.RequestForMetadataPost) error
 }
 
 type grpcClient struct {
@@ -21,6 +23,12 @@ func NewGrpcClient(client protobuf.OctaviusServicesClient) Client {
 	}
 }
 
-func (g *grpcClient) CreateJob() {
-	panic("implement me")
+func (g *grpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) error {
+	fmt.Println("Creating job at: ")
+	res, err := g.client.CreateJob(context.Background(), metadataPostRequest)
+	if err != nil {
+		return err
+	}
+	fmt.Println(res)
+	return nil
 }

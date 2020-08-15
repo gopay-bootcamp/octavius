@@ -1,4 +1,4 @@
-CP_HOST: "localhost:5000"
+CP_HOST: "localhost:5050"
 EMAIL_ID: debjit.chattopadhyay@go-jek.com
 ACCESS_TOKEN: OCTAVIUSACCESSTOKENHERE
 CONNECTION_TIMEOUT_SECS: 10

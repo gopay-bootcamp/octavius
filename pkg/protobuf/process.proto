@@ -7,16 +7,16 @@ message Error{
 }
 
 message secret {
-    string name=1;
-    string description=2;
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
 }
 message arg {
-    string name=1;
-    string description=2;
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
 }
 message env_vars {
-    repeated secret secrets=1;
-    repeated arg args=2;
+    repeated secret secrets=1 [json_name="secrets"];
+    repeated arg args=2 [json_name="args"];
 }
 
 message authorized_groups {
@@ -24,14 +24,14 @@ message authorized_groups {
 }
 
 message metadata {
-    string name=1;
-    string description=2;
-    string image_name=3;
-    env_vars env_vars=4;
-    authorized_groups authorized_groups=5;
-    string author=6;
-    string contributors=7;
-    string organization=8;
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
+    string image_name=3 [json_name="image_name"];
+    env_vars env_vars=4 [json_name="env_vars"];
+    repeated string authorized_groups=5 [json_name="authorized_groups"];
+    string author=6 [json_name="author"];
+    string contributors=7 [json_name="contributors"];
+    string organization=8 [json_name="organization"];
 }
 
 message client_info {
@@ -48,6 +48,9 @@ message response {
     string status=1;
 }
 
+message test_message {
+    string demo=1 [json_name="demo"];
+}
 
 service OctaviusServices{
    rpc Create_job(request_for_metadata_post) returns (response);

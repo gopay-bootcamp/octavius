@@ -17,7 +17,7 @@ func (s server) CreateJob(ctx context.Context, metadata *protobuf.RequestForMeta
 }
 
 func main() {
-	listener, err := net.Listen("tcp", ":8000")
+	listener, err := net.Listen("tcp", ":5050")
 
 	srvr := grpc.NewServer()
 
