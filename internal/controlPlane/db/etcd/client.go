@@ -31,7 +31,7 @@ type etcdClient struct {
 var (
 	dialTimeout    = 2 * time.Second
 	requestTimeout = 10 * time.Second
-	etcdHost       = "localhost" + config.Config().EtcdPort
+	etcdHost       = "localhost:" + config.Config().EtcdPort
 )
 
 // function to create new client of etcd database

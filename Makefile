@@ -21,6 +21,9 @@ $(@info $(shell mkdir -p $(OUT_DIR) $(BIN_DIR) $(PLUGIN_DIR))
 .PHONY: build
 build: cli
 
+.PHONY: build
+build: server
+
 .PHONY: server
 server:
 	PROCTOR_AUTH_PLUGIN_BINARY=$(PLUGIN_DIR)/auth.so \
