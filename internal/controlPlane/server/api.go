@@ -1,10 +1,10 @@
 package server
 
 import (
+	"log"
 	"octavius/internal/config"
 	"octavius/internal/controlPlane/db/etcd"
 	"octavius/internal/controlPlane/server/execution"
-	"octavius/internal/logger"
 	"octavius/pkg/protobuf"
 
 	// "crud-toy/internal/model"
@@ -16,7 +16,7 @@ import (
 
 func Start() error {
 	appPort := config.Config().AppPort
-	listener, err := net.Listen("tcp", appPort)
+	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
@@ -25,10 +25,10 @@ func Start() error {
 	procGrpcServer := NewProcServiceServer(exec)
 	protobuf.RegisterProcServiceServer(server, procGrpcServer)
 	if err != nil {
-		logger.Fatal("grpc server not started")
+		log.Fatal("grpc server not started")
 		return err
 	}
-	logger.Info("grpc server started on port 8000")
+	log.Printf("grpc server started on port %v", appPort)
 	server.Serve(listener)
 	return nil
 }

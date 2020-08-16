@@ -31,6 +31,6 @@ message RequestForCreateProc{
 message RequestForReadAllProcs{}
 
 service ProcService{
-    rpc CreateProc(RequestForCreateProc) returns (Proc);
+    rpc CreateProc(RequestForCreateProc) returns (ProcID);
     rpc ReadAllProcs(RequestForReadAllProcs) returns (ProcList);
 }

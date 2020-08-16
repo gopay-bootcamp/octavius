@@ -2,7 +2,8 @@ package server
 
 import (
 	"context"
-	"octavius/pkg/model/proc"
+	"octavius/internal/controlPlane/server/execution"
+	"octavius/pkg/protobuf"
 	procProto "octavius/pkg/protobuf"
 )
 
@@ -17,7 +18,7 @@ func NewProcServiceServer(exec execution.Execution) procProto.ProcServiceServer 
 }
 
 func (s *procServiceServer) CreateProc(ctx context.Context, request *procProto.RequestForCreateProc) (*procProto.ProcID, error) {
-	var proc model.Proc
+	var proc protobuf.Proc
 	proc.Name = request.Name
 	proc.Author = request.Author
 	id, err := s.procExec.CreateProc(ctx, &proc)
