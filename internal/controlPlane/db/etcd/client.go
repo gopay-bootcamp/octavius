@@ -2,22 +2,23 @@ package etcd
 
 import (
 	"context"
-	"octavius/internal/config"
-	"octavius/pkg/model/proc"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"octavius/internal/config"
+	"octavius/pkg/protobuf"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
 )
 
+//EtcdClient is exported to be used in server/execution
 type EtcdClient interface {
 	DeleteKey(ctx context.Context, key string) error
-	GetValue(ctx context.Context, key string) (*model.Proc, error)
-	PutValue(ctx context.Context, key string, value *model.Proc) (string, error)
-	GetAllValues(ctx context.Context) ([]model.Proc, error)
-	GetValueWithRevision(ctx context.Context, key string, header int64) (*model.Proc, error)
+	GetValue(ctx context.Context, key string) (*protobuf.Proc, error)
+	PutValue(ctx context.Context, key string, value *protobuf.Proc) (string, error)
+	GetAllValues(ctx context.Context) ([]protobuf.Proc, error)
+	GetValueWithRevision(ctx context.Context, key string, header int64) (*protobuf.Proc, error)
 	Close()
 	SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan
 	GetProcRevisionById(ctx context.Context, id string) (int64, error)
@@ -54,7 +55,7 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) error {
 	return nil
 }
 
-func (client *etcdClient) PutValue(ctx context.Context, key string, proc *model.Proc) (string,error) {
+func (client *etcdClient) PutValue(ctx context.Context, key string, proc *protobuf.Proc) (string, error) {
 	value, err := json.Marshal(proc)
 	if err != nil {
 		return "", err
@@ -66,7 +67,7 @@ func (client *etcdClient) PutValue(ctx context.Context, key string, proc *model.
 	return proc.Name, nil
 }
 
-func (client *etcdClient) GetValue(ctx context.Context, id string) (*model.Proc, error) {
+func (client *etcdClient) GetValue(ctx context.Context, id string) (*protobuf.Proc, error) {
 	res, err := client.db.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -75,7 +76,7 @@ func (client *etcdClient) GetValue(ctx context.Context, id string) (*model.Proc,
 	if len(gr.Kvs) == 0 {
 		return nil, errors.New("No proc found")
 	}
-	var proc *model.Proc
+	var proc *protobuf.Proc
 	json.Unmarshal(gr.Kvs[0].Value, &proc)
 	return proc, nil
 }
@@ -89,19 +90,19 @@ func (client *etcdClient) GetProcRevisionById(ctx context.Context, id string) (i
 	if len(gr.Kvs) == 0 {
 		return -1, errors.New("No proc found")
 	}
-	return gr.Header.Revision,nil
+	return gr.Header.Revision, nil
 }
 
-func (client *etcdClient) GetAllValues(ctx context.Context) ([]model.Proc, error) {
+func (client *etcdClient) GetAllValues(ctx context.Context) ([]protobuf.Proc, error) {
 	prefix := "key_"
 	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
 	if err != nil {
 		return nil, err
 	}
 	gr := res.OpResponse().Get()
-	var procs []model.Proc
+	var procs []protobuf.Proc
 	for _, kv := range gr.Kvs {
-		proc := model.Proc{}
+		proc := protobuf.Proc{}
 		str := string(kv.Value)
 		json.Unmarshal([]byte(str), &proc)
 		procs = append(procs, proc)
@@ -109,8 +110,7 @@ func (client *etcdClient) GetAllValues(ctx context.Context) ([]model.Proc, error
 	return procs, nil
 }
 
-
-func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (*model.Proc, error) {
+func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (*protobuf.Proc, error) {
 	res, err := client.db.Get(ctx, id, clientv3.WithRev(header))
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, h
 	if len(gr.Kvs) == 0 {
 		return nil, errors.New("No proc found")
 	}
-	var proc *model.Proc
+	var proc *protobuf.Proc
 	json.Unmarshal(gr.Kvs[0].Value, &proc)
 	return proc, nil
 }

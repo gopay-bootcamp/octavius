@@ -3,10 +3,12 @@ package server
 import (
 	"octavius/internal/config"
 	"octavius/internal/controlPlane/db/etcd"
+	"octavius/internal/controlPlane/server/execution"
 	"octavius/internal/logger"
+	"octavius/pkg/protobuf"
 
 	// "crud-toy/internal/model"
-	"octavius/pkg/protobuf"
+
 	"net"
 
 	"google.golang.org/grpc"
@@ -18,9 +20,10 @@ func Start() error {
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
-	
+	exec := execution.NewExec(etcdClient)
+
 	procGrpcServer := NewProcServiceServer(exec)
-	procProto.RegisterProcServiceServer(server, procGrpcServer)
+	protobuf.RegisterProcServiceServer(server, procGrpcServer)
 	if err != nil {
 		logger.Fatal("grpc server not started")
 		return err

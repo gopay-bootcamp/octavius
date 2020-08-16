@@ -2,15 +2,13 @@ package execution
 
 import (
 	"context"
-	"octavius/pkg/model/proc"
 	"octavius/internal/controlPlane/db/etcd"
-	
+	"octavius/pkg/protobuf"
 )
 
 type Execution interface {
-	CreateProc(ctx context.Context, proc *model.Proc) (string, error)
-	ReadAllProc(ctx context.Context) ([]model.Proc, error)
-	
+	CreateProc(ctx context.Context, proc *protobuf.Proc) (string, error)
+	ReadAllProc(ctx context.Context) ([]protobuf.Proc, error)
 }
 
 type execution struct {
@@ -25,8 +23,8 @@ func NewExec(dbClient etcd.EtcdClient) Execution {
 	}
 }
 
-func (e *execution) CreateProc(ctx context.Context, proc *model.Proc) (string, error) {
-	
+func (e *execution) CreateProc(ctx context.Context, proc *protobuf.Proc) (string, error) {
+
 	result, err := e.client.PutValue(ctx, proc.Name, proc)
 	if err != nil {
 		return "", err
@@ -34,13 +32,10 @@ func (e *execution) CreateProc(ctx context.Context, proc *model.Proc) (string, e
 	return result, nil
 }
 
-
-func (e *execution) ReadAllProc(ctx context.Context) ([]model.Proc, error) {
+func (e *execution) ReadAllProc(ctx context.Context) ([]protobuf.Proc, error) {
 	procs, err := e.client.GetAllValues(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return procs, nil
 }
-
-
