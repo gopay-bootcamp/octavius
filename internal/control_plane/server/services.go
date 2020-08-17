@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"octavius/internal/controlPlane/server/execution"
+	"octavius/internal/control_plane/server/execution"
 	"octavius/pkg/protobuf"
 	procProto "octavius/pkg/protobuf"
 )

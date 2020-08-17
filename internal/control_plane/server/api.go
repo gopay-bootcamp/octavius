@@ -3,14 +3,10 @@ package server
 import (
 	"log"
 	"octavius/internal/config"
-	"octavius/internal/controlPlane/db/etcd"
-	"octavius/internal/controlPlane/server/execution"
+	"octavius/internal/control_plane/db/etcd"
+	"octavius/internal/control_plane/server/execution"
 	"octavius/pkg/protobuf"
-
-	// "crud-toy/internal/model"
-
 	"net"
-
 	"google.golang.org/grpc"
 )
 
