@@ -3,7 +3,7 @@ package start
 import (
 	"fmt"
 	"log"
-	"octavius/internal/controlPlane/server"
+	"octavius/internal/control_plane/server"
 
 	"github.com/spf13/cobra"
 )

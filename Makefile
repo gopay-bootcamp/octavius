@@ -27,7 +27,7 @@ build: server
 .PHONY: server
 server:
 	PROCTOR_AUTH_PLUGIN_BINARY=$(PLUGIN_DIR)/auth.so \
-	go build -race -o $(BIN_DIR)/controlPlane ./cmd/controlPlane/main.go
+	go build -race -o $(BIN_DIR)/control_plane ./cmd/control_plane/main.go
 
 .PHONY: start-server
 start-server:

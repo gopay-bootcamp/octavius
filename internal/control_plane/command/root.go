@@ -2,7 +2,8 @@ package command
 
 import (
 	"fmt"
-	"octavius/internal/controlPlane/command/start"
+	"octavius/internal/control_plane/command/start"
+	"octavius/internal/logger"
 	"os"
 
 	"github.com/mitchellh/go-homedir"
@@ -20,7 +21,7 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		logger.Error("error in execute", err)
 		os.Exit(1)
 	}
 }
