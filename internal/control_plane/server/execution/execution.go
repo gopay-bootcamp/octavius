@@ -2,7 +2,7 @@ package execution
 
 import (
 	"context"
-	"octavius/internal/controlPlane/db/etcd"
+	"octavius/internal/control_plane/db/etcd"
 	"octavius/pkg/protobuf"
 )
 
