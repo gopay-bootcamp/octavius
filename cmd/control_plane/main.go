@@ -1,7 +1,7 @@
 package main
 
 import (
-	"octavius/internal/controlPlane/command"
+	"octavius/internal/control_plane/command"
 )
 
 func main() {
