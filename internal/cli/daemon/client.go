@@ -34,7 +34,7 @@ func NewClient(clientConfigLoader config.Loader) Client {
 }
 
 func (c *octaviusClient) StartClient() error {
-	err := c.loadOctaveConfig()
+	err := c.loadOctaviusConfig()
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (c *octaviusClient) StartClient() error {
 	return nil
 }
 
-func (c *octaviusClient) loadOctaveConfig() error {
+func (c *octaviusClient) loadOctaviusConfig() error {
 	octaveConfig, err := c.octaviusConfigLoader.Load()
 	if err != (config.ConfigError{}) {
 		return errors.New(err.Message)
