@@ -2,9 +2,8 @@ package command
 
 import (
 	"octavius/internal/cli/command/create"
-	"fmt"
 	"os"
-
+	"octavius/internal/logger"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,13 +13,13 @@ var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "OCTAVIUS",
-	Short: "Welcome to the ocatvius cli",
-	Long:  `Easily automate your work using ocatvius' multi-processing capabilities`,
+	Short: "Welcome to the octavius cli",
+	Long:  `Easily automate your work using octavius' multi-processing capabilities`,
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		logger.Error("Execution error ", err)
 		os.Exit(1)
 	}
 }
@@ -42,7 +41,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			logger.Error("Config Setup Issue : ", err)
 			os.Exit(1)
 		}
 		viper.AddConfigPath(home)
@@ -53,6 +52,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		logger.Info("Using Config file: " + viper.ConfigFileUsed())
 	}
 }

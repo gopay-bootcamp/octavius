@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"octavius/internal/control_plane/command/start"
 	"octavius/internal/logger"
 	"os"
@@ -12,9 +11,8 @@ import (
 )
 
 var cfgFile string
-
 var rootCmd = &cobra.Command{
-	Use:   "control_plane",
+	Use:   "ControlPlane",
 	Short: "Control plane of octavius",
 	Long:  `Control plane of octavius takes request from cli`,
 }
@@ -27,6 +25,8 @@ func Execute() {
 }
 
 func init() {
+	logger.Setup()
+	logger.Info("in controlPlane root init")
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/config.json)")
@@ -38,15 +38,17 @@ func init() {
 }
 
 func initConfig() {
+	logger.Info("in controlPlane root init config")
 	// Use config file from the flag.
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			logger.Error("CP Init config issue : ", err)
 			os.Exit(1)
 		}
+		logger.Info("home: " + home)
 		viper.AddConfigPath(home)
 		viper.SetConfigName("config.json")
 	}
@@ -55,6 +57,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		logger.Info("Using config file:" + viper.ConfigFileUsed())
 	}
 }
