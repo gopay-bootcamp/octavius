@@ -1,11 +1,10 @@
 package start
 
 import (
-	"fmt"
-	"log"
-	"octavius/internal/control_plane/server"
 
 	"github.com/spf13/cobra"
+	"octavius/internal/control_plane/server"
+	"octavius/internal/logger"
 )
 
 var createCmd = &cobra.Command{
@@ -13,10 +12,10 @@ var createCmd = &cobra.Command{
 	Short: "Start server",
 	Long:  `Start server at AppPort`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("start executed")
+		logger.Info("Start Executed")
 		err := server.Start()
-		if err == nil {
-			log.Panic(err)
+		if err != nil {
+			logger.Panic("Start command err: ", err)
 		}
 	},
 }
@@ -26,6 +25,7 @@ func GetCmd() *cobra.Command {
 }
 
 func init() {
-	fmt.Println("in start init")
+
+	logger.Setup()
 
 }

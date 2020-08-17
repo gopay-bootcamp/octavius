@@ -50,6 +50,7 @@ func initConfig() {
 		}
 		logger.Info("home: " + home)
 		viper.AddConfigPath(home)
+		logger.Info("Config file utilising from " + home)
 		viper.SetConfigName("config.json")
 	}
 

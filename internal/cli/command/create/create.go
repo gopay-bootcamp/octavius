@@ -15,7 +15,6 @@ var createCmd = &cobra.Command{
 	Long:  `Create procs by giving name, author`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Info("create executed")
-		logger.Info("in cli create")
 		appPort := config.Config().AppPort
 		conn, err := grpc.Dial("localhost:"+appPort, grpc.WithInsecure())
 		if err != nil {
@@ -41,5 +40,5 @@ func GetCmd() *cobra.Command {
 }
 
 func init() {
-
+logger.Setup()
 }

@@ -1,9 +1,11 @@
 package main
 
 import (
-	"octavius/internal/cli/printer"
 	"octavius/internal/cli/command"
+
+	"octavius/internal/cli/printer"
 	"octavius/internal/logger"
+
 )
 
 
