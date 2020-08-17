@@ -1,0 +1,34 @@
+{
+    "name": "demo-image-name",
+    "description": "This is a cool demo image",
+    "image_name": "images/demo-image",
+    "author": "Gopay System Automation Team",
+    "contributors": "",
+    "organization": "gopay-systems",
+    "authorized_groups": [
+      "demo-group"
+    ],
+    "env_vars": {
+      "secrets": [
+        {
+          "name": "TOP_SECRET_1",
+          "description": "Secret"
+        },
+        {
+          "name": "TOP_SECRET_2",
+          "description": "[Mandatory] Base64 KUBECONFIG_GOKU_STAGING"
+        }
+      ],
+      "args": [
+        {
+          "name": "ENV",
+          "description": "[Mandatory] Cluster Environment to Migrate [staging,production]"
+        },
+        {
+          "name": "RELEASE_NAME",
+          "description": "[Mandatory] Helm release name to be migrated"
+        }
+      ]
+    }
+  }
+  
