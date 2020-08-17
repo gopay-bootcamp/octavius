@@ -1,6 +1,7 @@
 package server
 
 import (
+	"octavius/internal/control_plane/server/metadata/repository"
 	"log"
 	"octavius/internal/config"
 	"octavius/internal/control_plane/db/etcd"
@@ -16,7 +17,11 @@ func Start() error {
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
-	exec := execution.NewExec(etcdClient)
+
+
+	metadataRepository := repository.NewMetadataRepository(etcdClient) 
+
+	exec := execution.NewExec(metadataRepository)
 
 	procGrpcServer := NewProcServiceServer(exec)
 	protobuf.RegisterProcServiceServer(server, procGrpcServer)

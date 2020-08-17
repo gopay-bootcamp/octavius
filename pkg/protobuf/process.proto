@@ -1,36 +1,49 @@
 syntax = "proto3";
 option go_package = "octavius/pkg/protobuf";
 
-message Proc{
-    string ID=1;
-    string name=2;
-    string author=3;
-}
-
 message Error{
     int64 errorCode=1;
     string errorMessage=2;
 }
 
-message ProcID{
-    string value=1;
-    string message=2;
+message secret {
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
+}
+message arg {
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
+}
+message env_vars {
+    repeated secret secrets=1 [json_name="secrets"];
+    repeated arg args=2 [json_name="args"];
 }
 
-message ProcList {
-    repeated Proc procs = 1;
-    Error error=2;
+message metadata {
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
+    string image_name=3 [json_name="image_name"];
+    env_vars env_vars=4 [json_name="env_vars"];
+    repeated string authorized_groups=5 [json_name="authorized_groups"];
+    string author=6 [json_name="author"];
+    string contributors=7 [json_name="contributors"];
+    string organization=8 [json_name="organization"];
 }
 
-message RequestForCreateProc{
-    string name=1;
-    string author=2;
+message client_info {
+    string client_email=1;
+    string access_token=2;
 }
 
+message request_for_metadata_post {
+    metadata metadata=1;
+    client_info client_info=2;
+}
 
-message RequestForReadAllProcs{}
+message response {
+    string status=1;
+}
 
-service ProcService{
-    rpc CreateProc(RequestForCreateProc) returns (ProcID);
-    rpc ReadAllProcs(RequestForReadAllProcs) returns (ProcList);
+service OctaviusServices{
+   rpc Create_job(request_for_metadata_post) returns (response);
 }

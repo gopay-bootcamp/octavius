@@ -1,7 +1,10 @@
 package create
 
 import (
-	"context"
+	"fmt"
+	"octavius/internal/cli/daemon"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"octavius/internal/config"
@@ -9,36 +12,25 @@ import (
 	"octavius/pkg/protobuf"
 )
 
-var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Create procs",
-	Long:  `Create procs by giving name, author`,
-	Run: func(cmd *cobra.Command, args []string) {
-		logger.Info("create executed")
-		appPort := config.Config().AppPort
-		conn, err := grpc.Dial("localhost:"+appPort, grpc.WithInsecure())
-		if err != nil {
-			logger.Fatal("", err)
-		}
-		client := protobuf.NewProcServiceClient(conn)
-		crequest := &protobuf.RequestForCreateProc{
-			Name:   "First Job",
-			Author: "Author",
-		}
-		procID, err := client.CreateProc(context.Background(), crequest)
-		if err != nil {
-			logger.Error("",err)
-		} else {
-			logger.Info("Proc id message:" + procID.GetMessage())
-			logger.Info("Proc id value:" + procID.GetValue())
-		}
-	},
-}
+func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
+	return &cobra.Command{
+		Use:     "create",
+		Short:   "Create new octavius job metadata",
+		Long:    "This command helps create new jobmetadata to your CP host with proper metadata.json file",
+		Example: fmt.Sprintf("octavius create PATH=<filepath>/metadata.json"),
+		Args:    cobra.MinimumNArgs(1),
 
-func GetCmd() *cobra.Command {
-	return createCmd
-}
-
-func init() {
-logger.Setup()
+		Run: func(cmd *cobra.Command, args []string) {
+			arg := strings.Split(args[0], "=")
+			if len(arg) < 2 || arg[0] != "PATH" {
+				fmt.Println("Incorrect command argument format, the correct format is: \n octavius create PATH=<filepath>/metadata.json")
+				return
+			}
+			metadataFile := arg[1]
+			err := octaviusDaemon.CreateMetadata(metadataFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+		},
+	}
 }
