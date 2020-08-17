@@ -19,10 +19,6 @@ message env_vars {
     repeated arg args=2 [json_name="args"];
 }
 
-message authorized_groups {
-    repeated string authorized_groups=1;
-}
-
 message metadata {
     string name=1 [json_name="name"];
     string description=2 [json_name="description"];
@@ -46,10 +42,6 @@ message request_for_metadata_post {
 
 message response {
     string status=1;
-}
-
-message test_message {
-    string demo=1 [json_name="demo"];
 }
 
 service OctaviusServices{
