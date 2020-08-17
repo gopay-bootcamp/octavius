@@ -82,7 +82,7 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 
 	postRequestHeader := protobuf.ClientInfo{
 		ClientEmail: c.emailId,
-		AccessToken: c.accessToken,
+		AcessToken: c.accessToken,
 	}
 	metadataPostRequest := protobuf.RequestForMetadataPost{
 		Metadata:   &metadata,
