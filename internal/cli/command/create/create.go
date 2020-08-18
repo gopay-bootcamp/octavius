@@ -4,12 +4,7 @@ import (
 	"fmt"
 	"octavius/internal/cli/daemon"
 	"strings"
-
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"octavius/internal/config"
-	"octavius/internal/logger"
-	"octavius/pkg/protobuf"
 )
 
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {

@@ -3,13 +3,12 @@ package execution
 import (
 	"octavius/internal/control_plane/server/metadata/repository"
 	"context"
-	"octavius/internal/control_plane/db/etcd"
 	"octavius/pkg/protobuf"
 )
 
 type Execution interface {
-	SaveMetadataToDb(ctx context.Context, proc *protobuf.Proc) (string, error)
-	ReadAllMetadata(ctx context.Context) ([]protobuf.Proc, error)
+	SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.MetadataID)
+	ReadAllMetadata(ctx context.Context) (string, error)
 }
 
 type execution struct {
@@ -24,19 +23,16 @@ func NewExec(metadataRepo repository.MetadataRepository) Execution {
 	}
 }
 
-func (e *execution) SaveMetadataToDb(ctx context.Context, proc *protobuf.Proc) (string, error) {
+func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.MetadataID) {
 
-	result, err := e.metadata.Save(ctx,proc.Name,proc)
-	if err != nil {
-		return "", err
-	}
-	return result, nil
+	result := e.metadata.Save(ctx,metadata.Name,metadata)
+	return result
 }
 
-func (e *execution) ReadAllMetadata(ctx context.Context) ([]protobuf.Proc, error) {
-	procs, err := e.client.GetAllValues(ctx)
+func (e *execution) ReadAllMetadata(ctx context.Context) (string, error) {
+	procs, err := e.metadata.GetAll(ctx)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	return procs, nil
 }

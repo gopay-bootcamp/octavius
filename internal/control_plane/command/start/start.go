@@ -12,7 +12,6 @@ var createCmd = &cobra.Command{
 	Short: "Start server",
 	Long:  `Start server at AppPort`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Info("Start Executed")
 		err := server.Start()
 		if err != nil {
 			logger.Panic("Start command err: ", err)

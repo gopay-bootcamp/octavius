@@ -20,11 +20,10 @@ func Start() error {
 
 
 	metadataRepository := repository.NewMetadataRepository(etcdClient) 
-
 	exec := execution.NewExec(metadataRepository)
 
 	procGrpcServer := NewProcServiceServer(exec)
-	protobuf.RegisterProcServiceServer(server, procGrpcServer)
+	protobuf.RegisterOctaviusServicesServer(server, procGrpcServer)
 	if err != nil {
 		log.Fatal("grpc server not started")
 		return err
