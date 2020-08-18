@@ -1,20 +1,20 @@
 package execution
 
 import (
-	"octavius/internal/control_plane/server/metadata/repository"
 	"context"
+	"octavius/internal/control_plane/server/metadata/repository"
 	"octavius/pkg/protobuf"
 )
 
 type Execution interface {
-	SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.MetadataID)
+	SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataID
 	ReadAllMetadata(ctx context.Context) (string, error)
 }
 
 type execution struct {
 	metadata repository.MetadataRepository
-	ctx    context.Context
-	cancel context.CancelFunc
+	ctx      context.Context
+	cancel   context.CancelFunc
 }
 
 func NewExec(metadataRepo repository.MetadataRepository) Execution {
@@ -23,9 +23,9 @@ func NewExec(metadataRepo repository.MetadataRepository) Execution {
 	}
 }
 
-func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.MetadataID) {
+func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataID {
 
-	result := e.metadata.Save(ctx,metadata.Name,metadata)
+	result := e.metadata.Save(ctx, metadata.Name, metadata)
 	return result
 }
 

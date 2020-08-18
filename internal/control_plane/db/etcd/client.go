@@ -12,10 +12,10 @@ import (
 
 //EtcdClient is exported to be used in server/execution
 type EtcdClient interface {
-	DeleteKey(ctx context.Context, key string) (bool,error)
+	DeleteKey(ctx context.Context, key string) (bool, error)
 	GetValue(ctx context.Context, key string) (string, error)
 	PutValue(ctx context.Context, key string, value string) (string, error)
-	GetAllValues(ctx context.Context,prefix string) ([]string, error)
+	GetAllValues(ctx context.Context, prefix string) ([]string, error)
 	GetValueWithRevision(ctx context.Context, key string, header int64) (string, error)
 	Close()
 	SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan
@@ -45,13 +45,13 @@ func NewClient() EtcdClient {
 }
 
 // function to delete the key provided
-func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool,error) {
+func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error) {
 	_, err := client.db.Delete(ctx, id)
 	if err != nil {
-		return false,err
+		return false, err
 	}
-	
-	return true,nil
+
+	return true, nil
 }
 
 func (client *etcdClient) PutValue(ctx context.Context, key string, value string) (string, error) {
@@ -86,7 +86,7 @@ func (client *etcdClient) GetProcRevisionById(ctx context.Context, id string) (i
 	return gr.Header.Revision, nil
 }
 
-func (client *etcdClient) GetAllValues(ctx context.Context,prefix string) ([]string, error) {
+func (client *etcdClient) GetAllValues(ctx context.Context, prefix string) ([]string, error) {
 	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
 	if err != nil {
 		return nil, err

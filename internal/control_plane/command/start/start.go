@@ -1,7 +1,6 @@
 package start
 
 import (
-
 	"github.com/spf13/cobra"
 	"octavius/internal/control_plane/server"
 	"octavius/internal/logger"
@@ -14,7 +13,7 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := server.Start()
 		if err != nil {
-			logger.Panic("Start command err: ", err)
+			logger.Fatal("Start command err: ", err)
 		}
 	},
 }

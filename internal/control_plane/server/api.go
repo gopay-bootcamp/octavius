@@ -1,14 +1,16 @@
 package server
 
 import (
+	"fmt"
 	"octavius/internal/control_plane/server/metadata/repository"
-	"log"
+	"octavius/internal/logger"
+
+	"google.golang.org/grpc"
+	"net"
 	"octavius/internal/config"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/server/execution"
 	"octavius/pkg/protobuf"
-	"net"
-	"google.golang.org/grpc"
 )
 
 func Start() error {
@@ -18,17 +20,15 @@ func Start() error {
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
 
-
-	metadataRepository := repository.NewMetadataRepository(etcdClient) 
+	metadataRepository := repository.NewMetadataRepository(etcdClient)
 	exec := execution.NewExec(metadataRepository)
 
 	procGrpcServer := NewProcServiceServer(exec)
 	protobuf.RegisterOctaviusServicesServer(server, procGrpcServer)
 	if err != nil {
-		log.Fatal("grpc server not started")
-		return err
+		logger.Fatal("grpc server not started", err)
 	}
-	log.Printf("grpc server started on port %v", appPort)
+	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
 	server.Serve(listener)
 	return nil
 }
