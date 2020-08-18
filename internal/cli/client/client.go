@@ -11,6 +11,7 @@ import (
 type Client interface {
 	CreateJob(*protobuf.RequestForMetadataPost) error
 	GetStreamLog(*protobuf.RequestForStreamLog) error
+	ExecuteJob(*protobuf.RequestForExecute) error
 }
 
 type grpcClient struct {
@@ -46,6 +47,14 @@ func (g *grpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 		}
 		fmt.Printf("log %v", log.Log)
 	}
+	return nil
+}
 
+func (g *grpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) error {
+	res,err := g.client.ExecuteJob(context.Background(), requestForExecute)
+	if err != nil {
+		return err
+	}
+	fmt.Println(res)
 	return nil
 }

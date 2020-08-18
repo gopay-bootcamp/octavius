@@ -2,31 +2,35 @@ package execution
 
 import (
 	"fmt"
-	"octavius/internal/cli/daemon"
 	"github.com/spf13/cobra"
+	"octavius/internal/cli/daemon"
+	"strings"
 )
 
-var executionCmd = &cobra.Command{
-	Use:   "execution",
-	Short: "Execution of Job",
-	Long:  `Execution of Job by giving arguments`,
-	Run: func(cmd *cobra.Command, args []string, octaviusDaemon daemon.Client) {
-		if len(args) != 1 {
-			fmt.Println("Incorrect command argument format, the correct format is: \n octavius getstream <job-name>")
-			return
-		}
-		jobName := args[0]
-		err := octaviusDaemon.GetStreamLog(jobName)
-		if err != nil {
-			fmt.Println(err)
-		}
-	},
-}
+func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
+	return &cobra.Command{
+		Use:     "execute",
+		Short:   "Execute the existing job",
+		Long:    "This command helps to execute the job which is already created in server",
+		Example: fmt.Sprintf("octavius execute <job-name> arg1=argvalue1 arg2=argvalue2"),
+		Args:    cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) < 1 {
+				fmt.Println("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ...")
+				return
+			}
+			jobName := args[0]
+			metadata := map[string]string{}
 
-func GetCmd() *cobra.Command {
-	return executionCmd
-}
+			for i := 1; i < len(args); i++ {
+				arg := strings.Split(args[i], "=")
+				metadata[arg[0]] = arg[1]
+			}
 
-func init() {
-
+			err := octaviusDaemon.Execute(jobName, metadata)
+			if err != nil {
+				fmt.Println(err)
+			}
+		},
+	}
 }

@@ -46,6 +46,12 @@ message request_for_stream_log {
     string job_name=2;
 }
 
+message request_for_execute{
+    client_info client_info=1;
+    string job_name=2;
+    map<string,string> metadata=3;
+}
+
 message response {
     string status=1;
 }
@@ -56,4 +62,5 @@ message log{
 service OctaviusServices{
    rpc Create_job(request_for_metadata_post) returns (response);
    rpc GetStreamLogs(request_for_stream_log) returns (stream log);
+   rpc ExecuteJob(request_for_execute) returns (response);
 }

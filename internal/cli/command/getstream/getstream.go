@@ -3,22 +3,25 @@ package getstream
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"octavius/internal/cli/daemon"
 )
 
-var getstreamCmd = &cobra.Command{
-	Use:   "getstream",
-	Short: "Get job log data",
-	Long:  `Get job log by giving arguments`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		fmt.Println("getstream executed")
-	},
-}
-
-func GetCmd() *cobra.Command {
-	return getstreamCmd
-}
-
-func init() {
-
+func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
+	return &cobra.Command{
+		Use:   "getstream",
+		Short: "Get job log data",
+		Long:  `Get job log by giving arguments`,
+		Args:    cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) != 1 {
+				fmt.Println("Incorrect command argument format, the correct format is: \n octavius getstream <job-name>")
+				return
+			}
+			jobName := args[0]
+			err := octaviusDaemon.GetStreamLog(jobName)
+			if err != nil {
+				fmt.Println(err)
+			}
+		},
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"octavius/internal/cli/command/config"
 	"octavius/internal/cli/command/create"
+	"octavius/internal/cli/command/execution"
 	"octavius/internal/cli/command/getstream"
 	"octavius/internal/cli/daemon"
 
@@ -26,8 +27,11 @@ func Execute(octaviusDaemon daemon.Client) {
 	createCmd := create.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(createCmd)
 
-	getstreamCmd := getstream.GetCmd()
+	getstreamCmd := getstream.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(getstreamCmd)
+
+	executeCmd := execution.NewCmd(octaviusDaemon)
+	rootCmd.AddCommand(executeCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

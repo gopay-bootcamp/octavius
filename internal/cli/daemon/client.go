@@ -17,6 +17,7 @@ type Client interface {
 	StartClient() error
 	CreateMetadata(metadataFile string) error
 	GetStreamLog(jobName string) error
+	Execute(jobName string, metadata map[string]string) error
 }
 
 type octaviusClient struct {
@@ -75,7 +76,7 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 	//find a better method for umarshalling using io reader
 	err = jsonpb.UnmarshalString(string(metadataJson), &metadata)
 	if err != nil {
-		return errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
+		return errors.New(fmt.Sprintln("error unmarshalling metadata.json file: ", err))
 	}
 
 	err = c.StartClient()
@@ -94,7 +95,7 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 
 	err = c.grpcClient.CreateJob(&metadataPostRequest)
 	if err != nil {
-		return errors.New("Error occured when sending the grpc request. Check your CPHost")
+		return errors.New("error occured when sending the grpc request. Check your CPHost")
 	}
 	return nil
 }
@@ -113,9 +114,29 @@ func (c *octaviusClient) GetStreamLog(jobName string) error {
 		ClientInfo: &postRequestHeader,
 		JobName: jobName,
 	}
-	err = c.grpcClient.GetStreamLog(getStreamPostRequest)
+	err = c.grpcClient.GetStreamLog(&getStreamPostRequest)
 	if err != nil {
-		return errors.New("Error occured when sending the grpc request. Check your CPHost")
+		return errors.New("error occured when sending the grpc request. Check your CPHost")
+	}
+	return nil
+}
+func (c *octaviusClient) Execute(jobName string, metadata map[string]string) error {
+	err := c.StartClient()
+	if err != nil {
+		return err
+	}
+	postRequestHeader := protobuf.ClientInfo{
+		ClientEmail: c.emailId,
+		AccessToken: c.accessToken,
+	}
+	executePostRequest := protobuf.RequestForExecute{
+		ClientInfo: &postRequestHeader,
+		JobName: jobName,
+		Metadata: metadata,
+	}
+	err = c.grpcClient.ExecuteJob(&executePostRequest)
+	if err != nil {
+		return errors.New("error occured when sending the grpc request. Check your CPHost")
 	}
 	return nil
 }
