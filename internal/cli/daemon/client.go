@@ -16,6 +16,7 @@ import (
 type Client interface {
 	StartClient() error
 	CreateMetadata(metadataFile string) error
+	GetStreamLog(jobName string) error
 }
 
 type octaviusClient struct {
@@ -48,6 +49,8 @@ func (c *octaviusClient) StartClient() error {
 	c.grpcClient = client
 	return nil
 }
+
+
 
 func (c *octaviusClient) loadOctaviusConfig() error {
 	octaveConfig, err := c.octaviusConfigLoader.Load()
@@ -90,6 +93,27 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 	}
 
 	err = c.grpcClient.CreateJob(&metadataPostRequest)
+	if err != nil {
+		return errors.New("Error occured when sending the grpc request. Check your CPHost")
+	}
+	return nil
+}
+
+func (c *octaviusClient) GetStreamLog(jobName string) error {
+	err := c.StartClient()
+	if err != nil {
+		return err
+	}
+
+	postRequestHeader := protobuf.ClientInfo{
+		ClientEmail: c.emailId,
+		AccessToken: c.accessToken,
+	}
+	getStreamPostRequest := protobuf.RequestForStreamLog{
+		ClientInfo: &postRequestHeader,
+		JobName: jobName,
+	}
+	err = c.grpcClient.GetStreamLog(getStreamPostRequest)
 	if err != nil {
 		return errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}

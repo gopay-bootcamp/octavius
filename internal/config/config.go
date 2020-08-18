@@ -57,11 +57,10 @@ var once sync.Once
 var config ProctorConfig
 
 type ProctorConfig struct {
-	viper    						*viper.Viper
-	LogLevel 						string
-	AppPort  						string
-	EtcdPort 						string
-	
+	viper    *viper.Viper
+	LogLevel string
+	AppPort  string
+	EtcdPort string
 }
 
 func load() ProctorConfig {
@@ -83,7 +82,7 @@ func load() ProctorConfig {
 		viper:    fang,
 		LogLevel: fang.GetString("log_level"),
 		EtcdPort: fang.GetString("etcd_port"),
-		AppPort: fang.GetString("app_port"),
+		AppPort:  fang.GetString("app_port"),
 	}
 	return proctorConfig
 }

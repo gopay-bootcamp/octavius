@@ -2,11 +2,11 @@ package etcd
 
 import (
 	"context"
-	"octavius/internal/config"
-	"octavius/pkg/model/proc"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"octavius/internal/config"
+	"octavius/pkg/model/proc"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -54,7 +54,7 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) error {
 	return nil
 }
 
-func (client *etcdClient) PutValue(ctx context.Context, key string, proc *model.Proc) (string,error) {
+func (client *etcdClient) PutValue(ctx context.Context, key string, proc *model.Proc) (string, error) {
 	value, err := json.Marshal(proc)
 	if err != nil {
 		return "", err
@@ -89,7 +89,7 @@ func (client *etcdClient) GetProcRevisionById(ctx context.Context, id string) (i
 	if len(gr.Kvs) == 0 {
 		return -1, errors.New("No proc found")
 	}
-	return gr.Header.Revision,nil
+	return gr.Header.Revision, nil
 }
 
 func (client *etcdClient) GetAllValues(ctx context.Context) ([]model.Proc, error) {
@@ -108,7 +108,6 @@ func (client *etcdClient) GetAllValues(ctx context.Context) ([]model.Proc, error
 	}
 	return procs, nil
 }
-
 
 func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (*model.Proc, error) {
 	res, err := client.db.Get(ctx, id, clientv3.WithRev(header))

@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"os"
-	"octavius/internal/config"
 	"github.com/rs/zerolog"
+	"octavius/internal/config"
+	"os"
 )
 
 type Logger struct {
@@ -56,7 +56,7 @@ func Error(action string, err error) {
 
 func LogErrors(err error, action string) {
 	if err != nil {
-		Error(action,err)
+		Error(action, err)
 	} else {
 		Debug(action)
 	}

@@ -6,8 +6,8 @@ import (
 	"octavius/internal/logger"
 
 	// "crud-toy/internal/model"
-	"octavius/pkg/protobuf"
 	"net"
+	"octavius/pkg/protobuf"
 
 	"google.golang.org/grpc"
 )
@@ -18,7 +18,7 @@ func Start() error {
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
-	
+
 	procGrpcServer := NewProcServiceServer(exec)
 	procProto.RegisterProcServiceServer(server, procGrpcServer)
 	if err != nil {

@@ -41,6 +41,11 @@ message request_for_metadata_post {
     client_info client_info=2;
 }
 
+message request_for_stream_log {
+    client_info client_info=1;
+    string job_name=2;
+}
+
 message response {
     string status=1;
 }
