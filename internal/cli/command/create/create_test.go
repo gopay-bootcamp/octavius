@@ -2,17 +2,18 @@ package create
 
 import (
 	"errors"
+	"octavius/internal/cli/daemon"
+	"testing"
+
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"octavius/internal/cli/daemon"
-	"testing"
 )
 
 type CreateCmdTestSuite struct {
 	suite.Suite
 	mockOctaviusDClient *daemon.MockClient
-	testCreateCmd        *cobra.Command
+	testCreateCmd       *cobra.Command
 }
 
 func (s *CreateCmdTestSuite) SetupTest() {
@@ -32,10 +33,10 @@ func (s *CreateCmdTestSuite) TestCreateCmdHelp() {
 
 func (s *CreateCmdTestSuite) TestCreateCmd() {
 
-	s.mockOctaviusDClient.On("CreateMetadata","../../../../test/metadata/metadata.json").Return(nil).Once()
+	s.mockOctaviusDClient.On("CreateMetadata", "../../../../test/metadata/metadata.json").Return(nil).Once()
 
-	args := []string{ "PATH=../../../../test/metadata/metadata.json"}
-	s.testCreateCmd.Run(&cobra.Command{},args)
+	args := []string{"PATH=../../../../test/metadata/metadata.json"}
+	s.testCreateCmd.Run(&cobra.Command{}, args)
 
 	s.mockOctaviusDClient.AssertExpectations(s.T())
 
@@ -43,21 +44,21 @@ func (s *CreateCmdTestSuite) TestCreateCmd() {
 
 func (s *CreateCmdTestSuite) TestCreateCmdWithWrongArguments() {
 
-	s.mockOctaviusDClient.On("CreateMetadata","../../../../test/metadata/metadata.json").Return(nil).Once()
+	s.mockOctaviusDClient.On("CreateMetadata", "../../../../test/metadata/metadata.json").Return(nil).Once()
 
-	args := []string{ "PAT=../../../../test/metadata/metadata.json"}
-	s.testCreateCmd.Run(&cobra.Command{},args)
+	args := []string{"PAT=../../../../test/metadata/metadata.json"}
+	s.testCreateCmd.Run(&cobra.Command{}, args)
 
-	s.mockOctaviusDClient.AssertNotCalled(s.T(),"CreateMetadata","../../../../test/metadata/metadata.json")
+	s.mockOctaviusDClient.AssertNotCalled(s.T(), "CreateMetadata", "../../../../test/metadata/metadata.json")
 
 }
 
 func (s *CreateCmdTestSuite) TestCreateCmdWithReturnedError() {
 
-	s.mockOctaviusDClient.On("CreateMetadata","../../../../test/metadata/metadata.json").Return(errors.New("GOT SOME ERROR")).Once()
+	s.mockOctaviusDClient.On("CreateMetadata", "../../../../test/metadata/metadata.json").Return(errors.New("GOT SOME ERROR")).Once()
 
-	args := []string{ "PATH=../../../../test/metadata/metadata.json"}
-	s.testCreateCmd.Run(&cobra.Command{},args)
+	args := []string{"PATH=../../../../test/metadata/metadata.json"}
+	s.testCreateCmd.Run(&cobra.Command{}, args)
 
 	s.mockOctaviusDClient.AssertExpectations(s.T())
 }

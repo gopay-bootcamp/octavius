@@ -1,38 +1,21 @@
 package client
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc"
 	"octavius/pkg/protobuf"
-	"time"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type MockGrpcClient struct {
 	mock.Mock
 }
 
-
-
 func (m *MockGrpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) (*protobuf.Response, error) {
 	args := m.Called(metadataPostRequest)
 	return args.Get(0).(*protobuf.Response), args.Error(1)
 }
 
-func (m *MockGrpcClient) NewGrpcClient(CPHost string) (Client,error) {
-	m.Called(CPHost)
-	fmt.Printf("Mock called")
-	conn, err := grpc.Dial(CPHost, grpc.WithInsecure())
-	if err != nil {
-		return nil,err
-	}
-	grpcClient := protobuf.NewOctaviusServicesClient(conn)
-
-
-	return &GrpcClient{
-		client:                grpcClient,
-		connectionTimeoutSecs: time.Second,
-	},nil
+func (m *MockGrpcClient) ConnectClient(cpHost string) error {
+	args := m.Called(cpHost)
+	return args.Error(0)
 }
-
-

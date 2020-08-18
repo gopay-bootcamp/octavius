@@ -1,58 +1,82 @@
 package daemon
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/suite"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
-	"os"
+	"octavius/pkg/protobuf"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type ClientTestSuite struct {
 	suite.Suite
 	testClient       Client
-	mockLoader 		config.MockLoader
-	mockGrpcClient 	client.MockGrpcClient
+	mockConfigLoader config.MockLoader
+	mockGrpcClient   client.MockGrpcClient
 }
 
 func (s *ClientTestSuite) SetupTest() {
-	s.mockGrpcClient=client.MockGrpcClient{}
-	s.mockLoader=config.MockLoader{}
+	s.mockGrpcClient = client.MockGrpcClient{}
+	s.mockConfigLoader = config.MockLoader{}
 
-
-	s.testClient=NewClient(&s.mockLoader)
-
+	s.testClient = NewClient(&s.mockConfigLoader)
 
 }
 
 func (s *ClientTestSuite) TestCreateMetadata() {
-
-	s.mockLoader.On("Load").Return(
-		config.OctaviusConfig{
-			Host           :  "localhost:5050",
-			Email                 : "jaimin.rathod@go-jek.com",
-			AccessToken           :	"AllowMe",
-			ConnectionTimeoutSecs : time.Second,
-		},
-		config.ConfigError{},
-		).Once()
-
-	s.mockGrpcClient.On("NewGrpcClient","localhost:5050").Once()
-
-	metadataFileHandler, err := os.Open("../../../test/metadata/metadata.json")
-	if err != nil {
-		fmt.Println("Error opening the file given")
-		return
+	t := s.T()
+	testConfig := config.OctaviusConfig{
+		Host:                  "localhost:5050",
+		Email:                 "jaimin.rathod@go-jek.com",
+		AccessToken:           "AllowMe",
+		ConnectionTimeoutSecs: time.Second,
 	}
-	defer metadataFileHandler.Close()
-	s.testClient.CreateMetadata(metadataFileHandler,&s.mockGrpcClient)
+
+	metadataTestFileHandler := strings.NewReader(
+		`{
+			"name": "test-name",
+			"image_name": "test-image",
+			"author": "test-author",
+			"organization": "gopay-systems"
+	}`)
+
+	testMetadata := protobuf.Metadata{
+		Name:         "test-name",
+		ImageName:    "test-image",
+		Author:       "test-author",
+		Organization: "gopay-systems",
+	}
+
+	testRequestHeader := protobuf.ClientInfo{
+		ClientEmail: "jaimin.rathod@go-jek.com",
+		AccessToken: "AllowMe",
+	}
+
+	testPostRequest := protobuf.RequestForMetadataPost{
+		Metadata:   &testMetadata,
+		ClientInfo: &testRequestHeader,
+	}
+
+	testPostResponse := protobuf.Response{
+		Status: "success",
+	}
+
+	s.mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
+	s.mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
+	s.mockGrpcClient.On("CreateJob", &testPostRequest).Return(&testPostResponse, nil).Once()
+	res, err := s.testClient.CreateMetadata(metadataTestFileHandler, &s.mockGrpcClient)
+
+	assert.Nil(t, err)
+	assert.Equal(t, &testPostResponse, res)
+	s.mockGrpcClient.AssertExpectations(t)
+	s.mockConfigLoader.AssertExpectations(t)
 
 }
 
 func TestClientTestSuite(t *testing.T) {
 	suite.Run(t, new(ClientTestSuite))
 }
-
-

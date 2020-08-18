@@ -3,18 +3,17 @@ package daemon
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/jsonpb"
-	"octavius/pkg/protobuf"
-
 	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
+	"octavius/pkg/protobuf"
 	"time"
+
+	"github.com/golang/protobuf/jsonpb"
 )
 
 type Client interface {
-	ConfigureClient() error
-	CreateMetadata(io.Reader,client.Client) (*protobuf.Response, error)
+	CreateMetadata(io.Reader, client.Client) (*protobuf.Response, error)
 }
 
 type octaviusClient struct {
@@ -32,53 +31,35 @@ func NewClient(clientConfigLoader config.Loader) Client {
 	}
 }
 
-func (c *octaviusClient) ConfigureClient() error {
-	err := c.loadOctaviusConfig()
-	if err != nil {
-		return err
-	}
-
-
-	return nil
-}
-
-func (c *octaviusClient) loadOctaviusConfig() error {
-
-	octaveConfig, err := c.octaviusConfigLoader.Load()
-	if err != (config.ConfigError{}) {
-		return errors.New(err.Message)
+func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
+	octaveConfig, configErr := c.octaviusConfigLoader.Load()
+	if configErr != (config.ConfigError{}) {
+		return errors.New(configErr.Message)
 	}
 
 	c.CPHost = octaveConfig.Host
 	c.emailId = octaveConfig.Email
 	c.accessToken = octaveConfig.AccessToken
 	c.connectionTimeoutSecs = octaveConfig.ConnectionTimeoutSecs
+	c.grpcClient = grpcClient
+
+	err := c.grpcClient.ConnectClient(c.CPHost)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-
-
-func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader,client client.Client) (*protobuf.Response, error) {
-
-
-
-
+func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.Response, error) {
 	metadata := protobuf.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
 	}
 
-
-	err = c.ConfigureClient()
+	err = c.startOctaviusClient(grpcClient)
 	if err != nil {
-		fmt.Printf("%v",err)
-		return nil, err
-	}
-
-	c.grpcClient,err=client.NewGrpcClient(c.CPHost)
-	if err != nil {
-		fmt.Printf("%v",err)
+		fmt.Printf("%v", err)
 		return nil, err
 	}
 
@@ -90,7 +71,6 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader,client cli
 		Metadata:   &metadata,
 		ClientInfo: &postRequestHeader,
 	}
-
 
 	res, err := c.grpcClient.CreateJob(&metadataPostRequest)
 	if err != nil {

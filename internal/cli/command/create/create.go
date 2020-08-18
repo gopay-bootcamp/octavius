@@ -2,11 +2,12 @@ package create
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/client"
+	"octavius/internal/cli/daemon"
 	"os"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
@@ -31,8 +32,8 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			}
 			defer metadataFileHandler.Close()
 
-			client:=client.NewClient()
-			res, err := octaviusDaemon.CreateMetadata(metadataFileHandler,client)
+			client := &client.GrpcClient{}
+			res, err := octaviusDaemon.CreateMetadata(metadataFileHandler, client)
 			if err != nil {
 				fmt.Println(err)
 			}
