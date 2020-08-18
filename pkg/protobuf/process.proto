@@ -52,4 +52,5 @@ message response {
 
 service OctaviusServices{
    rpc Create_job(request_for_metadata_post) returns (response);
+   rpc Get_Stream_Logs(request_for_stream_log) returns (stream response);
 }

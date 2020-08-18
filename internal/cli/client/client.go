@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"io"
 	"octavius/pkg/protobuf"
 	"time"
 )
@@ -34,11 +35,18 @@ func (g *grpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataP
 }
 
 func (g *grpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) error {
-	res, err := g.client.
+	responseStream, err := g.client.Get_Stream_Logs(context.Background(), requestForStreamLog)
 	if err != nil {
 		return err
 	}
-	fmt.Println(res)
+	for {
+		log, err := responseStream.Recv()
+		if err == io.EOF {
+			break
+		}
+		fmt.Printf("log %v", log.Status)
+	}
+	fmt.Println()
 
 	return nil
 }
