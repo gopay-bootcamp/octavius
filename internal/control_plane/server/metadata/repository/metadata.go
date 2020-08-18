@@ -26,6 +26,7 @@ func NewMetadataRepository(client etcd.EtcdClient) MetadataRepository {
 
 func (c *metadataRepository) Save(ctx context.Context, key string, metadata *protobuf.Metadata) *protobuf.MetadataID {
 	val, err := proto.Marshal(metadata)
+
 	errMsg := &protobuf.Error{ErrorCode: 2, ErrorMessage: "error in marshalling metadata"}
 	if err != nil {
 		res := &protobuf.MetadataID{Error: errMsg, ID: ""}
