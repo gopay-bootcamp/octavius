@@ -1,12 +1,12 @@
 package daemon
 
 import (
-	"octavius/internal/logger"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
+	"octavius/internal/logger"
 	"octavius/pkg/protobuf"
 	"time"
 
@@ -92,7 +92,7 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 
 	err = c.grpcClient.PostMetadata(&metadataPostRequest)
 	if err != nil {
-		logger.Fatal("error in recieving response",err)
+		logger.Fatal("error in recieving response", err)
 	}
 	return nil
 }
