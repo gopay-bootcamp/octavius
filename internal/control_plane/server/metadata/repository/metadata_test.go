@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/gogo/protobuf/proto"
 	"context"
+	"github.com/gogo/protobuf/proto"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/pkg/protobuf"
 	"reflect"
@@ -12,16 +12,16 @@ import (
 func Test_metadataRepository_Save(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	metadataVal := &protobuf.Metadata{
-					Author:      "littlestar642",
-					ImageName:   "demo image",
-					Name:        "test data",
-					Description: "sample test metadata",
-				}
+		Author:      "littlestar642",
+		ImageName:   "demo image",
+		Name:        "test data",
+		Description: "sample test metadata",
+	}
 	val, err := proto.Marshal(metadataVal)
-	if err !=nil {
+	if err != nil {
 		t.Error("error in marshalling metadata")
 	}
-	mockClient.On("PutValue", "metadata/test data",string(val)).Return("metadata/test data",nil)
+	mockClient.On("PutValue", "metadata/test data", string(val)).Return("metadata/test data", nil)
 
 	type fields struct {
 		etcdClient etcd.EtcdClient
@@ -42,8 +42,8 @@ func Test_metadataRepository_Save(t *testing.T) {
 				etcdClient: mockClient,
 			},
 			args: args{
-				ctx: context.Background(),
-				key: "test data",
+				ctx:      context.Background(),
+				key:      "test data",
 				metadata: metadataVal,
 			},
 			want: &protobuf.MetadataName{

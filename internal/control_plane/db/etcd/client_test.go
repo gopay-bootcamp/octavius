@@ -20,7 +20,7 @@ func TestEtcdClient_PutValue(t *testing.T) {
 		t.Fatal("client returned nil")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	_, err := client.PutValue(ctx, "test_key","test value")
+	_, err := client.PutValue(ctx, "test_key", "test value")
 	cancel()
 	if err != nil {
 		t.Error("Put value returned error", err)
@@ -33,15 +33,15 @@ func TestEtcdClient_DeleteKey(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	_, err := client.GetValue(ctx, "test_key")
 
-	status,err := client.DeleteKey(ctx, "test_key")
+	status, err := client.DeleteKey(ctx, "test_key")
 	if err != nil {
 		t.Error("error in deleting key")
 	}
 
-	if status ==false{
+	if status == false {
 		t.Error("key not deleted")
 	}
-	
+
 	val, err := client.GetValue(ctx, "test_key")
 	if err == nil {
 		t.Error("value still being retirieved")
@@ -56,7 +56,7 @@ func TestEtcdClient_GetValue(t *testing.T) {
 	client := NewClient()
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	_, err := client.PutValue(ctx,"test_key","test value")
+	_, err := client.PutValue(ctx, "test_key", "test value")
 	if err != nil {
 		t.Error("error in get value")
 	}
@@ -73,22 +73,22 @@ func TestEtcdClient_GetValueWithRevision(t *testing.T) {
 	client := NewClient()
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	
-	_, err := client.PutValue(ctx, "test_key","test value")
+
+	_, err := client.PutValue(ctx, "test_key", "test value")
 	if err != nil {
 		t.Error("error in put value", err)
-	} 
+	}
 
-	header1,err := client.GetProcRevisionById(ctx,"test_key")
+	header1, err := client.GetProcRevisionById(ctx, "test_key")
 	if err != nil {
 		t.Error("error in getting revision number", err)
 	}
 
-	_, err = client.PutValue(ctx, "test_key","new value")
+	_, err = client.PutValue(ctx, "test_key", "new value")
 	if err != nil {
 		t.Error("error in put value", err)
 	}
-	
+
 	grv, err := client.GetValueWithRevision(ctx, "test_key", header1)
 	if err != nil {
 		t.Error("error in get value", err)

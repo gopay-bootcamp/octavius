@@ -10,13 +10,13 @@ type ClientMock struct {
 	mock.Mock
 }
 
-func (m *ClientMock) DeleteKey(ctx context.Context, key string) (bool,error) {
+func (m *ClientMock) DeleteKey(ctx context.Context, key string) (bool, error) {
 	args := m.Called()
-	return args.Get(0).(bool),args.Error(1)
+	return args.Get(0).(bool), args.Error(1)
 }
 
 func (m *ClientMock) PutValue(ctx context.Context, key string, value string) (string, error) {
-	args := m.Called(key,value)
+	args := m.Called(key, value)
 	return args.Get(0).(string), args.Error(1)
 }
 
@@ -25,7 +25,7 @@ func (m *ClientMock) GetValue(ctx context.Context, key string) (string, error) {
 	return args.Get(0).(string), args.Error(1)
 }
 
-func (m *ClientMock) GetAllValues(ctx context.Context,prefix string) ([]string, error) {
+func (m *ClientMock) GetAllValues(ctx context.Context, prefix string) ([]string, error) {
 	args := m.Called()
 	return args.Get(0).([]string), args.Error(1)
 }

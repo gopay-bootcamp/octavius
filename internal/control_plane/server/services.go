@@ -17,12 +17,12 @@ func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesSe
 	}
 }
 
-func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName,error) {
+func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName, error) {
 	id := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
-	return id,nil
+	return id, nil
 }
 
-func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray,error) {
-	dataList:= s.procExec.ReadAllMetadata(ctx)
-	return dataList,nil
+func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray, error) {
+	dataList := s.procExec.ReadAllMetadata(ctx)
+	return dataList, nil
 }
