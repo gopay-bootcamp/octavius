@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"errors"
-	"fmt"
 	"octavius/pkg/protobuf"
 	"time"
 
@@ -38,6 +37,5 @@ func (g *GrpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataP
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(res)
 	return res, nil
 }

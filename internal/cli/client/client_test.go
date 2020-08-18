@@ -13,7 +13,13 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-const bufSize = 1024 * 1024
+const (
+	bufSize = 1024 * 1024
+)
+
+var testPostResponse = &protobuf.Response{
+	Status: "success",
+}
 
 var lis *bufconn.Listener
 
@@ -35,9 +41,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 type server struct{}
 
 func (s *server) CreateJob(context.Context, *protobuf.RequestForMetadataPost) (*protobuf.Response, error) {
-	return &protobuf.Response{
-		Status: "success",
-	}, nil
+	return testPostResponse, nil
 }
 
 func TestCreateJob(t *testing.T) {
@@ -48,6 +52,7 @@ func TestCreateJob(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
+
 	client := protobuf.NewOctaviusServicesClient(conn)
 	testClient := GrpcClient{
 		client:                client,
@@ -55,9 +60,6 @@ func TestCreateJob(t *testing.T) {
 	}
 	testPostRequest := &protobuf.RequestForMetadataPost{}
 	res, err := testClient.CreateJob(testPostRequest)
-	testPostResponse := &protobuf.Response{
-		Status: "success",
-	}
 	assert.Nil(t, err)
-	assert.Equal(t, res, testPostResponse)
+	assert.Equal(t, testPostResponse.Status, res.Status)
 }
