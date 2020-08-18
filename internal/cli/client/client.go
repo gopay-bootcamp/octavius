@@ -35,7 +35,7 @@ func (g *grpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataP
 }
 
 func (g *grpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) error {
-	responseStream, err := g.client.Get_Stream_Logs(context.Background(), requestForStreamLog)
+	responseStream, err := g.client.GetStreamLogs(context.Background(), requestForStreamLog)
 	if err != nil {
 		return err
 	}
@@ -44,9 +44,8 @@ func (g *grpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 		if err == io.EOF {
 			break
 		}
-		fmt.Printf("log %v", log.Status)
+		fmt.Printf("log %v", log.Log)
 	}
-	fmt.Println()
 
 	return nil
 }

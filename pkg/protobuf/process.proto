@@ -50,7 +50,10 @@ message response {
     string status=1;
 }
 
+message log{
+    string log=1;
+}
 service OctaviusServices{
    rpc Create_job(request_for_metadata_post) returns (response);
-   rpc Get_Stream_Logs(request_for_stream_log) returns (stream response);
+   rpc GetStreamLogs(request_for_stream_log) returns (stream log);
 }
