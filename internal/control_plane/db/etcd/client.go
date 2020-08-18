@@ -69,7 +69,7 @@ func (client *etcdClient) GetValue(ctx context.Context, id string) (string, erro
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return "", errors.New("no metadata found")
+		return "", errors.New("no value found")
 	}
 	return string(gr.Kvs[0].Value), nil
 }
@@ -81,7 +81,7 @@ func (client *etcdClient) GetProcRevisionById(ctx context.Context, id string) (i
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return -1, errors.New("no metadata found")
+		return -1, errors.New("no value found")
 	}
 	return gr.Header.Revision, nil
 }
@@ -107,7 +107,7 @@ func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, h
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return "", errors.New("no metadata found")
+		return "", errors.New("no value found")
 	}
 	return string(gr.Kvs[0].Value), nil
 }

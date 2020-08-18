@@ -11,7 +11,7 @@ const prefix = "metadata/"
 
 type MetadataRepository interface {
 	Save(ctx context.Context, key string, metadata *protobuf.Metadata) *protobuf.MetadataID
-	GetAll(ctx context.Context) (string, error)
+	GetAll(ctx context.Context) *protobuf.MetadataArray
 }
 
 type metadataRepository struct {
@@ -27,25 +27,41 @@ func NewMetadataRepository(client etcd.EtcdClient) MetadataRepository {
 func (c *metadataRepository) Save(ctx context.Context, key string, metadata *protobuf.Metadata) *protobuf.MetadataID {
 	val, err := proto.Marshal(metadata)
 
-	errMsg := &protobuf.Error{ErrorCode: 2, ErrorMessage: "error in marshalling metadata"}
 	if err != nil {
+		errMsg := &protobuf.Error{ErrorCode: 2, ErrorMessage: "error in marshalling metadata"}
 		res := &protobuf.MetadataID{Error: errMsg, ID: ""}
 		return res
 	}
 
 	key = prefix + key
 	pr, err := c.etcdClient.PutValue(ctx, key, string(val))
-	errMsg = &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
 	if err != nil {
+		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
 		res := &protobuf.MetadataID{Error: errMsg, ID: ""}
 		return res
 	}
 
-	errMsg = &protobuf.Error{ErrorCode: 0, ErrorMessage: "no error"}
+	errMsg := &protobuf.Error{ErrorCode: 0, ErrorMessage: "no error"}
 	res := &protobuf.MetadataID{Error: errMsg, ID: pr}
 	return res
 }
 
-func (c *metadataRepository) GetAll(ctx context.Context) (string, error) {
-	return "", nil
+func (c *metadataRepository) GetAll(ctx context.Context) *protobuf.MetadataArray {
+	res,err := c.etcdClient.GetAllValues(ctx,prefix)
+	if err != nil {
+		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
+		var arr []*protobuf.Metadata
+		res := &protobuf.MetadataArray{Error: errMsg, Value:arr}
+		return res
+	}
+
+	errMsg := &protobuf.Error{ErrorCode: 0, ErrorMessage: "no error"}
+	var resArr []*protobuf.Metadata
+	for _,val := range res{
+		metadata := &protobuf.Metadata{}
+		proto.Unmarshal([]byte(val),metadata)
+		resArr = append(resArr,metadata)
+	}
+	resp := &protobuf.MetadataArray{Error: errMsg, Value:resArr}
+	return resp
 }

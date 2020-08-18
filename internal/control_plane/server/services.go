@@ -6,30 +6,23 @@ import (
 	procProto "octavius/pkg/protobuf"
 )
 
-type procServiceServer struct {
+type octaviusServiceServer struct {
 	procExec execution.Execution
 }
 
+// NewProcServiceServer used to create a new execution context
 func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesServer {
-	return &procServiceServer{
+	return &octaviusServiceServer{
 		procExec: exec,
 	}
 }
 
-func (s *procServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataID, error) {
+func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataID,error) {
 	id := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
-	return id, nil
+	return id,nil
 }
 
-// func (s *procServiceServer) ReadAllProcs(ctx context.Context, request *procProto.RequestForReadAllProcs) (*procProto.ProcList, error) {
-// 	procList, err := s.procExec.ReadAllProc(ctx)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	protoProcs := []*procProto.Proc{}
-// 	for _, proc := range procList {
-// 		protoProc := procProto.Proc{ID: proc.ID, Name: proc.Name, Author: proc.Author}
-// 		protoProcs = append(protoProcs, &protoProc)
-// 	}
-// 	return &procProto.ProcList{Procs: protoProcs}, nil
-// }
+func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray,error) {
+	dataList:= s.procExec.ReadAllMetadata(ctx)
+	return dataList,nil
+}

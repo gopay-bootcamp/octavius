@@ -45,6 +45,16 @@ message metadataID {
     string ID=2;
 }
 
+message request_to_get_all_metadata{
+
+}
+
+message metadataArray{
+    Error error=1;
+    repeated metadata value=2;
+}
+
 service OctaviusServices{
    rpc Post_metadata(request_to_post_metadata) returns (metadataID);
+   rpc Get_all_metadata(request_to_get_all_metadata) returns (metadataArray);
 }
