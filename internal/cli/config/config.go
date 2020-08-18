@@ -59,7 +59,7 @@ func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 		message := ""
 		if _, err := os.Stat(configFileUsed); os.IsNotExist(err) {
 			message = fmt.Sprintf("Config file not found in %s/octavius_client.yaml\n", ConfigFileDir())
-			message += fmt.Sprintf("Setup config using `octavius config CP_HOST=some.host ...`\n\n")
+			message += fmt.Sprintf("Setup config using `octavius config --cp-host some.host ...`\n\n")
 		}
 		return OctaviusConfig{}, ConfigError{error: err, Message: message}
 	}

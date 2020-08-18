@@ -8,7 +8,7 @@ import (
 )
 
 type Client interface {
-	CreateJob(*protobuf.RequestForMetadataPost) error
+	CreateJob(*protobuf.RequestForMetadataPost) (*protobuf.Response, error)
 }
 
 type grpcClient struct {
@@ -23,11 +23,11 @@ func NewGrpcClient(client protobuf.OctaviusServicesClient) Client {
 	}
 }
 
-func (g *grpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) error {
+func (g *grpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) (*protobuf.Response, error) {
 	res, err := g.client.CreateJob(context.Background(), metadataPostRequest)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	fmt.Println(res)
-	return nil
+	return res, nil
 }

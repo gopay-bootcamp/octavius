@@ -3,6 +3,7 @@ package create
 import (
 	"fmt"
 	"octavius/internal/cli/daemon"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -23,10 +24,17 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				return
 			}
 			metadataFile := arg[1]
-			err := octaviusDaemon.CreateMetadata(metadataFile)
+			metadataFileHandler, err := os.Open(metadataFile)
+			if err != nil {
+				fmt.Println("Error opening the file given")
+				return
+			}
+			defer metadataFileHandler.Close()
+			res, err := octaviusDaemon.CreateMetadata(metadataFileHandler)
 			if err != nil {
 				fmt.Println(err)
 			}
+			fmt.Println(res)
 		},
 	}
 }

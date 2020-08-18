@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +31,7 @@ func NewCmd() *cobra.Command {
 		Use:     "config",
 		Short:   "Configure octavius client",
 		Long:    "This command helps configure client with control plane host, email id and access token",
-		Example: fmt.Sprintf("octavius config %s=example.octavius.com %s=example@octavius.com %s=XXXXX", config.OctaviusCPHost, config.EmailId, config.AccessToken),
+		Example: "octavius config [flags]",
 
 		Run: func(cmd *cobra.Command, args []string) {
 			configFile := filepath.Join(config.ConfigFileDir(), "octavius_client.yaml")
@@ -40,7 +39,7 @@ func NewCmd() *cobra.Command {
 				fmt.Println("[Warning] This will overwrite current config:")
 				existingOctaviusConfig, err := ioutil.ReadFile(configFile)
 				if err != nil {
-					fmt.Println(fmt.Sprintf("Error reading config file: %s", configFile), color.FgRed)
+					fmt.Printf("Error reading config file: %s in Control Plane", configFile)
 					return
 				}
 				fmt.Println(string(existingOctaviusConfig))
