@@ -1,22 +1,19 @@
 package config
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/mock"
-	"time"
 )
 
-type MockConfig struct {
+type MockLoader struct {
 	mock.Mock
 }
 
-func (m *MockConfig) Load() (OctaviusConfig, ConfigError) {
-	m.Called()
-	OctaviusConfig:=OctaviusConfig{
-		Host: "localhost:5050",
-		Email: "xyz@gmail.com",
-		AccessToken: "Token",
-		ConnectionTimeoutSecs: time.Second,
-	}
-	return OctaviusConfig , ConfigError{}
 
+
+func (m *MockLoader) Load() (OctaviusConfig, ConfigError) {
+	fmt.Printf("Called load mock")
+	args:= m.Called()
+
+	return args.Get(0).(OctaviusConfig), args.Get(1).(ConfigError)
 }
