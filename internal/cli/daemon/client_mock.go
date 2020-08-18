@@ -9,10 +9,11 @@ type MockClient struct {
 }
 
 func (m *MockClient) StartClient() error {
-	panic("implement me")
+	args := m.Called()
+	return args.Error(0)
 }
 
 func (m *MockClient) CreateMetadata(metadataFile string) error {
-	args := m.Called()
+	args := m.Called(metadataFile)
 	return args.Error(0)
 }

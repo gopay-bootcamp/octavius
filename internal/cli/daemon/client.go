@@ -3,13 +3,13 @@ package daemon
 import (
 	"errors"
 	"fmt"
+	"github.com/golang/protobuf/jsonpb"
 	"io/ioutil"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
 	"octavius/pkg/protobuf"
 	"time"
 
-	"github.com/gogo/protobuf/jsonpb"
 	"google.golang.org/grpc"
 )
 
@@ -63,13 +63,15 @@ func (c *octaviusClient) loadOctaviusConfig() error {
 }
 
 func (c *octaviusClient) CreateMetadata(metadataFile string) error {
+
 	metadataJson, err := ioutil.ReadFile(metadataFile)
 	if err != nil {
+
 		return errors.New(fmt.Sprintln("Error reading metadata file: ", metadataFile))
 	}
 
 	metadata := protobuf.Metadata{}
-	//find a better method for umarshalling using io reader
+	////find a better method for umarshalling using io reader
 	err = jsonpb.UnmarshalString(string(metadataJson), &metadata)
 	if err != nil {
 		return errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
@@ -82,14 +84,14 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 
 	postRequestHeader := protobuf.ClientInfo{
 		ClientEmail: c.emailId,
-		AcessToken: c.accessToken,
+		AccessToken: c.accessToken,
 	}
 	metadataPostRequest := protobuf.RequestForMetadataPost{
 		Metadata:   &metadata,
 		ClientInfo: &postRequestHeader,
 	}
-
-	err = c.grpcClient.CreateJob(&metadataPostRequest)
+    fmt.Printf("%v",metadataPostRequest.ClientInfo)
+	//err = c.grpcClient.CreateJob(&metadataPostRequest)
 	if err != nil {
 		return errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}
