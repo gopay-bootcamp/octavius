@@ -1,5 +1,12 @@
 # CONTRIBUTION GUIDELINES
 
+
+## Formatting
+
+Run `go fmt ./...` before making any PR.
+
+## PRs and Issues Template
+
 While making contributions to Octavius, please adhere to these guidelines while creating a new issues/PRs.
 
 ### Title
