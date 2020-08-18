@@ -8,7 +8,7 @@ import (
 
 type Execution interface {
 	SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataID
-	ReadAllMetadata(ctx context.Context) (string, error)
+	ReadAllMetadata(ctx context.Context) *protobuf.MetadataArray
 }
 
 type execution struct {
@@ -17,6 +17,7 @@ type execution struct {
 	cancel   context.CancelFunc
 }
 
+// NewExec creates a new instance of metadataRepo
 func NewExec(metadataRepo repository.MetadataRepository) Execution {
 	return &execution{
 		metadata: metadataRepo,
@@ -24,15 +25,11 @@ func NewExec(metadataRepo repository.MetadataRepository) Execution {
 }
 
 func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataID {
-
 	result := e.metadata.Save(ctx, metadata.Name, metadata)
 	return result
 }
 
-func (e *execution) ReadAllMetadata(ctx context.Context) (string, error) {
-	procs, err := e.metadata.GetAll(ctx)
-	if err != nil {
-		return "", err
-	}
-	return procs, nil
+func (e *execution) ReadAllMetadata(ctx context.Context) *protobuf.MetadataArray {
+	res := e.metadata.GetAll(ctx)
+	return res
 }

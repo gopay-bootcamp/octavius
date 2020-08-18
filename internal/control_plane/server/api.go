@@ -13,6 +13,7 @@ import (
 	"octavius/pkg/protobuf"
 )
 
+// Start the grpc server
 func Start() error {
 	appPort := config.Config().AppPort
 	listener, err := net.Listen("tcp", "localhost:"+appPort)

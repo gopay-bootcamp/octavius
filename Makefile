@@ -19,10 +19,7 @@ CONFIG_LOCATION := $(SRC_DIR)
 $(@info $(shell mkdir -p $(OUT_DIR) $(BIN_DIR) $(PLUGIN_DIR))
 
 .PHONY: build
-build: cli
-
-.PHONY: build
-build: server
+build: cli server
 
 .PHONY: server
 server:
