@@ -2,11 +2,9 @@ package etcd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"octavius/internal/config"
-	"octavius/pkg/protobuf"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -14,11 +12,11 @@ import (
 
 //EtcdClient is exported to be used in server/execution
 type EtcdClient interface {
-	DeleteKey(ctx context.Context, key string) error
-	GetValue(ctx context.Context, key string) (*protobuf.Proc, error)
-	PutValue(ctx context.Context, key string, value *protobuf.Proc) (string, error)
-	GetAllValues(ctx context.Context) ([]protobuf.Proc, error)
-	GetValueWithRevision(ctx context.Context, key string, header int64) (*protobuf.Proc, error)
+	DeleteKey(ctx context.Context, key string) (bool,error)
+	GetValue(ctx context.Context, key string) (string, error)
+	PutValue(ctx context.Context, key string, value string) (string, error)
+	GetAllValues(ctx context.Context,prefix string) ([]string, error)
+	GetValueWithRevision(ctx context.Context, key string, header int64) (string, error)
 	Close()
 	SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan
 	GetProcRevisionById(ctx context.Context, id string) (int64, error)
@@ -47,38 +45,33 @@ func NewClient() EtcdClient {
 }
 
 // function to delete the key provided
-func (client *etcdClient) DeleteKey(ctx context.Context, id string) error {
+func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool,error) {
 	_, err := client.db.Delete(ctx, id)
 	if err != nil {
-		return err
+		return false,err
 	}
-	return nil
+	
+	return true,nil
 }
 
-func (client *etcdClient) PutValue(ctx context.Context, key string, proc *protobuf.Proc) (string, error) {
-	value, err := json.Marshal(proc)
+func (client *etcdClient) PutValue(ctx context.Context, key string, value string) (string, error) {
+	_, err := client.db.Put(ctx, key, value)
 	if err != nil {
 		return "", err
 	}
-	_, err = client.db.Put(ctx, key, string(value))
-	if err != nil {
-		return "", err
-	}
-	return proc.Name, nil
+	return key, nil
 }
 
-func (client *etcdClient) GetValue(ctx context.Context, id string) (*protobuf.Proc, error) {
+func (client *etcdClient) GetValue(ctx context.Context, id string) (string, error) {
 	res, err := client.db.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return nil, errors.New("No proc found")
+		return "", errors.New("No proc found")
 	}
-	var proc *protobuf.Proc
-	json.Unmarshal(gr.Kvs[0].Value, &proc)
-	return proc, nil
+	return string(gr.Kvs[0].Value), nil
 }
 
 func (client *etcdClient) GetProcRevisionById(ctx context.Context, id string) (int64, error) {
@@ -93,35 +86,30 @@ func (client *etcdClient) GetProcRevisionById(ctx context.Context, id string) (i
 	return gr.Header.Revision, nil
 }
 
-func (client *etcdClient) GetAllValues(ctx context.Context) ([]protobuf.Proc, error) {
-	prefix := "key_"
+func (client *etcdClient) GetAllValues(ctx context.Context,prefix string) ([]string, error) {
 	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
 	if err != nil {
 		return nil, err
 	}
+	var procs []string
 	gr := res.OpResponse().Get()
-	var procs []protobuf.Proc
 	for _, kv := range gr.Kvs {
-		proc := protobuf.Proc{}
 		str := string(kv.Value)
-		json.Unmarshal([]byte(str), &proc)
-		procs = append(procs, proc)
+		procs = append(procs, str)
 	}
 	return procs, nil
 }
 
-func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (*protobuf.Proc, error) {
+func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (string, error) {
 	res, err := client.db.Get(ctx, id, clientv3.WithRev(header))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return nil, errors.New("No proc found")
+		return "", errors.New("No proc found")
 	}
-	var proc *protobuf.Proc
-	json.Unmarshal(gr.Kvs[0].Value, &proc)
-	return proc, nil
+	return string(gr.Kvs[0].Value), nil
 }
 
 func (client *etcdClient) SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan {

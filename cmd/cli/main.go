@@ -2,16 +2,14 @@ package main
 
 import (
 	"octavius/internal/cli/command"
-
+	"octavius/internal/cli/config"
+	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/printer"
-	"octavius/internal/logger"
-
 )
-
-
 
 func main() {
 	printer.InitPrinter()
-	logger.Setup()
-	command.Execute()
+	clientConfigLoader := config.NewLoader()
+	octaviusDaemon := daemon.NewClient(clientConfigLoader)
+	command.Execute(octaviusDaemon)
 }

@@ -12,7 +12,7 @@ import (
 
 var cfgFile string
 var rootCmd = &cobra.Command{
-	Use:   "ControlPlane",
+	Use:   "control_plane",
 	Short: "Control plane of octavius",
 	Long:  `Control plane of octavius takes request from cli`,
 }
@@ -26,7 +26,6 @@ func Execute() {
 
 func init() {
 	logger.Setup()
-	logger.Info("in controlPlane root init")
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/config.json)")
@@ -38,7 +37,6 @@ func init() {
 }
 
 func initConfig() {
-	logger.Info("in controlPlane root init config")
 	// Use config file from the flag.
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
