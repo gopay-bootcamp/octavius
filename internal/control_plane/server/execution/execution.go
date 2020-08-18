@@ -7,7 +7,7 @@ import (
 )
 
 type Execution interface {
-	SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataID
+	SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataName
 	ReadAllMetadata(ctx context.Context) *protobuf.MetadataArray
 }
 
@@ -24,7 +24,7 @@ func NewExec(metadataRepo repository.MetadataRepository) Execution {
 	}
 }
 
-func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataID {
+func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) *protobuf.MetadataName {
 	result := e.metadata.Save(ctx, metadata.Name, metadata)
 	return result
 }

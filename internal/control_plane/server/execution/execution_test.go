@@ -8,8 +8,23 @@ import (
 	"testing"
 )
 
-
 func Test_execution_SaveMetadataToDb(t *testing.T) {
+	metadataRepoMock := new(repository.MetadataMock)
+	
+	metadataVal := &protobuf.Metadata{
+					Author:      "littlestar642",
+					ImageName:   "demo image",
+					Name:        "test data",
+					Description: "sample test metadata",
+				}
+	metadataResp := &protobuf.MetadataName{
+				Name: "test data",
+				Err: &protobuf.Error{
+					ErrorCode:    0,
+					ErrorMessage: "no error",
+				},
+			}
+	metadataRepoMock.On("Save","test data",metadataVal).Return(metadataResp,nil)
 	type fields struct {
 		metadata repository.MetadataRepository
 		ctx      context.Context
@@ -23,10 +38,25 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *protobuf.MetadataID
+		want   *protobuf.MetadataName
 	}{
-		// TODO: Add test cases.
-		
+		{
+			fields: fields{
+				metadata: metadataRepoMock,
+				ctx:      context.Background(),
+			},
+			args: args{
+				ctx: context.Background(),
+				metadata: metadataVal,
+			},
+			want: &protobuf.MetadataName{
+				Name: "test data",
+				Err: &protobuf.Error{
+					ErrorCode:    0,
+					ErrorMessage: "no error",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -41,3 +71,4 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 		})
 	}
 }
+
