@@ -43,16 +43,16 @@ func (c *octaviusClient) ConfigureClient() error {
 }
 
 func (c *octaviusClient) loadOctaviusConfig() error {
-	c.octaviusConfigLoader.Load()
-	//octaveConfig, err := c.octaviusConfigLoader.Load()
-	//if err != (config.ConfigError{}) {
-	//	return errors.New(err.Message)
-	//}
-	//
-	//c.CPHost = octaveConfig.Host
-	//c.emailId = octaveConfig.Email
-	//c.accessToken = octaveConfig.AccessToken
-	//c.connectionTimeoutSecs = octaveConfig.ConnectionTimeoutSecs
+
+	octaveConfig, err := c.octaviusConfigLoader.Load()
+	if err != (config.ConfigError{}) {
+		return errors.New(err.Message)
+	}
+
+	c.CPHost = octaveConfig.Host
+	c.emailId = octaveConfig.Email
+	c.accessToken = octaveConfig.AccessToken
+	c.connectionTimeoutSecs = octaveConfig.ConnectionTimeoutSecs
 	return nil
 }
 
@@ -76,7 +76,7 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader,client cli
 		return nil, err
 	}
 
-	c.grpcClient,err=client.NewGrpcClient("localhost:5050")
+	c.grpcClient,err=client.NewGrpcClient(c.CPHost)
 	if err != nil {
 		fmt.Printf("%v",err)
 		return nil, err
