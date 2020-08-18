@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"octavius/internal/logger"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -91,7 +92,7 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 
 	err = c.grpcClient.PostMetadata(&metadataPostRequest)
 	if err != nil {
-		return errors.New("Error occured when sending the grpc request. Check your CPHost")
+		logger.Fatal("error in recieving response",err)
 	}
 	return nil
 }
