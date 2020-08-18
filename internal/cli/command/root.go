@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"octavius/internal/cli/command/config"
 	"octavius/internal/cli/command/create"
+	"octavius/internal/cli/command/getstream"
 	"octavius/internal/cli/daemon"
 
 	"github.com/spf13/cobra"
@@ -24,6 +25,9 @@ func Execute(octaviusDaemon daemon.Client) {
 
 	createCmd := create.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(createCmd)
+
+	getstreamCmd := getstream.GetCmd()
+	rootCmd.AddCommand(getstreamCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
