@@ -1,6 +1,7 @@
 package create
 
 import (
+	"errors"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -31,7 +32,34 @@ func (s *CreateCmdTestSuite) TestCreateCmdHelp() {
 
 func (s *CreateCmdTestSuite) TestCreateCmd() {
 
-	s.mockOctaviusDClient.On("CreateMetadata",)
+	s.mockOctaviusDClient.On("CreateMetadata","../../../../test/metadata/metadata.json").Return(nil).Once()
+
+	args := []string{ "PATH=../../../../test/metadata/metadata.json"}
+	s.testCreateCmd.Run(&cobra.Command{},args)
+
+	s.mockOctaviusDClient.AssertExpectations(s.T())
+
+}
+
+func (s *CreateCmdTestSuite) TestCreateCmdWithWrongArguments() {
+
+	s.mockOctaviusDClient.On("CreateMetadata","../../../../test/metadata/metadata.json").Return(nil).Once()
+
+	args := []string{ "PAT=../../../../test/metadata/metadata.json"}
+	s.testCreateCmd.Run(&cobra.Command{},args)
+
+	s.mockOctaviusDClient.AssertNotCalled(s.T(),"CreateMetadata","../../../../test/metadata/metadata.json")
+
+}
+
+func (s *CreateCmdTestSuite) TestCreateCmdWithReturnedError() {
+
+	s.mockOctaviusDClient.On("CreateMetadata","../../../../test/metadata/metadata.json").Return(errors.New("GOT SOME ERROR")).Once()
+
+	args := []string{ "PATH=../../../../test/metadata/metadata.json"}
+	s.testCreateCmd.Run(&cobra.Command{},args)
+
+	s.mockOctaviusDClient.AssertExpectations(s.T())
 }
 
 func TestExecutionCmdTestSuite(t *testing.T) {
