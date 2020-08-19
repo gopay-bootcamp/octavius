@@ -59,7 +59,6 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 
 	err = c.startOctaviusClient(grpcClient)
 	if err != nil {
-		fmt.Printf("%v", err)
 		return nil, err
 	}
 
@@ -76,6 +75,5 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	if err != nil {
 		return nil, errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}
-
 	return res, nil
 }

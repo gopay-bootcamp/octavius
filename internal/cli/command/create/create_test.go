@@ -1,13 +1,15 @@
 package create
 
 import (
-	"github.com/stretchr/testify/assert"
+	"errors"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/fileUtil"
 	"octavius/internal/cli/printer"
 	"octavius/pkg/protobuf"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateCmdHelp(t *testing.T) {
@@ -37,5 +39,20 @@ func TestCreateCmd(t *testing.T) {
 
 	mockFileUtil.AssertExpectations(t)
 	mockOctaviusDClient.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
+}
+
+func TestCreateCmdForIoError(t *testing.T) {
+	mockOctaviusDClient := new(daemon.MockClient)
+	mockFileUtil := new(fileUtil.MockFileUtil)
+	mockPrinter := new(printer.MockPrinter)
+	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil, mockPrinter)
+	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader(""), errors.New("test io error"))
+
+	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
+	testCreateCmd.Execute()
+
+	mockFileUtil.AssertExpectations(t)
+	mockOctaviusDClient.AssertNotCalled(t, "CreateMetadata")
 	mockPrinter.AssertExpectations(t)
 }
