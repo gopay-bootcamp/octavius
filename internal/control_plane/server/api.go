@@ -5,12 +5,13 @@ import (
 	"octavius/internal/control_plane/server/metadata/repository"
 	"octavius/internal/logger"
 
-	"google.golang.org/grpc"
 	"net"
 	"octavius/internal/config"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/server/execution"
 	"octavius/pkg/protobuf"
+
+	"google.golang.org/grpc"
 )
 
 // Start the grpc server
@@ -27,7 +28,7 @@ func Start() error {
 	procGrpcServer := NewProcServiceServer(exec)
 	protobuf.RegisterOctaviusServicesServer(server, procGrpcServer)
 	if err != nil {
-		logger.Fatal("grpc server not started", err)
+		return err
 	}
 	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
 	server.Serve(listener)

@@ -1,11 +1,12 @@
 package command
 
 import (
+	"octavius/internal/control_plane/command/start"
+	"octavius/internal/logger"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"octavius/internal/control_plane/command/start"
-	"octavius/internal/logger"
 )
 
 var cfgFile string

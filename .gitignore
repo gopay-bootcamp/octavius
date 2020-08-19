@@ -18,3 +18,4 @@ default.etcd
 .vscode/
 .idea/
 pkg/protobuf/*.go
+.DS_Store

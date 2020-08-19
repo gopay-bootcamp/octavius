@@ -1,9 +1,10 @@
 package start
 
 import (
-	"github.com/spf13/cobra"
 	"octavius/internal/control_plane/server"
 	"octavius/internal/logger"
+
+	"github.com/spf13/cobra"
 )
 
 var createCmd = &cobra.Command{
@@ -18,6 +19,7 @@ var createCmd = &cobra.Command{
 	},
 }
 
+//GetCmd returns start command
 func GetCmd() *cobra.Command {
 	return createCmd
 }
