@@ -1,23 +1,23 @@
 package daemon
 
 import (
-	"github.com/stretchr/testify/mock"
 	"io"
+	"octavius/internal/cli/client"
 	"octavius/pkg/protobuf"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type MockClient struct {
 	mock.Mock
 }
 
-
-
 func (m *MockClient) StartClient() error {
 	args := m.Called()
 	return args.Error(0)
 }
 
-func (m *MockClient) CreateMetadata(metadataFileHandler io.Reader) (*protobuf.Response, error) {
-	 m.Called(metadataFileHandler)
-	return nil,nil
+func (m *MockClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.Response, error) {
+	args := m.Called(metadataFileHandler)
+	return args.Get(0).(*protobuf.Response), args.Error(1)
 }

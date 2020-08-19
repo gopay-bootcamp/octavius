@@ -9,26 +9,14 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 )
 
-type ClientTestSuite struct {
-	suite.Suite
-	testClient       Client
-	mockConfigLoader config.MockLoader
-	mockGrpcClient   client.MockGrpcClient
-}
+func TestCreateMetadata(t *testing.T) {
 
-func (s *ClientTestSuite) SetupTest() {
-	s.mockGrpcClient = client.MockGrpcClient{}
-	s.mockConfigLoader = config.MockLoader{}
+	mockGrpcClient := client.MockGrpcClient{}
+	mockConfigLoader := config.MockLoader{}
+	testClient := NewClient(&mockConfigLoader)
 
-	s.testClient = NewClient(&s.mockConfigLoader)
-
-}
-
-func (s *ClientTestSuite) TestCreateMetadata() {
-	t := s.T()
 	testConfig := config.OctaviusConfig{
 		Host:                  "localhost:5050",
 		Email:                 "jaimin.rathod@go-jek.com",
@@ -65,18 +53,13 @@ func (s *ClientTestSuite) TestCreateMetadata() {
 		Status: "success",
 	}
 
-	s.mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
-	s.mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	s.mockGrpcClient.On("CreateJob", &testPostRequest).Return(&testPostResponse, nil).Once()
-	res, err := s.testClient.CreateMetadata(metadataTestFileHandler, &s.mockGrpcClient)
+	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
+	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
+	mockGrpcClient.On("CreateJob", &testPostRequest).Return(&testPostResponse, nil).Once()
+	res, err := testClient.CreateMetadata(metadataTestFileHandler, &mockGrpcClient)
 
 	assert.Nil(t, err)
 	assert.Equal(t, &testPostResponse, res)
-	s.mockGrpcClient.AssertExpectations(t)
-	s.mockConfigLoader.AssertExpectations(t)
-
-}
-
-func TestClientTestSuite(t *testing.T) {
-	suite.Run(t, new(ClientTestSuite))
+	mockGrpcClient.AssertExpectations(t)
+	mockConfigLoader.AssertExpectations(t)
 }

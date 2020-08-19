@@ -1,17 +1,16 @@
 package config
 
 import (
-	"bufio"
 	"fmt"
-	"github.com/spf13/cobra"
 	"octavius/internal/cli/config"
 	"octavius/internal/cli/fileUtil"
-	"os"
+	"octavius/internal/cli/printer"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
-
-func NewCmd() *cobra.Command {
+func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command {
 	var (
 		cpHost                string
 		emailId               string
@@ -25,10 +24,10 @@ func NewCmd() *cobra.Command {
 		Example: "octavius config [flags]",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			fileUtil:=fileUtil.NewFileUtil()
 			configFilePath := filepath.Join(config.ConfigFileDir(), "octavius_client.yaml")
-			isConfigFileExist:=fileUtil.IsFileExist(configFilePath)
-			if isConfigFileExist==true {
+			isConfigFileExist := fileUtil.IsFileExist(configFilePath)
+
+			if isConfigFileExist == true {
 				fmt.Println("[Warning] This will overwrite current config:")
 				existingOctaviusConfig, err := fileUtil.ReadFile(configFilePath)
 				if err != nil {
@@ -38,9 +37,7 @@ func NewCmd() *cobra.Command {
 				fmt.Println(existingOctaviusConfig)
 				fmt.Println("\nDo you want to continue (Y/n)?\t")
 
-				in := bufio.NewReader(os.Stdin)
-				userPermission, err := in.ReadString('\n')
-
+				userPermission, err := fileUtil.GetUserInput()
 				if err != nil {
 					fmt.Println("Error getting user permission for overwriting config")
 					return
@@ -51,17 +48,15 @@ func NewCmd() *cobra.Command {
 					return
 				}
 			} else {
-				err:=fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
-				if err!=nil {
+				err := fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
+				if err != nil {
 					fmt.Printf("Error in creating config file directory, %v\n", err)
 				}
-				err=fileUtil.CreateFile(configFilePath)
-				if err!=nil {
+				err = fileUtil.CreateFile(configFilePath)
+				if err != nil {
 					fmt.Printf("Error in creating config file, %v\n", err)
 				}
-
 			}
-
 
 			var configFileContent string
 			configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, cpHost)
@@ -69,9 +64,7 @@ func NewCmd() *cobra.Command {
 			configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, accessToken)
 			configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, connectionTimeOutSecs)
 
-
-
-			err := fileUtil.WriteFile(configFilePath,configFileContent)
+			err := fileUtil.WriteFile(configFilePath, configFileContent)
 			if err != nil {
 				fmt.Printf("Error writing content %v \n to config file %s: %s", configFileContent, configFilePath, err)
 				return

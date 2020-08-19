@@ -56,6 +56,7 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	if err != nil {
 		return nil, errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
 	}
+
 	err = c.startOctaviusClient(grpcClient)
 	if err != nil {
 		fmt.Printf("%v", err)
@@ -73,7 +74,6 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 
 	res, err := c.grpcClient.CreateJob(&metadataPostRequest)
 	if err != nil {
-
 		return nil, errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}
 

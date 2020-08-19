@@ -1,34 +1,43 @@
 package fileUtil
 
 import (
+	"bufio"
 	"io"
 	"io/ioutil"
 	"os"
 )
 
 type FileUtil interface {
-	GetIoReader(string) (io.Reader,error)
+	GetIoReader(string) (io.Reader, error)
 	IsFileExist(string) bool
-	ReadFile(string) (string,error)
+	ReadFile(string) (string, error)
 	CreateDirIfNotExist(string) error
 	CreateFile(string) error
-	WriteFile(string,string) error
+	WriteFile(string, string) error
+	GetUserInput() (string, error)
 }
 
-type fileUtil struct {
-
-}
+type fileUtil struct{}
 
 func NewFileUtil() FileUtil {
 	return &fileUtil{}
 }
 
-func (f *fileUtil) GetIoReader(filePath string) (io.Reader,error) {
+func (f *fileUtil) GetUserInput() (string, error) {
+	in := bufio.NewReader(os.Stdin)
+	userPermission, err := in.ReadString('\n')
+	if err != nil {
+		return "", nil
+	}
+	return userPermission, nil
+}
+
+func (f *fileUtil) GetIoReader(filePath string) (io.Reader, error) {
 	ioReader, err := os.Open(filePath)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return ioReader,nil
+	return ioReader, nil
 }
 
 func (f *fileUtil) IsFileExist(filePath string) bool {
@@ -38,12 +47,12 @@ func (f *fileUtil) IsFileExist(filePath string) bool {
 	return true
 }
 
-func (f *fileUtil) ReadFile(filePath string) (string,error) {
-	content,err:=ioutil.ReadFile(filePath)
-	if err!=nil {
-		return "",err
+func (f *fileUtil) ReadFile(filePath string) (string, error) {
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return "", err
 	}
-	return string(content),nil
+	return string(content), nil
 }
 
 func (f *fileUtil) CreateDirIfNotExist(dir string) error {
@@ -57,17 +66,17 @@ func (f *fileUtil) CreateDirIfNotExist(dir string) error {
 }
 
 func (f *fileUtil) CreateFile(filePath string) error {
-	_,err:=os.Create(filePath)
-	if err!=nil {
+	_, err := os.Create(filePath)
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (f *fileUtil) WriteFile(filePath string,content string) error {
-	contentInByte:=[]byte(content)
-	err:=ioutil.WriteFile(filePath,contentInByte,0777)
-	if err!=nil {
+func (f *fileUtil) WriteFile(filePath string, content string) error {
+	contentInByte := []byte(content)
+	err := ioutil.WriteFile(filePath, contentInByte, 0777)
+	if err != nil {
 		return err
 	}
 	return nil
