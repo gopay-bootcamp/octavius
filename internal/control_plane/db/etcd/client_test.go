@@ -3,7 +3,10 @@ package etcd
 import (
 	"context"
 	"testing"
+	"time"
 )
+
+var requestTimeout = 10 * time.Second
 
 func TestNewClient(t *testing.T) {
 	client := NewClient()

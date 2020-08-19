@@ -14,7 +14,7 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := server.Start()
 		if err != nil {
-			logger.Fatal("start command err: ", err)
+			logger.Error("error in starting server", err)
 		}
 	},
 }

@@ -16,43 +16,36 @@ var rootCmd = &cobra.Command{
 	Long:  `Control plane of octavius takes request from cli`,
 }
 
-// Execute the root command
+// Execute the root command and no error returned
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.Fatal("error in execute", err)
+		logger.Error("error in root command execution", err)
 	}
 }
 
 func init() {
 	logger.Setup()
 	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/config.json)")
-
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	// add your client commands here
 	rootCmd.AddCommand(start.GetCmd())
 }
 
 func initConfig() {
-	// Use config file from the flag.
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			logger.Fatal("CP Init config issue : ", err)
+			logger.Error("CP Init config issue : ", err)
 		}
 		viper.AddConfigPath(home)
 		viper.SetConfigName("config.json")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
+	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
-		logger.Fatal("problem in reading config file", err)
+		logger.Error("problem in reading config file", err)
 	}
 }

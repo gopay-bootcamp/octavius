@@ -11,8 +11,8 @@ import (
 const prefix = "metadata/"
 
 type MetadataRepository interface {
-	Save(ctx context.Context, key string, metadata *protobuf.Metadata) *protobuf.MetadataName
-	GetAll(ctx context.Context) *protobuf.MetadataArray
+	Save(ctx context.Context, key string, metadata *protobuf.Metadata) (*protobuf.MetadataName, error)
+	GetAll(ctx context.Context) (*protobuf.MetadataArray, error)
 }
 
 type metadataRepository struct {
@@ -25,13 +25,13 @@ func NewMetadataRepository(client etcd.EtcdClient) MetadataRepository {
 	}
 }
 
-func (c *metadataRepository) Save(ctx context.Context, key string, metadata *protobuf.Metadata) *protobuf.MetadataName {
+func (c *metadataRepository) Save(ctx context.Context, key string, metadata *protobuf.Metadata) (*protobuf.MetadataName, error) {
 	val, err := proto.Marshal(metadata)
 
 	if err != nil {
 		errMsg := &protobuf.Error{ErrorCode: 2, ErrorMessage: "error in marshalling metadata"}
 		res := &protobuf.MetadataName{Err: errMsg, Name: ""}
-		return res
+		return res, err
 	}
 
 	dbKey := prefix + key
@@ -39,21 +39,21 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	if err != nil {
 		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
 		res := &protobuf.MetadataName{Err: errMsg, Name: ""}
-		return res
+		return res, err
 	}
 
 	errMsg := &protobuf.Error{ErrorCode: 0, ErrorMessage: "no error"}
 	res := &protobuf.MetadataName{Err: errMsg, Name: key}
-	return res
+	return res, nil
 }
 
-func (c *metadataRepository) GetAll(ctx context.Context) *protobuf.MetadataArray {
+func (c *metadataRepository) GetAll(ctx context.Context) (*protobuf.MetadataArray, error) {
 	res, err := c.etcdClient.GetAllValues(ctx, prefix)
 	if err != nil {
 		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
 		var arr []*protobuf.Metadata
 		res := &protobuf.MetadataArray{Err: errMsg, Value: arr}
-		return res
+		return res, err
 	}
 
 	errMsg := &protobuf.Error{ErrorCode: 0, ErrorMessage: "no error"}
@@ -64,5 +64,5 @@ func (c *metadataRepository) GetAll(ctx context.Context) *protobuf.MetadataArray
 		resArr = append(resArr, metadata)
 	}
 	resp := &protobuf.MetadataArray{Err: errMsg, Value: resArr}
-	return resp
+	return resp, nil
 }
