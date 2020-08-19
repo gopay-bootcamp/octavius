@@ -2,12 +2,11 @@ package create
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
-	"os"
+	"octavius/internal/cli/fileUtil"
 	"strings"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
@@ -24,18 +23,20 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				fmt.Println("Incorrect command argument format, the correct format is: \n octavius create PATH=<filepath>/metadata.json")
 				return
 			}
-			metadataFile := arg[1]
-			metadataFileHandler, err := os.Open(metadataFile)
-			if err != nil {
-				fmt.Println("Error opening the file given")
+			metadataFilePath := arg[1]
+
+			fileUtil:=fileUtil.NewFileUtil()
+			metadataFileIoReader,err:=fileUtil.GetIoReader(metadataFilePath)
+			if err!=nil {
+				fmt.Println(err)
 				return
 			}
-			defer metadataFileHandler.Close()
 
 			client := &client.GrpcClient{}
-			res, err := octaviusDaemon.CreateMetadata(metadataFileHandler, client)
+			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
 				fmt.Println(err)
+				return
 			}
 			fmt.Println(res)
 		},

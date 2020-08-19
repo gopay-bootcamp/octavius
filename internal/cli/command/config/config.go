@@ -3,22 +3,13 @@ package config
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"github.com/spf13/cobra"
 	"octavius/internal/cli/config"
+	"octavius/internal/cli/fileUtil"
 	"os"
 	"path/filepath"
-
-	"github.com/spf13/cobra"
 )
 
-func CreateDirIfNotExist(dir string) {
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		err = os.MkdirAll(dir, 0755)
-		if err != nil {
-			panic(err)
-		}
-	}
-}
 
 func NewCmd() *cobra.Command {
 	var (
@@ -34,15 +25,17 @@ func NewCmd() *cobra.Command {
 		Example: "octavius config [flags]",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			configFile := filepath.Join(config.ConfigFileDir(), "octavius_client.yaml")
-			if _, err := os.Stat(configFile); err == nil {
+			fileUtil:=fileUtil.NewFileUtil()
+			configFilePath := filepath.Join(config.ConfigFileDir(), "octavius_client.yaml")
+			isConfigFileExist:=fileUtil.IsFileExist(configFilePath)
+			if isConfigFileExist==true {
 				fmt.Println("[Warning] This will overwrite current config:")
-				existingOctaviusConfig, err := ioutil.ReadFile(configFile)
+				existingOctaviusConfig, err := fileUtil.ReadFile(configFilePath)
 				if err != nil {
-					fmt.Printf("Error reading config file: %s in Control Plane", configFile)
+					fmt.Printf("Error reading config file: %v\n", err)
 					return
 				}
-				fmt.Println(string(existingOctaviusConfig))
+				fmt.Println(existingOctaviusConfig)
 				fmt.Println("\nDo you want to continue (Y/n)?\t")
 
 				in := bufio.NewReader(os.Stdin)
@@ -57,27 +50,33 @@ func NewCmd() *cobra.Command {
 					fmt.Println("Skipped configuring octavius client")
 					return
 				}
+			} else {
+				err:=fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
+				if err!=nil {
+					fmt.Printf("Error in creating config file directory, %v\n", err)
+				}
+				err=fileUtil.CreateFile(configFilePath)
+				if err!=nil {
+					fmt.Printf("Error in creating config file, %v\n", err)
+				}
+
 			}
 
-			CreateDirIfNotExist(config.ConfigFileDir())
+
 			var configFileContent string
 			configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, cpHost)
 			configFileContent += fmt.Sprintf("%s: %s\n", config.EmailId, emailId)
 			configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, accessToken)
 			configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, connectionTimeOutSecs)
 
-			configFileContentBytes := []byte(configFileContent)
-			f, err := os.Create(configFile)
+
+
+			err := fileUtil.WriteFile(configFilePath,configFileContent)
 			if err != nil {
-				fmt.Printf("Error creating config file %s: %s", configFile, err.Error())
+				fmt.Printf("Error writing content %v \n to config file %s: %s", configFileContent, configFilePath, err)
 				return
 			}
-			_, err = f.Write(configFileContentBytes)
-			if err != nil {
-				fmt.Printf("Error writing content %v \n to config file %s: %s", configFileContentBytes, configFile, err.Error())
-				return
-			}
-			defer f.Close()
+
 			fmt.Println("Octavius client configured successfully")
 		},
 	}
