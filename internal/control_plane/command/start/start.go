@@ -1,12 +1,14 @@
 package start
 
 import (
+	"github.com/rs/zerolog"
+	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server"
-	"octavius/internal/logger"
 
 	"github.com/spf13/cobra"
 )
 
+var Logger zerolog.Logger
 var createCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start server",
@@ -14,7 +16,7 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := server.Start()
 		if err != nil {
-			logger.Error("error in starting server", err)
+			Logger.Err(err).Msg("Execution error in start server")
 		}
 	},
 }
@@ -25,5 +27,5 @@ func GetCmd() *cobra.Command {
 }
 
 func init() {
-	logger.Setup()
+	Logger = logger.Setup()
 }

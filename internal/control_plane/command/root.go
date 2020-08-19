@@ -1,14 +1,16 @@
 package command
 
 import (
+	"github.com/rs/zerolog"
 	"octavius/internal/control_plane/command/start"
-	"octavius/internal/logger"
+	"octavius/internal/control_plane/logger"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
+var Logger zerolog.Logger
 var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "control_plane",
@@ -19,12 +21,14 @@ var rootCmd = &cobra.Command{
 // Execute the root command and no error returned
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.Error("error in root command execution", err)
+		Logger.Err(err).Msg("Root command error")
+	} else {
+		Logger.Info().Msg("Root Command Executed")
 	}
 }
 
 func init() {
-	logger.Setup()
+	Logger = logger.Setup()
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/config.json)")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
@@ -37,7 +41,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			logger.Error("CP Init config issue : ", err)
+			Logger.Err(err).Msg("CP Init config issue ")
 		}
 		viper.AddConfigPath(home)
 		viper.SetConfigName("config.json")
@@ -46,6 +50,8 @@ func initConfig() {
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
-		logger.Error("problem in reading config file", err)
+		Logger.Err(err).Msg("problem in reading config file.")
+	} else{
+		Logger.Debug().Msg("Data being read from config file.")
 	}
 }

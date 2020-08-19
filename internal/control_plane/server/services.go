@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"octavius/internal/control_plane/server/execution"
-	"octavius/internal/logger"
 	procProto "octavius/pkg/protobuf"
 )
 
@@ -21,17 +20,19 @@ func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesSe
 func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName, error) {
 	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
 	if err != nil {
-		logger.Error("error in posting metadata", err)
+		Logger.Err(err).Msg("error in posting metadata")
 		return name, err
 	}
+	Logger.Info().Msg("Metadata posted")
 	return name, nil
 }
 
 func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray, error) {
 	dataList, err := s.procExec.ReadAllMetadata(ctx)
 	if err != nil {
-		logger.Error("error in getting metadata list", err)
+		Logger.Err(err).Msg("error in getting metadata list")
 		return dataList, err
 	}
+	Logger.Info().Msgf("Getting Metadata")
 	return dataList, nil
 }

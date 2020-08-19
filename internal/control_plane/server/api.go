@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
+	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/metadata/repository"
-	"octavius/internal/logger"
 
 	"net"
 	"octavius/internal/config"
@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+var Logger = logger.Setup()
 // Start the grpc server
 func Start() error {
 	appPort := config.Config().AppPort
@@ -30,7 +31,7 @@ func Start() error {
 	if err != nil {
 		return err
 	}
-	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
+	Logger.Info().Msg(fmt.Sprintf("grpc server started on port %v", appPort))
 	server.Serve(listener)
 	return nil
 }

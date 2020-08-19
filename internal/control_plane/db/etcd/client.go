@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"octavius/internal/config"
+	"octavius/internal/control_plane/logger"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -30,6 +31,8 @@ var (
 	dialTimeout = 2 * time.Second
 	etcdHost    = "localhost:" + config.Config().EtcdPort
 )
+
+var Logger = logger.Setup()
 
 //NewClient returns a new client of etcd database
 func NewClient() EtcdClient {
@@ -126,6 +129,6 @@ func (client *etcdClient) SetWatchOnPrefix(ctx context.Context, prefix string) c
 
 //Close closes connection to etcd database
 func (client *etcdClient) Close() {
-	fmt.Println("Closing connections to db")
+	Logger.Info().Msg("Closing connections to db")
 	defer client.db.Close()
 }
