@@ -7,9 +7,11 @@ import (
 	"octavius/internal/cli/printer"
 	"path/filepath"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
+//NewCmd Returns an instance of Config command for Octavius Client
 func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command {
 	var (
 		cpHost                string
@@ -28,35 +30,35 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 			isConfigFileExist := fileUtil.IsFileExist(configFilePath)
 
 			if isConfigFileExist == true {
-				fmt.Println("[Warning] This will overwrite current config:")
+				printer.Println(fmt.Sprintln("[Warning] This will overwrite current config:"), color.FgRed)
 				existingOctaviusConfig, err := fileUtil.ReadFile(configFilePath)
 				if err != nil {
-					fmt.Printf("Error reading config file: %v\n", err)
+					printer.Println(fmt.Sprintf("Error reading config file: %v\n", err), color.FgRed)
 					return
 				}
 				fmt.Println(existingOctaviusConfig)
 
-				fmt.Println("\nDo you want to continue (Y/n)?\t")
+				printer.Println(fmt.Sprintln("\nDo you want to continue (Y/n)?\t"), color.FgYellow)
 
 				userPermission, err := fileUtil.GetUserInput()
 				if err != nil {
-					fmt.Println("Error getting user permission for overwriting config")
+					printer.Println(fmt.Sprintln("Error getting user permission for overwriting config"))
 					return
 				}
 
 				if userPermission != "y\n" && userPermission != "Y\n" {
-					fmt.Println("Skipped configuring octavius client")
+					printer.Println(fmt.Sprintln("Skipped configuring octavius client"))
 					return
 				}
 			} else {
 				err := fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
 				if err != nil {
-					fmt.Printf("Error in creating config file directory, %v\n", err)
+					printer.Println(fmt.Sprintf("Error in creating config file directory, %v\n", err), color.FgRed)
 					return
 				}
 				err = fileUtil.CreateFile(configFilePath)
 				if err != nil {
-					fmt.Printf("Error in creating config file, %v\n", err)
+					printer.Println(fmt.Sprintf("Error in creating config file, %v\n", err), color.FgRed)
 					return
 				}
 			}
@@ -69,11 +71,11 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 
 			err := fileUtil.WriteFile(configFilePath, configFileContent)
 			if err != nil {
-				fmt.Printf("Error writing content %v \n to config file %s: %s\n", configFileContent, configFilePath, err)
+				printer.Println(fmt.Sprintf("Error writing content %v \n to config file %s: %s\n", configFileContent, configFilePath, err), color.FgRed)
 				return
 			}
 
-			fmt.Println("Octavius client configured successfully")
+			printer.Println(fmt.Sprintln("Octavius client configured successfully"), color.FgGreen)
 		},
 	}
 	configCmd.Flags().StringVarP(&cpHost, "cp-host", "", "", "CP_HOST port address(required)")

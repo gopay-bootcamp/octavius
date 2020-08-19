@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewCmd Returns an instance of Create command for registering Job Metadata in Octavius
 func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command {
 	var metadataFilePath string
 
@@ -23,14 +24,14 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer pr
 		Run: func(cmd *cobra.Command, args []string) {
 			metadataFileIoReader, err := fileUtil.GetIoReader(metadataFilePath)
 			if err != nil {
-				fmt.Println(err)
+				printer.Println(fmt.Sprintln(err))
 				return
 			}
 
 			client := &client.GrpcClient{}
 			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
-				fmt.Println(err)
+				printer.Println(fmt.Sprintln(err), color.FgRed)
 				return
 			}
 			printer.Println(res.Name, color.FgGreen)

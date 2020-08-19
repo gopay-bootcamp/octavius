@@ -19,6 +19,7 @@ var rootCmd = &cobra.Command{
 	Long:  `Easily automate your work using ocatvius' multi-processing capabilities`,
 }
 
+// Execute Executes the root command of Octavius Cli
 func Execute(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer printer.Printer) {
 
 	configCmd := config.NewCmd(fileUtil, printer)
