@@ -27,12 +27,12 @@ func TestCreateCmd(t *testing.T) {
 	mockFileUtil := new(fileUtil.MockFileUtil)
 	mockPrinter := new(printer.MockPrinter)
 	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil, mockPrinter)
-	testResponse := &protobuf.Response{
-		Status: "success",
+	testMetadataName := &protobuf.MetadataName{
+		Name: "name",
 	}
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader("test-metadata-handler-string"), nil)
-	mockOctaviusDClient.On("CreateMetadata", strings.NewReader("test-metadata-handler-string")).Return(testResponse, nil).Once()
-	mockPrinter.On("Println", "success")
+	mockOctaviusDClient.On("CreateMetadata", strings.NewReader("test-metadata-handler-string")).Return(testMetadataName, nil).Once()
+	mockPrinter.On("Println", "name")
 
 	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
 	testCreateCmd.Execute()

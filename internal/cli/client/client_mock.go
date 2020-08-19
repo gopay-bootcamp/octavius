@@ -10,9 +10,9 @@ type MockGrpcClient struct {
 	mock.Mock
 }
 
-func (m *MockGrpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) (*protobuf.Response, error) {
+func (m *MockGrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	args := m.Called(metadataPostRequest)
-	return args.Get(0).(*protobuf.Response), args.Error(1)
+	return args.Get(0).(*protobuf.MetadataName), args.Error(1)
 }
 
 func (m *MockGrpcClient) ConnectClient(cpHost string) error {

@@ -17,9 +17,11 @@ const (
 	bufSize = 1024 * 1024
 )
 
-var testPostResponse = &protobuf.Response{
-	Status: "success",
+var testPostMetadataName = &protobuf.MetadataName{
+	Name: "name",
 }
+
+var testMetadataArray = &protobuf.MetadataArray{}
 
 var lis *bufconn.Listener
 
@@ -40,11 +42,15 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
-func (s *server) CreateJob(context.Context, *protobuf.RequestForMetadataPost) (*protobuf.Response, error) {
-	return testPostResponse, nil
+func (s *server) PostMetadata(context.Context, *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
+	return testPostMetadataName, nil
 }
 
-func TestCreateJob(t *testing.T) {
+func (s *server) GetAllMetadata(context.Context, *protobuf.RequestToGetAllMetadata) (*protobuf.MetadataArray, error) {
+	return nil, nil
+}
+
+func TestCreateMetadata(t *testing.T) {
 	createFakeServer()
 
 	ctx := context.Background()
@@ -58,8 +64,8 @@ func TestCreateJob(t *testing.T) {
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
 	}
-	testPostRequest := &protobuf.RequestForMetadataPost{}
-	res, err := testClient.CreateJob(testPostRequest)
+	testPostRequest := &protobuf.RequestToPostMetadata{}
+	res, err := testClient.CreateMetadata(testPostRequest)
 	assert.Nil(t, err)
-	assert.Equal(t, testPostResponse.Status, res.Status)
+	assert.Equal(t, testPostMetadataName.Name, res.Name)
 }

@@ -44,22 +44,22 @@ func TestCreateMetadata(t *testing.T) {
 		AccessToken: "AllowMe",
 	}
 
-	testPostRequest := protobuf.RequestForMetadataPost{
+	testPostRequest := protobuf.RequestToPostMetadata{
 		Metadata:   &testMetadata,
 		ClientInfo: &testRequestHeader,
 	}
 
-	testPostResponse := protobuf.Response{
+	testPostMetadataName := protobuf.MetadataName{
 		Status: "success",
 	}
 
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("CreateJob", &testPostRequest).Return(&testPostResponse, nil).Once()
+	mockGrpcClient.On("CreateMetadata", &testPostRequest).Return(&testPostMetadataName, nil).Once()
 	res, err := testClient.CreateMetadata(metadataTestFileHandler, &mockGrpcClient)
 
 	assert.Nil(t, err)
-	assert.Equal(t, &testPostResponse, res)
+	assert.Equal(t, &testPostMetadataName, res)
 	mockGrpcClient.AssertExpectations(t)
 	mockConfigLoader.AssertExpectations(t)
 }

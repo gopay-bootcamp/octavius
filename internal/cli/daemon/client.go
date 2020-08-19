@@ -13,7 +13,7 @@ import (
 )
 
 type Client interface {
-	CreateMetadata(io.Reader, client.Client) (*protobuf.Response, error)
+	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
 }
 
 type octaviusClient struct {
@@ -50,7 +50,7 @@ func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
 	return nil
 }
 
-func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.Response, error) {
+func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.MetadataName, error) {
 	metadata := protobuf.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
@@ -66,12 +66,12 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 		ClientEmail: c.emailId,
 		AccessToken: c.accessToken,
 	}
-	metadataPostRequest := protobuf.RequestForMetadataPost{
+	metadataPostRequest := protobuf.RequestToPostMetadata{
 		Metadata:   &metadata,
 		ClientInfo: &postRequestHeader,
 	}
 
-	res, err := c.grpcClient.CreateJob(&metadataPostRequest)
+	res, err := c.grpcClient.CreateMetadata(&metadataPostRequest)
 	if err != nil {
 		return nil, errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 type Client interface {
-	CreateJob(*protobuf.RequestForMetadataPost) (*protobuf.Response, error)
+	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
 	ConnectClient(cpHost string) error
 }
 
@@ -30,10 +30,10 @@ func (g *GrpcClient) ConnectClient(cpHost string) error {
 	return nil
 }
 
-func (g *GrpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) (*protobuf.Response, error) {
+func (g *GrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
-	res, err := g.client.CreateJob(ctx, metadataPostRequest)
+	res, err := g.client.PostMetadata(ctx, metadataPostRequest)
 	if err != nil {
 		return nil, err
 	}

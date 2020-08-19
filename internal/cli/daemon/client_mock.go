@@ -17,7 +17,7 @@ func (m *MockClient) StartClient() error {
 	return args.Error(0)
 }
 
-func (m *MockClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.Response, error) {
+func (m *MockClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.MetadataName, error) {
 	args := m.Called(metadataFileHandler)
-	return args.Get(0).(*protobuf.Response), args.Error(1)
+	return args.Get(0).(*protobuf.MetadataName), args.Error(1)
 }
