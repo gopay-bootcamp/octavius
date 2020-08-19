@@ -25,7 +25,5 @@ func GetCmd() *cobra.Command {
 }
 
 func init() {
-
 	logger.Setup()
-
 }
