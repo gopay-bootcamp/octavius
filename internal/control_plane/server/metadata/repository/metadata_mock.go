@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"github.com/stretchr/testify/mock"
 	"octavius/pkg/protobuf"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type MetadataMock struct {

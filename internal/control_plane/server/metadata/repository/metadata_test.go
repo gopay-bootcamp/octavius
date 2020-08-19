@@ -2,11 +2,12 @@ package repository
 
 import (
 	"context"
-	"github.com/gogo/protobuf/proto"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/pkg/protobuf"
 	"reflect"
 	"testing"
+
+	"github.com/gogo/protobuf/proto"
 )
 
 func Test_metadataRepository_Save(t *testing.T) {
@@ -60,7 +61,7 @@ func Test_metadataRepository_Save(t *testing.T) {
 			c := &metadataRepository{
 				etcdClient: tt.fields.etcdClient,
 			}
-			if got := c.Save(tt.args.ctx, tt.args.key, tt.args.metadata); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := c.Save(tt.args.ctx, tt.args.key, tt.args.metadata); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("metadataRepository.Save() = %v, want %v", got, tt.want)
 			}
 		})

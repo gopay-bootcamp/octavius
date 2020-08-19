@@ -23,11 +23,13 @@ func NewExec(metadataRepo repository.MetadataRepository) Execution {
 	}
 }
 
+//SaveMetadataToDb calls the metadata/repository Save() function and returns MetadataName
 func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.MetadataName, error) {
 	result, err := e.metadata.Save(ctx, metadata.Name, metadata)
 	return result, err
 }
 
+//ReadAllMetadata calls the metadata/repository GetAll() and returns MetadataArray
 func (e *execution) ReadAllMetadata(ctx context.Context) (*protobuf.MetadataArray, error) {
 	result, err := e.metadata.GetAll(ctx)
 	return result, err

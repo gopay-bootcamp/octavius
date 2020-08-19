@@ -2,6 +2,7 @@ package etcd
 
 import (
 	"context"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/stretchr/testify/mock"
 )
@@ -42,7 +43,7 @@ func (m *ClientMock) GetValueWithRevision(ctx context.Context, key string, heade
 }
 
 // GetProcRevisionById mock
-func (m *ClientMock) GetProcRevisionById(ctx context.Context, id string) (int64, error) {
+func (m *ClientMock) GetProcRevisionByID(ctx context.Context, id string) (int64, error) {
 	args := m.Called()
 	return args.Get(0).(int64), args.Error(1)
 }
