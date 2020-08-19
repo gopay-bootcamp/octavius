@@ -3,21 +3,20 @@ package daemon
 import (
 	"errors"
 	"fmt"
+	"github.com/gogo/protobuf/jsonpb"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
 	"octavius/pkg/protobuf"
 	"time"
-
-	"github.com/gogo/protobuf/jsonpb"
-	"google.golang.org/grpc"
 )
 
 type Client interface {
 	StartClient() error
 	CreateMetadata(metadataFile string) error
 	GetStreamLog(jobName string) error
-	Execute(jobName string, metadata map[string]string) error
+	Execute(jobName string, jobData map[string]string) error
 }
 
 type octaviusClient struct {
@@ -50,8 +49,6 @@ func (c *octaviusClient) StartClient() error {
 	c.grpcClient = client
 	return nil
 }
-
-
 
 func (c *octaviusClient) loadOctaviusConfig() error {
 	octaveConfig, err := c.octaviusConfigLoader.Load()
@@ -112,7 +109,7 @@ func (c *octaviusClient) GetStreamLog(jobName string) error {
 	}
 	getStreamPostRequest := protobuf.RequestForStreamLog{
 		ClientInfo: &postRequestHeader,
-		JobName: jobName,
+		JobName:    jobName,
 	}
 	err = c.grpcClient.GetStreamLog(&getStreamPostRequest)
 	if err != nil {
@@ -120,7 +117,7 @@ func (c *octaviusClient) GetStreamLog(jobName string) error {
 	}
 	return nil
 }
-func (c *octaviusClient) Execute(jobName string, metadata map[string]string) error {
+func (c *octaviusClient) Execute(jobName string, jobData map[string]string) error {
 	err := c.StartClient()
 	if err != nil {
 		return err
@@ -131,8 +128,8 @@ func (c *octaviusClient) Execute(jobName string, metadata map[string]string) err
 	}
 	executePostRequest := protobuf.RequestForExecute{
 		ClientInfo: &postRequestHeader,
-		JobName: jobName,
-		Metadata: metadata,
+		JobName:    jobName,
+		JobData:    jobData,
 	}
 	err = c.grpcClient.ExecuteJob(&executePostRequest)
 	if err != nil {

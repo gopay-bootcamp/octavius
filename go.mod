@@ -12,6 +12,6 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
 	google.golang.org/grpc v1.27.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v0.0.0-20200814200710-a3740e5ed326 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v0.0.0-20200818224027-0f73133e3aa3 // indirect
 	google.golang.org/protobuf v1.25.0
 )

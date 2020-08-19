@@ -51,7 +51,7 @@ func (g *grpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 }
 
 func (g *grpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) error {
-	res,err := g.client.ExecuteJob(context.Background(), requestForExecute)
+	res, err := g.client.ExecuteJob(context.Background(), requestForExecute)
 	if err != nil {
 		return err
 	}

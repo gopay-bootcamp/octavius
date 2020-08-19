@@ -20,14 +20,14 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				return
 			}
 			jobName := args[0]
-			metadata := map[string]string{}
+			jobData := map[string]string{}
 
 			for i := 1; i < len(args); i++ {
 				arg := strings.Split(args[i], "=")
-				metadata[arg[0]] = arg[1]
+				jobData[arg[0]] = arg[1]
 			}
 
-			err := octaviusDaemon.Execute(jobName, metadata)
+			err := octaviusDaemon.Execute(jobName, jobData)
 			if err != nil {
 				fmt.Println(err)
 			}
