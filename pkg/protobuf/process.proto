@@ -35,15 +35,26 @@ message client_info {
     string access_token=2;
 }
 
-message request_for_metadata_post {
+message request_to_post_metadata {
     metadata metadata=1;
     client_info client_info=2;
 }
 
-message response {
-    string status=1;
+message MetadataName {
+    Error err=1;
+    string name=2;
+}
+
+message request_to_get_all_metadata{
+
+}
+
+message metadataArray{
+    Error err=1;
+    repeated metadata value=2;
 }
 
 service OctaviusServices{
-   rpc Create_job(request_for_metadata_post) returns (response);
+   rpc Post_metadata(request_to_post_metadata) returns (MetadataName);
+   rpc Get_all_metadata(request_to_get_all_metadata) returns (metadataArray);
 }

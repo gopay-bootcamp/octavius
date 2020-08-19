@@ -2,41 +2,36 @@ package server
 
 import (
 	"context"
-	"octavius/pkg/model/proc"
+	"octavius/internal/control_plane/server/execution"
+	"octavius/internal/logger"
 	procProto "octavius/pkg/protobuf"
 )
 
-type procServiceServer struct {
+type octaviusServiceServer struct {
 	procExec execution.Execution
 }
 
-func NewProcServiceServer(exec execution.Execution) procProto.ProcServiceServer {
-	return &procServiceServer{
+// NewProcServiceServer used to create a new execution context
+func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesServer {
+	return &octaviusServiceServer{
 		procExec: exec,
 	}
 }
 
-func (s *procServiceServer) CreateProc(ctx context.Context, request *procProto.RequestForCreateProc) (*procProto.ProcID, error) {
-	var proc model.Proc
-	proc.Name = request.Name
-	proc.Author = request.Author
-	id, err := s.procExec.CreateProc(ctx, &proc)
+func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName, error) {
+	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
 	if err != nil {
-		return nil, err
+		logger.Error("error in posting metadata", err)
+		return name, err
 	}
-	resp := &procProto.ProcID{Value: id, Message: "successfully created Proc"}
-	return resp, nil
+	return name, nil
 }
 
-func (s *procServiceServer) ReadAllProcs(ctx context.Context, request *procProto.RequestForReadAllProcs) (*procProto.ProcList, error) {
-	procList, err := s.procExec.ReadAllProc(ctx)
+func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray, error) {
+	dataList, err := s.procExec.ReadAllMetadata(ctx)
 	if err != nil {
-		return nil, err
+		logger.Error("error in getting metadata list", err)
+		return dataList, err
 	}
-	protoProcs := []*procProto.Proc{}
-	for _, proc := range procList {
-		protoProc := procProto.Proc{ID: proc.ID, Name: proc.Name, Author: proc.Author}
-		protoProcs = append(protoProcs, &protoProc)
-	}
-	return &procProto.ProcList{Procs: protoProcs}, nil
+	return dataList, nil
 }

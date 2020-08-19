@@ -2,10 +2,9 @@ package create
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"octavius/internal/cli/daemon"
 	"strings"
-
-	"github.com/spf13/cobra"
 )
 
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {

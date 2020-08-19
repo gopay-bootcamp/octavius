@@ -37,14 +37,7 @@ The new version of proctor, primarily used for automating tasks in kubernetes cl
 
 ## Running 
 
-Build the proto file -:
-
-`protoc --go_out=. --go_opt=paths=source_relative  ./pkg/protobuf/process.proto`
-
-`protoc --go-grpc_out=. --go-grpc_opt=requireUnimplementedServers=false,paths=source_relative  ./pkg/protobuf/process.proto` 
-
-
-To create the binaries -:
+To create the binaries and protobuf files -:
 
 `make build`
 

@@ -89,5 +89,5 @@ func ConfigFileDir() string {
 	// } else {
 	// 	return fmt.Sprintf("%s/.octavius", os.Getenv("HOME"))
 	// }
-	return "./test/config/"
+	return "./job_data_example/config"
 }

@@ -2,45 +2,35 @@ package execution
 
 import (
 	"context"
-	"octavius/pkg/model/proc"
-	"octavius/internal/controlPlane/db/etcd"
-	
+	"octavius/internal/control_plane/server/metadata/repository"
+	"octavius/pkg/protobuf"
 )
 
+// Execution interface for methods related to execution
 type Execution interface {
-	CreateProc(ctx context.Context, proc *model.Proc) (string, error)
-	ReadAllProc(ctx context.Context) ([]model.Proc, error)
-	
+	SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.MetadataName, error)
+	ReadAllMetadata(ctx context.Context) (*protobuf.MetadataArray, error)
 }
 
 type execution struct {
-	client etcd.EtcdClient
-	ctx    context.Context
-	cancel context.CancelFunc
+	metadata repository.MetadataRepository
 }
 
-func NewExec(dbClient etcd.EtcdClient) Execution {
+// NewExec creates a new instance of metadata respository
+func NewExec(metadataRepo repository.MetadataRepository) Execution {
 	return &execution{
-		client: dbClient,
+		metadata: metadataRepo,
 	}
 }
 
-func (e *execution) CreateProc(ctx context.Context, proc *model.Proc) (string, error) {
-	
-	result, err := e.client.PutValue(ctx, proc.Name, proc)
-	if err != nil {
-		return "", err
-	}
-	return result, nil
+//SaveMetadataToDb calls the metadata/repository Save() function and returns MetadataName
+func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *protobuf.Metadata) (*protobuf.MetadataName, error) {
+	result, err := e.metadata.Save(ctx, metadata.Name, metadata)
+	return result, err
 }
 
-
-func (e *execution) ReadAllProc(ctx context.Context) ([]model.Proc, error) {
-	procs, err := e.client.GetAllValues(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return procs, nil
+//ReadAllMetadata calls the metadata/repository GetAll() and returns MetadataArray
+func (e *execution) ReadAllMetadata(ctx context.Context) (*protobuf.MetadataArray, error) {
+	result, err := e.metadata.GetAll(ctx)
+	return result, err
 }
-
-

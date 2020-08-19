@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
+	"octavius/internal/logger"
 	"octavius/pkg/protobuf"
 	"time"
 
@@ -84,14 +85,14 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 		ClientEmail: c.emailId,
 		AccessToken: c.accessToken,
 	}
-	metadataPostRequest := protobuf.RequestForMetadataPost{
+	metadataPostRequest := protobuf.RequestToPostMetadata{
 		Metadata:   &metadata,
 		ClientInfo: &postRequestHeader,
 	}
 
-	err = c.grpcClient.CreateJob(&metadataPostRequest)
+	err = c.grpcClient.PostMetadata(&metadataPostRequest)
 	if err != nil {
-		return errors.New("Error occured when sending the grpc request. Check your CPHost")
+		logger.Fatal("error in recieving response", err)
 	}
 	return nil
 }
