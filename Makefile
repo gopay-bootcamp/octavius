@@ -19,7 +19,11 @@ CONFIG_LOCATION := $(SRC_DIR)
 $(@info $(shell mkdir -p $(OUT_DIR) $(BIN_DIR) $(PLUGIN_DIR))
 
 .PHONY: build
-build: cli server
+build: proto_files cli server
+
+.PHONY: proto_files
+proto_files:
+	bash ./proto_gen.sh
 
 .PHONY: server
 server:
