@@ -1,14 +1,13 @@
 package create
 
 import (
+	"github.com/stretchr/testify/assert"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/fileUtil"
 	"octavius/internal/cli/printer"
 	"octavius/pkg/protobuf"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateCmdHelp(t *testing.T) {

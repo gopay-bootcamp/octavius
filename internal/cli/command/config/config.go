@@ -35,6 +35,7 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 					return
 				}
 				fmt.Println(existingOctaviusConfig)
+
 				fmt.Println("\nDo you want to continue (Y/n)?\t")
 
 				userPermission, err := fileUtil.GetUserInput()
@@ -51,10 +52,12 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 				err := fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
 				if err != nil {
 					fmt.Printf("Error in creating config file directory, %v\n", err)
+					return
 				}
 				err = fileUtil.CreateFile(configFilePath)
 				if err != nil {
 					fmt.Printf("Error in creating config file, %v\n", err)
+					return
 				}
 			}
 
@@ -66,7 +69,7 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 
 			err := fileUtil.WriteFile(configFilePath, configFileContent)
 			if err != nil {
-				fmt.Printf("Error writing content %v \n to config file %s: %s", configFileContent, configFilePath, err)
+				fmt.Printf("Error writing content %v \n to config file %s: %s\n", configFileContent, configFilePath, err)
 				return
 			}
 

@@ -42,5 +42,5 @@ func (m *MockFileUtil) CreateFile(filepath string) error {
 
 func (m *MockFileUtil) WriteFile(filepath string, content string) error {
 	args := m.Called(filepath, content)
-	return args.Error(1)
+	return args.Error(0)
 }
