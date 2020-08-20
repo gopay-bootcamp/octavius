@@ -14,7 +14,7 @@ _output/
 default.etcd
 # Dependency directories (remove the comment below to include it)
 # vendor/
-
+job_data_example/config/
 .vscode/
 .idea/
 pkg/protobuf/*.go

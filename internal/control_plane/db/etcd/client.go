@@ -14,7 +14,7 @@ import (
 type EtcdClient interface {
 	DeleteKey(ctx context.Context, key string) (bool, error)
 	GetValue(ctx context.Context, key string) (string, error)
-	PutValue(ctx context.Context, key string, value string) (error)
+	PutValue(ctx context.Context, key string, value string) error
 	GetAllValues(ctx context.Context, prefix string) ([]string, error)
 	GetValueWithRevision(ctx context.Context, key string, header int64) (string, error)
 	Close()
@@ -54,7 +54,7 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error
 }
 
 //PutValue puts the given key-value pair in etcd database
-func (client *etcdClient) PutValue(ctx context.Context, key string, value string) (error) {
+func (client *etcdClient) PutValue(ctx context.Context, key string, value string) error {
 	_, err := client.db.Put(ctx, key, value)
 	return err
 }

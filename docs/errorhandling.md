@@ -1,8 +1,8 @@
 # Error Handling
 
-1. Add `Error` protobuf(message) into your response protobuf(message) of `pkg/protobuf/process.proto` file.
+1. Add `Error` protobuf(message) into your MetadataName protobuf(message) of `pkg/protobuf/process.proto` file.
 
-2. Returning the error in response
+2. Returning the error in MetadataName
     - import `"octavius/pkg/constant"`
     - return `errorCode`(Integer) according to current binary
        - 0: for No Error
