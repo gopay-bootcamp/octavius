@@ -36,7 +36,7 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 					printer.Println(fmt.Sprintf("Error reading config file: %v\n", err), color.FgRed)
 					return
 				}
-				fmt.Println(existingOctaviusConfig)
+				printer.Println(fmt.Sprintln(existingOctaviusConfig))
 
 				printer.Println(fmt.Sprintln("\nDo you want to continue (Y/n)?\t"), color.FgYellow)
 

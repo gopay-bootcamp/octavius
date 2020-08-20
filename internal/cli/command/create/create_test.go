@@ -2,6 +2,7 @@ package create
 
 import (
 	"errors"
+	"fmt"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/fileUtil"
 	"octavius/internal/cli/printer"
@@ -48,7 +49,7 @@ func TestCreateCmdForIoError(t *testing.T) {
 	mockPrinter := new(printer.MockPrinter)
 	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil, mockPrinter)
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader(""), errors.New("test io error"))
-	mockPrinter.On("Println", "test io error\n")
+	mockPrinter.On("Println", fmt.Sprintln("test io error")).Once()
 
 	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
 	testCreateCmd.Execute()
