@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	Logger := logger.Setup()
-	command.Execute(Logger)
+	logger.Setup()
+	command.Execute()
 }

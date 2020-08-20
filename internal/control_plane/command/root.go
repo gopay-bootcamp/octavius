@@ -1,9 +1,9 @@
 package command
 
 import (
-	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"octavius/internal/control_plane/command/start"
+	"octavius/internal/control_plane/logger"
 )
 
 var cfgFile string
@@ -14,12 +14,12 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute the root command and no error returned
-func Execute(logger zerolog.Logger) {
-	rootCmd.AddCommand(start.NewCmd(logger))
+func Execute() {
+	rootCmd.AddCommand(start.NewCmd())
 	if err := rootCmd.Execute(); err != nil {
-		logger.Err(err).Msg("Root command error")
+		logger.Log.Err(err).Msg("Root command error")
 	} else {
-		logger.Info().Msg("Root Command Executed")
+		logger.Log.Info().Msg("Root Command Executed")
 	}
 }
 

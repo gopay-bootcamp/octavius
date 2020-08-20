@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/rs/zerolog"
 	"octavius/internal/config"
+	"octavius/internal/control_plane/logger"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -18,7 +18,7 @@ type EtcdClient interface {
 	PutValue(ctx context.Context, key string, value string) (string, error)
 	GetAllValues(ctx context.Context, prefix string) ([]string, error)
 	GetValueWithRevision(ctx context.Context, key string, header int64) (string, error)
-	Close(logger zerolog.Logger)
+	Close()
 	SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan
 	GetProcRevisionByID(ctx context.Context, id string) (int64, error)
 }
@@ -31,7 +31,6 @@ var (
 	dialTimeout = 2 * time.Second
 	etcdHost    = "localhost:" + config.Config().EtcdPort
 )
-
 
 //NewClient returns a new client of etcd database
 func NewClient() EtcdClient {
@@ -127,7 +126,7 @@ func (client *etcdClient) SetWatchOnPrefix(ctx context.Context, prefix string) c
 }
 
 //Close closes connection to etcd database
-func (client *etcdClient) Close(logger zerolog.Logger) {
-	logger.Info().Msg("Closing connections to db")
+func (client *etcdClient) Close() {
+	logger.Log.Info().Msg("Closing connections to db")
 	defer client.db.Close()
 }

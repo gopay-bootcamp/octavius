@@ -5,19 +5,18 @@ import (
 	"github.com/rs/zerolog"
 	"octavius/internal/config"
 	"os"
+	"time"
 )
 
-var Log zerolog.Logger
+var Log *zerolog.Logger
 
-func Setup() zerolog.Logger {
-	Log = zerolog.New(os.Stdout).With().Caller().Logger()
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+func Setup() {
+	var logInit zerolog.Logger
 	logLevel, err := zerolog.ParseLevel(config.Config().LogLevel)
 	if err != nil {
-		Log.Panic().Err(err).Msg("Config file load error")
+		logLevel = zerolog.Level(1)
 	}
-	Log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	Log.Level(logLevel)
-	return Log
+	zerolog.TimeFieldFormat = time.RFC822
+	logInit = zerolog.New(os.Stdout).With().Timestamp().Caller().Logger().Level(logLevel)
+	Log = &logInit
 }
-
