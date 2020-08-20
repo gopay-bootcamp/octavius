@@ -34,7 +34,7 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer pr
 				printer.Println(fmt.Sprintln(err), color.FgRed)
 				return
 			}
-			printer.Println(res.Name, color.FgGreen)
+			printer.Println(fmt.Sprintf("%s job created",res.Name),color.FgGreen)
 		},
 	}
 	createCmd.Flags().StringVarP(&metadataFilePath, "job-path", "", "", "path to metadata.json(required)")

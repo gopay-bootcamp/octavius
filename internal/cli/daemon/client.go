@@ -50,6 +50,7 @@ func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
 	return nil
 }
 
+// CreateMetadata take metadata file handler and grpc client
 func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.MetadataName, error) {
 	metadata := protobuf.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
