@@ -1,21 +1,20 @@
 package printer
 
-import (
-	"github.com/fatih/color"
-)
+import "github.com/fatih/color"
 
 type Printer interface {
 	Println(string, ...color.Attribute)
 }
 
-var PrinterInstance Printer
+var printerInstance Printer
 
 type printer struct{}
 
-func InitPrinter() {
-	if PrinterInstance == nil {
-		PrinterInstance = &printer{}
+func GetPrinter() Printer {
+	if printerInstance == nil {
+		printerInstance = &printer{}
 	}
+	return printerInstance
 }
 
 func (p *printer) Println(msg string, attr ...color.Attribute) {

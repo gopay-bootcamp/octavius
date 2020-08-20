@@ -23,7 +23,7 @@ func TestEtcdClient_PutValue(t *testing.T) {
 		t.Fatal("client returned nil")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	_, err := client.PutValue(ctx, "test_key", "test value")
+	err := client.PutValue(ctx, "test_key", "test value")
 	cancel()
 	if err != nil {
 		t.Error("Put value returned error", err)
@@ -59,7 +59,7 @@ func TestEtcdClient_GetValue(t *testing.T) {
 	client := NewClient()
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	_, err := client.PutValue(ctx, "test_key", "test value")
+	err := client.PutValue(ctx, "test_key", "test value")
 	if err != nil {
 		t.Error("error in get value")
 	}
@@ -77,17 +77,17 @@ func TestEtcdClient_GetValueWithRevision(t *testing.T) {
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 
-	_, err := client.PutValue(ctx, "test_key", "test value")
+	err := client.PutValue(ctx, "test_key", "test value")
 	if err != nil {
 		t.Error("error in put value", err)
 	}
 
-	header1, err := client.GetProcRevisionById(ctx, "test_key")
+	header1, err := client.GetProcRevisionByID(ctx, "test_key")
 	if err != nil {
 		t.Error("error in getting revision number", err)
 	}
 
-	_, err = client.PutValue(ctx, "test_key", "new value")
+	err = client.PutValue(ctx, "test_key", "new value")
 	if err != nil {
 		t.Error("error in put value", err)
 	}

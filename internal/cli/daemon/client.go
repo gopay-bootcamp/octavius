@@ -3,19 +3,17 @@ package daemon
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
 	"octavius/pkg/protobuf"
 	"time"
 
-	"github.com/gogo/protobuf/jsonpb"
-	"google.golang.org/grpc"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 type Client interface {
-	StartClient() error
-	CreateMetadata(metadataFile string) error
+	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
 }
 
 type octaviusClient struct {
@@ -33,51 +31,36 @@ func NewClient(clientConfigLoader config.Loader) Client {
 	}
 }
 
-func (c *octaviusClient) StartClient() error {
-	err := c.loadOctaviusConfig()
-	if err != nil {
-		return err
-	}
-
-	conn, err := grpc.Dial(c.CPHost, grpc.WithInsecure())
-	if err != nil {
-		return err
-	}
-	grpcClient := protobuf.NewOctaviusServicesClient(conn)
-	client := client.NewGrpcClient(grpcClient)
-	c.grpcClient = client
-	return nil
-}
-
-func (c *octaviusClient) loadOctaviusConfig() error {
-	octaveConfig, err := c.octaviusConfigLoader.Load()
-	if err != (config.ConfigError{}) {
-		return errors.New(err.Message)
+func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
+	octaveConfig, configErr := c.octaviusConfigLoader.Load()
+	if configErr != (config.ConfigError{}) {
+		return errors.New(configErr.Message)
 	}
 
 	c.CPHost = octaveConfig.Host
 	c.emailId = octaveConfig.Email
 	c.accessToken = octaveConfig.AccessToken
 	c.connectionTimeoutSecs = octaveConfig.ConnectionTimeoutSecs
+	c.grpcClient = grpcClient
+
+	err := c.grpcClient.ConnectClient(c.CPHost)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (c *octaviusClient) CreateMetadata(metadataFile string) error {
-	metadataJson, err := ioutil.ReadFile(metadataFile)
-	if err != nil {
-		return errors.New(fmt.Sprintln("Error reading metadata file: ", metadataFile))
-	}
-
+// CreateMetadata take metadata file handler and grpc client
+func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.MetadataName, error) {
 	metadata := protobuf.Metadata{}
-	//find a better method for umarshalling using io reader
-	err = jsonpb.UnmarshalString(string(metadataJson), &metadata)
+	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
-		return errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
+		return nil, errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
 	}
 
-	err = c.StartClient()
+	err = c.startOctaviusClient(grpcClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	postRequestHeader := protobuf.ClientInfo{
@@ -89,9 +72,9 @@ func (c *octaviusClient) CreateMetadata(metadataFile string) error {
 		ClientInfo: &postRequestHeader,
 	}
 
-	err = c.grpcClient.PostMetadata(&metadataPostRequest)
+	res, err := c.grpcClient.CreateMetadata(&metadataPostRequest)
 	if err != nil {
-		fmt.Sprintln("error in recieving response", err)
+		return nil, errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}
-	return nil
+	return res, nil
 }
