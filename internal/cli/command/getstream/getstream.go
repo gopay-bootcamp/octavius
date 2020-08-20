@@ -3,6 +3,7 @@ package getstream
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 )
 
@@ -18,7 +19,8 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				return
 			}
 			jobName := args[0]
-			err := octaviusDaemon.GetStreamLog(jobName)
+			client := &client.GrpcClient{}
+			err := octaviusDaemon.GetStreamLog(jobName, client)
 			if err != nil {
 				fmt.Println(err)
 			}

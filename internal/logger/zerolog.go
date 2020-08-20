@@ -16,7 +16,7 @@ func Setup() {
 	if (log != Logger{}) {
 		return
 	}
-	logInit := zerolog.New(os.Stdout).With().Logger().Level(1)
+	logInit := zerolog.New(os.Stdout).With().Caller().Logger().Level(1)
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	logLevel, err := zerolog.ParseLevel(config.Config().LogLevel)
 	if err != nil {
@@ -46,8 +46,8 @@ func Info(msg string) {
 	log.logger.Info().Msg(msg)
 }
 
-func Fatal(msg string) {
-	log.logger.Fatal().Msgf(msg)
+func Fatal(msg string, err error) {
+	log.logger.Fatal().Err(err).Msg(msg)
 }
 
 func Error(action string, err error) {

@@ -3,20 +3,19 @@ package daemon
 import (
 	"errors"
 	"fmt"
-	"github.com/gogo/protobuf/jsonpb"
-	"google.golang.org/grpc"
-	"io/ioutil"
+	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
 	"octavius/pkg/protobuf"
 	"time"
+
+	"github.com/gogo/protobuf/jsonpb"
 )
 
 type Client interface {
-	StartClient() error
-	CreateMetadata(metadataFile string) error
-	GetStreamLog(jobName string) error
-	Execute(jobName string, jobData map[string]string) error
+	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
+	GetStreamLog(string, client.Client) error
+	Execute(string, map[string]string, client.Client) error
 }
 
 type octaviusClient struct {
@@ -34,71 +33,55 @@ func NewClient(clientConfigLoader config.Loader) Client {
 	}
 }
 
-func (c *octaviusClient) StartClient() error {
-	err := c.loadOctaviusConfig()
-	if err != nil {
-		return err
-	}
-
-	conn, err := grpc.Dial(c.CPHost, grpc.WithInsecure())
-	if err != nil {
-		return err
-	}
-	grpcClient := protobuf.NewOctaviusServicesClient(conn)
-	client := client.NewGrpcClient(grpcClient)
-	c.grpcClient = client
-	return nil
-}
-
-func (c *octaviusClient) loadOctaviusConfig() error {
-	octaveConfig, err := c.octaviusConfigLoader.Load()
-	if err != (config.ConfigError{}) {
-		return errors.New(err.Message)
+func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
+	octaveConfig, configErr := c.octaviusConfigLoader.Load()
+	if configErr != (config.ConfigError{}) {
+		return errors.New(configErr.Message)
 	}
 
 	c.CPHost = octaveConfig.Host
 	c.emailId = octaveConfig.Email
 	c.accessToken = octaveConfig.AccessToken
 	c.connectionTimeoutSecs = octaveConfig.ConnectionTimeoutSecs
+	c.grpcClient = grpcClient
+
+	err := c.grpcClient.ConnectClient(c.CPHost)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (c *octaviusClient) CreateMetadata(metadataFile string) error {
-	metadataJson, err := ioutil.ReadFile(metadataFile)
-	if err != nil {
-		return errors.New(fmt.Sprintln("Error reading metadata file: ", metadataFile))
-	}
-
+func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.MetadataName, error) {
 	metadata := protobuf.Metadata{}
-	//find a better method for umarshalling using io reader
-	err = jsonpb.UnmarshalString(string(metadataJson), &metadata)
+	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
-		return errors.New(fmt.Sprintln("error unmarshalling metadata.json file: ", err))
+		return nil, errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
 	}
 
-	err = c.StartClient()
+	err = c.startOctaviusClient(grpcClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	postRequestHeader := protobuf.ClientInfo{
 		ClientEmail: c.emailId,
 		AccessToken: c.accessToken,
 	}
-	metadataPostRequest := protobuf.RequestForMetadataPost{
+	metadataPostRequest := protobuf.RequestToPostMetadata{
 		Metadata:   &metadata,
 		ClientInfo: &postRequestHeader,
 	}
 
-	err = c.grpcClient.CreateJob(&metadataPostRequest)
+	res, err := c.grpcClient.CreateMetadata(&metadataPostRequest)
 	if err != nil {
-		return errors.New("error occured when sending the grpc request. Check your CPHost")
+		return nil, errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}
-	return nil
+	return res, nil
 }
 
-func (c *octaviusClient) GetStreamLog(jobName string) error {
-	err := c.StartClient()
+func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) error {
+	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return err
 	}
@@ -117,8 +100,8 @@ func (c *octaviusClient) GetStreamLog(jobName string) error {
 	}
 	return nil
 }
-func (c *octaviusClient) Execute(jobName string, jobData map[string]string) error {
-	err := c.StartClient()
+func (c *octaviusClient) Execute(jobName string, jobData map[string]string, grpcClient client.Client) error {
+	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return err
 	}
@@ -134,6 +117,7 @@ func (c *octaviusClient) Execute(jobName string, jobData map[string]string) erro
 	err = c.grpcClient.ExecuteJob(&executePostRequest)
 	if err != nil {
 		return errors.New("error occured when sending the grpc request. Check your CPHost")
+
 	}
 	return nil
 }

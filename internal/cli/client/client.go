@@ -2,40 +2,52 @@ package client
 
 import (
 	"context"
+
+	"errors"
 	"fmt"
 	"io"
+
 	"octavius/pkg/protobuf"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 type Client interface {
-	CreateJob(*protobuf.RequestForMetadataPost) error
 	GetStreamLog(*protobuf.RequestForStreamLog) error
 	ExecuteJob(*protobuf.RequestForExecute) error
+
+	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
+	ConnectClient(cpHost string) error
 }
 
-type grpcClient struct {
+type GrpcClient struct {
 	client                protobuf.OctaviusServicesClient
 	connectionTimeoutSecs time.Duration
 }
 
-func NewGrpcClient(client protobuf.OctaviusServicesClient) Client {
-	return &grpcClient{
-		client:                client,
-		connectionTimeoutSecs: time.Second,
-	}
-}
-
-func (g *grpcClient) CreateJob(metadataPostRequest *protobuf.RequestForMetadataPost) error {
-	res, err := g.client.CreateJob(context.Background(), metadataPostRequest)
+func (g *GrpcClient) ConnectClient(cpHost string) error {
+	conn, err := grpc.Dial(cpHost, grpc.WithInsecure())
 	if err != nil {
-		return err
+		return errors.New("error dialing to CP host server")
 	}
-	fmt.Println(res)
+	grpcClient := protobuf.NewOctaviusServicesClient(conn)
+	g.client = grpcClient
+	g.connectionTimeoutSecs = time.Second
 	return nil
 }
 
-func (g *grpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) error {
+func (g *GrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
+	defer cancel()
+	res, err := g.client.PostMetadata(ctx, metadataPostRequest)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) error {
 	responseStream, err := g.client.GetStreamLogs(context.Background(), requestForStreamLog)
 	if err != nil {
 		return err
@@ -50,7 +62,7 @@ func (g *grpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 	return nil
 }
 
-func (g *grpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) error {
+func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) error {
 	res, err := g.client.ExecuteJob(context.Background(), requestForExecute)
 	if err != nil {
 		return err

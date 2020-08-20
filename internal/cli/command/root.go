@@ -7,6 +7,8 @@ import (
 	"octavius/internal/cli/command/execution"
 	"octavius/internal/cli/command/getstream"
 	"octavius/internal/cli/daemon"
+	"octavius/internal/cli/fileUtil"
+	"octavius/internal/cli/printer"
 
 	"github.com/spf13/cobra"
 )
@@ -19,12 +21,13 @@ var rootCmd = &cobra.Command{
 	Long:  `Easily automate your work using ocatvius' multi-processing capabilities`,
 }
 
-func Execute(octaviusDaemon daemon.Client) {
+// Execute Executes the root command of Octavius Cli
+func Execute(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer printer.Printer) {
 
-	configCmd := config.NewCmd()
+	configCmd := config.NewCmd(fileUtil, printer)
 	rootCmd.AddCommand(configCmd)
 
-	createCmd := create.NewCmd(octaviusDaemon)
+	createCmd := create.NewCmd(octaviusDaemon, fileUtil, printer)
 	rootCmd.AddCommand(createCmd)
 
 	getstreamCmd := getstream.NewCmd(octaviusDaemon)

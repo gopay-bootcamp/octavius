@@ -18,6 +18,7 @@ const (
 	ConnectionTimeoutSecs = "CONNECTION_TIMEOUT_SECS"
 )
 
+// OctaviusConfig Struct containing Octavius Client details
 type OctaviusConfig struct {
 	Host                  string
 	Email                 string
@@ -25,25 +26,30 @@ type OctaviusConfig struct {
 	ConnectionTimeoutSecs time.Duration
 }
 
+// ConfigError Struct containing error and Message to solve the Client Config Error
 type ConfigError struct {
 	error
 	Message string
 }
 
+// RootError Returns the error inside the ConfigError
 func (c *ConfigError) RootError() error {
 	return c.error
 }
 
+// Loader Octavius Client Loader interface with Method: Load()
 type Loader interface {
 	Load() (OctaviusConfig, ConfigError)
 }
 
 type loader struct{}
 
+// NewLoader Returns an instance of Octavius Client Config Loader class
 func NewLoader() Loader {
 	return &loader{}
 }
 
+//Load Loads the config by reading from octavius_client.yaml and returning Config and Error
 func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 	viper.SetDefault(ConnectionTimeoutSecs, 10)
 	viper.AutomaticEnv()
@@ -59,7 +65,7 @@ func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 		message := ""
 		if _, err := os.Stat(configFileUsed); os.IsNotExist(err) {
 			message = fmt.Sprintf("Config file not found in %s/octavius_client.yaml\n", ConfigFileDir())
-			message += fmt.Sprintf("Setup config using `octavius config CP_HOST=some.host ...`\n\n")
+			message += fmt.Sprintf("Setup config using `octavius config --cp-host some.host ...`\n\n")
 		}
 		return OctaviusConfig{}, ConfigError{error: err, Message: message}
 	}
@@ -78,7 +84,7 @@ func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 	}, ConfigError{}
 }
 
-// Returns Config file directory
+// ConfigFileDir Returns Config file directory
 // This allows to test on dev environment without conflicting with installed octavius config file
 func ConfigFileDir() string {
 	// localConfigDir, localConfigAvailable := os.LookupEnv("LOCAL_CONFIG_DIR")
@@ -89,5 +95,5 @@ func ConfigFileDir() string {
 	// } else {
 	// 	return fmt.Sprintf("%s/.octavius", os.Getenv("HOME"))
 	// }
-	return "./test/config/"
+	return "./job_data_example/config"
 }

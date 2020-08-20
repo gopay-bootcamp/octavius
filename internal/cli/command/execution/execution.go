@@ -3,6 +3,7 @@ package execution
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"strings"
 )
@@ -26,8 +27,8 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				arg := strings.Split(args[i], "=")
 				jobData[arg[0]] = arg[1]
 			}
-
-			err := octaviusDaemon.Execute(jobName, jobData)
+			client := &client.GrpcClient{}
+			err := octaviusDaemon.Execute(jobName, jobData, client)
 			if err != nil {
 				fmt.Println(err)
 			}

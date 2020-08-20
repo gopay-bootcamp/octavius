@@ -1,31 +1,36 @@
 package server
 
 import (
-	"octavius/internal/config"
-	"octavius/internal/controlPlane/db/etcd"
+	"fmt"
+	"octavius/internal/control_plane/server/metadata/repository"
 	"octavius/internal/logger"
 
-	// "crud-toy/internal/model"
 	"net"
+	"octavius/internal/config"
+	"octavius/internal/control_plane/db/etcd"
+	"octavius/internal/control_plane/server/execution"
 	"octavius/pkg/protobuf"
 
 	"google.golang.org/grpc"
 )
 
+// Start the grpc server
 func Start() error {
 	appPort := config.Config().AppPort
-	listener, err := net.Listen("tcp", appPort)
+	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
 
+	metadataRepository := repository.NewMetadataRepository(etcdClient)
+	exec := execution.NewExec(metadataRepository)
+
 	procGrpcServer := NewProcServiceServer(exec)
-	procProto.RegisterProcServiceServer(server, procGrpcServer)
+	protobuf.RegisterOctaviusServicesServer(server, procGrpcServer)
 	if err != nil {
-		logger.Fatal("grpc server not started")
 		return err
 	}
-	logger.Info("grpc server started on port 8000")
+	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
 	server.Serve(listener)
 	return nil
 }
