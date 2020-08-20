@@ -27,23 +27,21 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 	metadataRepoMock.On("Save", "test data", metadataVal).Return(metadataResp, nil)
 	type fields struct {
 		metadata repository.MetadataRepository
-		ctx      context.Context
-		cancel   context.CancelFunc
 	}
 	type args struct {
 		ctx      context.Context
 		metadata *protobuf.Metadata
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *protobuf.MetadataName
+		name    string
+		fields  fields
+		args    args
+		want    *protobuf.MetadataName
+		wantErr bool
 	}{
 		{
 			fields: fields{
 				metadata: metadataRepoMock,
-				ctx:      context.Background(),
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -62,10 +60,13 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			e := &execution{
 				metadata: tt.fields.metadata,
-				ctx:      tt.fields.ctx,
-				cancel:   tt.fields.cancel,
 			}
-			if got := e.SaveMetadataToDb(tt.args.ctx, tt.args.metadata); !reflect.DeepEqual(got, tt.want) {
+			got, err := e.SaveMetadataToDb(tt.args.ctx, tt.args.metadata)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("execution.SaveMetadataToDb() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("execution.SaveMetadataToDb() = %v, want %v", got, tt.want)
 			}
 		})

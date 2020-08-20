@@ -2,30 +2,43 @@ package create
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
+	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
-	"strings"
+	"octavius/internal/cli/fileUtil"
+	"octavius/internal/cli/printer"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
 )
 
-func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
-	return &cobra.Command{
+// NewCmd Returns an instance of Create command for registering Job Metadata in Octavius
+func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command {
+	var metadataFilePath string
+
+	createCmd := &cobra.Command{
 		Use:     "create",
 		Short:   "Create new octavius job metadata",
 		Long:    "This command helps create new jobmetadata to your CP host with proper metadata.json file",
-		Example: fmt.Sprintf("octavius create PATH=<filepath>/metadata.json"),
-		Args:    cobra.MinimumNArgs(1),
+		Example: fmt.Sprintf("octavius create --job-path <filepath>/metadata.json"),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			arg := strings.Split(args[0], "=")
-			if len(arg) < 2 || arg[0] != "PATH" {
-				fmt.Println("Incorrect command argument format, the correct format is: \n octavius create PATH=<filepath>/metadata.json")
+			metadataFileIoReader, err := fileUtil.GetIoReader(metadataFilePath)
+			if err != nil {
+				printer.Println(fmt.Sprintln(err))
 				return
 			}
-			metadataFile := arg[1]
-			err := octaviusDaemon.CreateMetadata(metadataFile)
+
+			client := &client.GrpcClient{}
+			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
-				fmt.Println(err)
+				printer.Println(fmt.Sprintln(err), color.FgRed)
+				return
 			}
+			printer.Println(res.Name, color.FgGreen)
 		},
 	}
+	createCmd.Flags().StringVarP(&metadataFilePath, "job-path", "", "", "path to metadata.json(required)")
+	createCmd.MarkFlagRequired("job-path")
+
+	return createCmd
 }
