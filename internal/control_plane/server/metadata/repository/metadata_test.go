@@ -2,11 +2,11 @@ package repository
 
 import (
 	"context"
+	"github.com/gogo/protobuf/proto"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/pkg/protobuf"
 	"reflect"
 	"testing"
-	"github.com/gogo/protobuf/proto"
 )
 
 func Test_metadataRepository_Save(t *testing.T) {
