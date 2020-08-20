@@ -51,6 +51,7 @@ func TestCreateCmdForIoError(t *testing.T) {
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader(""), errors.New("test io error"))
 	mockPrinter.On("Println",fmt.Sprintln("test io error")).Once()
 
+
 	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
 	testCreateCmd.Execute()
 

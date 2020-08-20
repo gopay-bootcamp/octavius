@@ -17,10 +17,6 @@ const (
 	bufSize = 1024 * 1024
 )
 
-var testPostMetadataName = &protobuf.MetadataName{
-	Name: "name",
-}
-
 var testMetadataArray = &protobuf.MetadataArray{}
 
 var lis *bufconn.Listener
@@ -43,7 +39,9 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 type server struct{}
 
 func (s *server) PostMetadata(context.Context, *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
-	return testPostMetadataName, nil
+	return &protobuf.MetadataName{
+		Name: "name",
+	}, nil
 }
 
 func (s *server) GetAllMetadata(context.Context, *protobuf.RequestToGetAllMetadata) (*protobuf.MetadataArray, error) {
@@ -67,5 +65,5 @@ func TestCreateMetadata(t *testing.T) {
 	testPostRequest := &protobuf.RequestToPostMetadata{}
 	res, err := testClient.CreateMetadata(testPostRequest)
 	assert.Nil(t, err)
-	assert.Equal(t, testPostMetadataName.Name, res.Name)
+	assert.Equal(t, "name", res.Name)
 }
