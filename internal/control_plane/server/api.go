@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"octavius/internal/control_plane/logger"
+	"github.com/rs/zerolog"
 	"octavius/internal/control_plane/server/metadata/repository"
 
 	"net"
@@ -14,24 +14,23 @@ import (
 	"google.golang.org/grpc"
 )
 
-var Logger = logger.Setup()
 // Start the grpc server
-func Start() error {
+func Start(logger zerolog.Logger) error {
 	appPort := config.Config().AppPort
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
-	defer etcdClient.Close()
+	defer etcdClient.Close(logger)
 
 	metadataRepository := repository.NewMetadataRepository(etcdClient)
 	exec := execution.NewExec(metadataRepository)
 
-	procGrpcServer := NewProcServiceServer(exec)
+	procGrpcServer := NewProcServiceServer(exec, logger)
 	protobuf.RegisterOctaviusServicesServer(server, procGrpcServer)
 	if err != nil {
 		return err
 	}
-	Logger.Info().Msg(fmt.Sprintf("grpc server started on port %v", appPort))
+	logger.Info().Msg(fmt.Sprintf("grpc server started on port %v", appPort))
 	server.Serve(listener)
 	return nil
 }
