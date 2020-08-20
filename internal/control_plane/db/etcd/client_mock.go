@@ -19,9 +19,9 @@ func (m *ClientMock) DeleteKey(ctx context.Context, key string) (bool, error) {
 }
 
 // PutValue mock
-func (m *ClientMock) PutValue(ctx context.Context, key string, value string) (string, error) {
+func (m *ClientMock) PutValue(ctx context.Context, key string, value string) (error) {
 	args := m.Called(key, value)
-	return args.Get(0).(string), args.Error(1)
+	return args.Error(0)
 }
 
 // GetValue mock
