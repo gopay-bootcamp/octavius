@@ -38,7 +38,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	}
 
 	dbKey := prefix + key
-	_, err = c.etcdClient.PutValue(ctx, dbKey, string(val))
+	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
 		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
 		res := &protobuf.MetadataName{Err: errMsg, Name: ""}
