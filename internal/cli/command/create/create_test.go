@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fatih/color"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +33,7 @@ func TestCreateCmd(t *testing.T) {
 	}
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader("test-metadata-handler-string"), nil)
 	mockOctaviusDClient.On("CreateMetadata", strings.NewReader("test-metadata-handler-string")).Return(testMetadataName, nil).Once()
-	mockPrinter.On("Println", "name")
+	mockPrinter.On("Println", "name", color.FgGreen)
 
 	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
 	testCreateCmd.Execute()
@@ -48,6 +49,7 @@ func TestCreateCmdForIoError(t *testing.T) {
 	mockPrinter := new(printer.MockPrinter)
 	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil, mockPrinter)
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader(""), errors.New("test io error"))
+	mockPrinter.On("Println", "test io error\n")
 
 	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
 	testCreateCmd.Execute()

@@ -50,7 +50,7 @@ func TestCreateMetadata(t *testing.T) {
 	}
 
 	testPostMetadataName := protobuf.MetadataName{
-		Status: "success",
+		Name: "success",
 	}
 
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
