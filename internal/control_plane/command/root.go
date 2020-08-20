@@ -18,12 +18,6 @@ func Execute() {
 	rootCmd.AddCommand(start.NewCmd())
 	if err := rootCmd.Execute(); err != nil {
 		logger.Log.Err(err).Msg("Root command error")
-	} else {
-		logger.Log.Info().Msg("Root Command Executed")
 	}
 }
 
-func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/config.json)")
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
