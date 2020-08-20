@@ -6,6 +6,7 @@ import (
 	"octavius/pkg/protobuf"
 	"reflect"
 	"testing"
+
 	"github.com/gogo/protobuf/proto"
 )
 
@@ -21,7 +22,7 @@ func Test_metadataRepository_Save(t *testing.T) {
 	if err != nil {
 		t.Error("error in marshalling metadata")
 	}
-	mockClient.On("PutValue", "metadata/test data", string(val)).Return("metadata/test data", nil)
+	mockClient.On("PutValue", "metadata/test data", string(val)).Return(nil)
 	type fields struct {
 		etcdClient etcd.EtcdClient
 	}
