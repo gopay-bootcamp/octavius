@@ -6,7 +6,6 @@ import (
 	"octavius/pkg/protobuf"
 	"reflect"
 	"testing"
-
 	"github.com/gogo/protobuf/proto"
 )
 
@@ -23,7 +22,6 @@ func Test_metadataRepository_Save(t *testing.T) {
 		t.Error("error in marshalling metadata")
 	}
 	mockClient.On("PutValue", "metadata/test data", string(val)).Return("metadata/test data", nil)
-
 	type fields struct {
 		etcdClient etcd.EtcdClient
 	}
@@ -33,11 +31,13 @@ func Test_metadataRepository_Save(t *testing.T) {
 		metadata *protobuf.Metadata
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *protobuf.MetadataName
+		name    string
+		fields  fields
+		args    args
+		want    *protobuf.MetadataName
+		wantErr bool
 	}{
+		// TODO: Add test cases.
 		{
 			fields: fields{
 				etcdClient: mockClient,
@@ -61,7 +61,12 @@ func Test_metadataRepository_Save(t *testing.T) {
 			c := &metadataRepository{
 				etcdClient: tt.fields.etcdClient,
 			}
-			if got, _ := c.Save(tt.args.ctx, tt.args.key, tt.args.metadata); !reflect.DeepEqual(got, tt.want) {
+			got, err := c.Save(tt.args.ctx, tt.args.key, tt.args.metadata)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("metadataRepository.Save() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("metadataRepository.Save() = %v, want %v", got, tt.want)
 			}
 		})
