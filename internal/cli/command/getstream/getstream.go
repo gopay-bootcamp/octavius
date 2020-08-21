@@ -5,9 +5,10 @@ import (
 	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
+	"octavius/internal/cli/printer"
 )
 
-func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
+func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Command {
 	return &cobra.Command{
 		Use:   "getstream",
 		Short: "Get job log data",

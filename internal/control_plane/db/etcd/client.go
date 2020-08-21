@@ -2,20 +2,11 @@ package etcd
 
 import (
 	"context"
-<<<<<<< HEAD
-	"encoding/json"
 	"errors"
 	"fmt"
-	"octavius/internal/config"
-	"octavius/pkg/model/proc"
-=======
-	"errors"
-	"fmt"
-	"octavius/internal/config"
->>>>>>> 495bf6f20c214d4353f9570ae6317472f22b9ce7
-	"time"
-
 	"github.com/coreos/etcd/clientv3"
+	"octavius/internal/config"
+	"time"
 )
 
 //EtcdClient is exported to be used in server/execution
@@ -61,23 +52,13 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error
 	return true, nil
 }
 
-<<<<<<< HEAD
-func (client *etcdClient) PutValue(ctx context.Context, key string, proc *model.Proc) (string, error) {
-	value, err := json.Marshal(proc)
-	if err != nil {
-		return "", err
-	}
-	_, err = client.db.Put(ctx, key, string(value))
-	if err != nil {
-		return "", err
-	}
-	return proc.Name, nil
-=======
+
+
 //PutValue puts the given key-value pair in etcd database
 func (client *etcdClient) PutValue(ctx context.Context, key string, value string) error {
 	_, err := client.db.Put(ctx, key, value)
 	return err
->>>>>>> 495bf6f20c214d4353f9570ae6317472f22b9ce7
+
 }
 
 //GetValue gets the value of the given key
@@ -121,12 +102,10 @@ func (client *etcdClient) GetAllValues(ctx context.Context, prefix string) ([]st
 	return procs, nil
 }
 
-<<<<<<< HEAD
-func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (*model.Proc, error) {
-=======
+
 //GetValueWithRevision returns value with revision
 func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (string, error) {
->>>>>>> 495bf6f20c214d4353f9570ae6317472f22b9ce7
+
 	res, err := client.db.Get(ctx, id, clientv3.WithRev(header))
 	if err != nil {
 		return "", err

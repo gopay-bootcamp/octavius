@@ -76,10 +76,8 @@ message log{
 }
 service OctaviusServices{
 
-
    rpc GetStreamLogs(request_for_stream_log) returns (stream log);
    rpc ExecuteJob(request_for_execute) returns (response);
-
    rpc Post_metadata(request_to_post_metadata) returns (MetadataName);
    rpc Get_all_metadata(request_to_get_all_metadata) returns (metadataArray);
 

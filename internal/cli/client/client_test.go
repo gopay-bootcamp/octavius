@@ -38,6 +38,16 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
+func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.OctaviusServices_GetStreamLogsServer) error {
+	return nil
+}
+
+func (s *server) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
+	return &protobuf.Response{
+		Status: "success",
+	},nil
+}
+
 func (s *server) PostMetadata(context.Context, *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	return &protobuf.MetadataName{
 		Name: "name",
@@ -67,3 +77,23 @@ func TestCreateMetadata(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "name", res.Name)
 }
+
+func TestExecuteJob(t *testing.T) {
+	createFakeServer()
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	client := protobuf.NewOctaviusServicesClient(conn)
+	testClient := GrpcClient{
+		client:                client,
+		connectionTimeoutSecs: 10 * time.Second,
+	}
+	testPostRequest := &protobuf.RequestToPostMetadata{}
+	res, err := testClient.ExecuteJob(testPostRequest)
+	assert.Nil(t, err)
+	assert.Equal(t, "name", res.Name)
+}
+

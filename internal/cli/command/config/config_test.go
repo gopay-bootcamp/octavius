@@ -40,6 +40,7 @@ func TestConfigCmdForConfigFileNotExist(t *testing.T) {
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileNotExistForDirectoryCreationFailure(t *testing.T) {

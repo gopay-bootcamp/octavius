@@ -2,12 +2,13 @@ package server
 
 import (
 	"fmt"
+	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/server/metadata/repository"
 	"octavius/internal/logger"
 
 	"net"
 	"octavius/internal/config"
-	"octavius/internal/control_plane/db/etcd"
+
 	"octavius/internal/control_plane/server/execution"
 	"octavius/pkg/protobuf"
 

@@ -63,3 +63,5 @@ func TestCreateMetadata(t *testing.T) {
 	mockGrpcClient.AssertExpectations(t)
 	mockConfigLoader.AssertExpectations(t)
 }
+
+

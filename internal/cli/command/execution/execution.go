@@ -2,13 +2,15 @@ package execution
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
+	"octavius/internal/cli/printer"
 	"strings"
 )
 
-func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
+func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Command {
 	return &cobra.Command{
 		Use:     "execute",
 		Short:   "Execute the existing job",
@@ -17,7 +19,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) < 1 {
-				fmt.Println("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ...")
+				printer.Println("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ...",color.FgRed)
 				return
 			}
 			jobName := args[0]
@@ -28,7 +30,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				jobData[arg[0]] = arg[1]
 			}
 			client := &client.GrpcClient{}
-			err := octaviusDaemon.Execute(jobName, jobData, client)
+			err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
 				fmt.Println(err)
 			}

@@ -30,10 +30,10 @@ func Execute(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer p
 	createCmd := create.NewCmd(octaviusDaemon, fileUtil, printer)
 	rootCmd.AddCommand(createCmd)
 
-	getstreamCmd := getstream.NewCmd(octaviusDaemon)
+	getstreamCmd := getstream.NewCmd(octaviusDaemon, printer)
 	rootCmd.AddCommand(getstreamCmd)
 
-	executeCmd := execution.NewCmd(octaviusDaemon)
+	executeCmd := execution.NewCmd(octaviusDaemon, printer)
 	rootCmd.AddCommand(executeCmd)
 
 	if err := rootCmd.Execute(); err != nil {

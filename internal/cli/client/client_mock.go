@@ -19,3 +19,14 @@ func (m *MockGrpcClient) ConnectClient(cpHost string) error {
 	args := m.Called(cpHost)
 	return args.Error(0)
 }
+
+func (m *MockGrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) error {
+	args := m.Called(requestForStreamLog)
+	return args.Error(0)
+}
+
+func (m *MockGrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) error {
+	args := m.Called(requestForExecute )
+	return args.Error(0)
+}
+

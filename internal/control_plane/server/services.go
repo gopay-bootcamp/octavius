@@ -11,6 +11,7 @@ type octaviusServiceServer struct {
 	procExec execution.Execution
 }
 
+
 // NewProcServiceServer used to create a new execution context
 func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesServer {
 	return &octaviusServiceServer{
@@ -34,4 +35,13 @@ func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *pro
 		return dataList, err
 	}
 	return dataList, nil
+}
+
+func (s *octaviusServiceServer) GetStreamLogs( request *procProto.RequestForStreamLog, server procProto.OctaviusServices_GetStreamLogsServer) (error) {
+	return nil
+}
+
+
+func (s *octaviusServiceServer) ExecuteJob(ctx context.Context, execute *procProto.RequestForExecute) (*procProto.Response, error) {
+	panic("implement me")
 }

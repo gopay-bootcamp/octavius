@@ -15,7 +15,7 @@ import (
 type Client interface {
 	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
 	GetStreamLog(string, client.Client) error
-	Execute(string, map[string]string, client.Client) error
+	ExecuteJob(string, map[string]string, client.Client) error
 }
 
 type octaviusClient struct {
@@ -100,7 +100,7 @@ func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) 
 	}
 	return nil
 }
-func (c *octaviusClient) Execute(jobName string, jobData map[string]string, grpcClient client.Client) error {
+func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) error {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return err
