@@ -3,7 +3,9 @@ package logger
 import (
 	"github.com/rs/zerolog"
 	"octavius/internal/config"
+	"octavius/pkg/constant"
 	"os"
+	"time"
 )
 
 type Logger struct {
@@ -16,13 +18,12 @@ func Setup() {
 	if (log != Logger{}) {
 		return
 	}
-	logInit := zerolog.New(os.Stdout).With().Caller().Logger().Level(1)
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	logLevel, err := zerolog.ParseLevel(config.Config().LogLevel)
 	if err != nil {
-		Panic("Config file load error", err)
+		logLevel, _ = zerolog.ParseLevel("info")
 	}
-	logInit.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	logInit := zerolog.New(os.Stdout).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
+	zerolog.TimeFieldFormat = time.RFC822
 	logInit.Level(logLevel)
 	log = Logger{
 		logger: &logInit,
@@ -46,18 +47,18 @@ func Info(msg string) {
 	log.logger.Info().Msg(msg)
 }
 
-func Fatal(msg string, err error) {
-	log.logger.Fatal().Err(err).Msg(msg)
+func Fatal(msg string) {
+	log.logger.Fatal().Msgf(msg)
 }
 
-func Error(action string, err error) {
-	log.logger.Print("Error caused ", log.logger.Err(err), " due to ", action)
+func Error(err error, action string) {
+	log.logger.Error().Msgf(action, err.Error())
 }
 
-func LogErrors(err error, action string) {
+func ErrorCheck(err error, msg string) {
 	if err != nil {
-		Error(action, err)
+		log.logger.Error().Msgf(msg, err.Error())
 	} else {
-		Debug(action)
+		log.logger.Info().Msg(msg)
 	}
 }

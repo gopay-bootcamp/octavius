@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
+	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/execution"
-	"octavius/internal/logger"
 	procProto "octavius/pkg/protobuf"
 )
 
@@ -21,27 +21,21 @@ func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesSe
 
 func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName, error) {
 	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
-	if err != nil {
-		logger.Error("error in posting metadata", err)
-		return name, err
-	}
-	return name, nil
+	logger.ErrorCheck(err, "Posting Metadata")
+	return name, err
 }
 
 func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray, error) {
 	dataList, err := s.procExec.ReadAllMetadata(ctx)
-	if err != nil {
-		logger.Error("error in getting metadata list", err)
-		return dataList, err
-	}
-	return dataList, nil
+	logger.ErrorCheck(err, "Getting Metadata")
+	return dataList, err
+}
+
+func (s *octaviusServiceServer) ExecuteJob(ctx context.Context, execute *procProto.RequestForExecute) (*procProto.Response, error) {
+	panic("implement me")
 }
 
 func (s *octaviusServiceServer) GetStreamLogs( request *procProto.RequestForStreamLog, server procProto.OctaviusServices_GetStreamLogsServer) (error) {
 	return nil
 }
 
-
-func (s *octaviusServiceServer) ExecuteJob(ctx context.Context, execute *procProto.RequestForExecute) (*procProto.Response, error) {
-	panic("implement me")
-}

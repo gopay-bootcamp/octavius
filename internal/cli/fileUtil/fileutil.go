@@ -19,17 +19,19 @@ type FileUtil interface {
 
 type fileUtil struct{}
 
+// NewFileUtil create new instance
 func NewFileUtil() FileUtil {
 	return &fileUtil{}
 }
 
+// GetUserInput to take user input
 func (f *fileUtil) GetUserInput() (string, error) {
 	in := bufio.NewReader(os.Stdin)
-	userPermission, err := in.ReadString('\n')
+	inp, err := in.ReadString('\n')
 	if err != nil {
 		return "", nil
 	}
-	return userPermission, nil
+	return inp, nil
 }
 
 func (f *fileUtil) GetIoReader(filePath string) (io.Reader, error) {

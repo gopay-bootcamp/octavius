@@ -17,3 +17,4 @@ const JobNotFound = "Job not found"
 const JobSucceeded = "SUCCEEDED"
 const JobFailed = "FAILED"
 const JobWaiting = "WAITING"
+const LoggerSkipFrameCount = 3

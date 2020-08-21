@@ -60,6 +60,7 @@ func (s *server) GetAllMetadata(context.Context, *protobuf.RequestToGetAllMetada
 	return nil, nil
 }
 
+// TestCreateMetadata used to test CreateMetadata
 func TestCreateMetadata(t *testing.T) {
 	createFakeServer()
 
