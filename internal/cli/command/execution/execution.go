@@ -30,10 +30,12 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 				jobData[arg[0]] = arg[1]
 			}
 			client := &client.GrpcClient{}
-			err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
+			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
-				fmt.Println(err)
+				printer.Println(fmt.Sprintln(err), color.FgRed)
+				return
 			}
+			printer.Println(fmt.Sprintln(response.Status), color.FgGreen)
 		},
 	}
 }

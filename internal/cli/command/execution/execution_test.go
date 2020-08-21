@@ -3,11 +3,8 @@ package execution
 import (
 	"github.com/stretchr/testify/assert"
 	"octavius/internal/cli/daemon"
-	"octavius/internal/cli/fileUtil"
-	"octavius/pkg/protobuf"
-	"strings"
-
 	"octavius/internal/cli/printer"
+	"octavius/pkg/protobuf"
 	"testing"
 )
 
@@ -24,14 +21,17 @@ func TestExecuteCmd(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	mockPrinter := new(printer.MockPrinter)
 	testCreateCmd := NewCmd(mockOctaviusDClient, mockPrinter)
-	status := &protobuf.response{
-		status: "success",
+	var jobData = map[string]string{
+		"Namespace": "default",
+	}
+	executedResponse := &protobuf.Response{
+		Status: "success",
 	}
 
-	mockOctaviusDClient.On("ExecuteJob", strings.NewReader("DemoJob"),jobData).Return(, nil).Once()
-	mockPrinter.On("Println", "name")
+	mockOctaviusDClient.On("ExecuteJob", "DemoJob",jobData).Return(executedResponse, nil).Once()
+	mockPrinter.On("Println", "success\n")
 
-	testCreateCmd.SetArgs([]string{"DemoJob","arg1=argvalue1"})
+	testCreateCmd.SetArgs([]string{"DemoJob","Namespace=default"})
 	testCreateCmd.Execute()
 
 	mockOctaviusDClient.AssertExpectations(t)

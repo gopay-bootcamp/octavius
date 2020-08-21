@@ -14,8 +14,8 @@ import (
 
 type Client interface {
 	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
-	GetStreamLog(string, client.Client) error
-	ExecuteJob(string, map[string]string, client.Client) error
+	GetStreamLog(string, client.Client) (*[]protobuf.Log, error)
+	ExecuteJob(string, map[string]string, client.Client) (*protobuf.Response, error)
 }
 
 type octaviusClient struct {
@@ -80,10 +80,10 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	return res, nil
 }
 
-func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) error {
+func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*[]protobuf.Log, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	postRequestHeader := protobuf.ClientInfo{
@@ -94,16 +94,16 @@ func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) 
 		ClientInfo: &postRequestHeader,
 		JobName:    jobName,
 	}
-	err = c.grpcClient.GetStreamLog(&getStreamPostRequest)
+	logResponse, err := c.grpcClient.GetStreamLog(&getStreamPostRequest)
 	if err != nil {
-		return errors.New("error occured when sending the grpc request. Check your CPHost")
+		return nil, errors.New("error occured when sending the grpc request. Check your CPHost")
 	}
-	return nil
+	return logResponse, nil
 }
-func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) error {
+func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) (*protobuf.Response, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	postRequestHeader := protobuf.ClientInfo{
 		ClientEmail: c.emailId,
@@ -114,10 +114,10 @@ func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, g
 		JobName:    jobName,
 		JobData:    jobData,
 	}
-	err = c.grpcClient.ExecuteJob(&executePostRequest)
+	response, err := c.grpcClient.ExecuteJob(&executePostRequest)
 	if err != nil {
-		return errors.New("error occured when sending the grpc request. Check your CPHost")
+		return nil, errors.New("error occured when sending the grpc request. Check your CPHost")
 
 	}
-	return nil
+	return response, nil
 }

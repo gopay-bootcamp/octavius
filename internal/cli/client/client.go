@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"errors"
-	"fmt"
 	"io"
 
 	"octavius/pkg/protobuf"
@@ -14,8 +13,8 @@ import (
 )
 
 type Client interface {
-	GetStreamLog(*protobuf.RequestForStreamLog) error
-	ExecuteJob(*protobuf.RequestForExecute) error
+	GetStreamLog(*protobuf.RequestForStreamLog) (*[]protobuf.Log, error)
+	ExecuteJob(*protobuf.RequestForExecute) (*protobuf.Response, error)
 
 	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
 	ConnectClient(cpHost string) error
@@ -47,26 +46,26 @@ func (g *GrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostM
 	return res, nil
 }
 
-func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) error {
+func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) (*[]protobuf.Log, error) {
 	responseStream, err := g.client.GetStreamLogs(context.Background(), requestForStreamLog)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	var logResponse []protobuf.Log
 	for {
 		log, err := responseStream.Recv()
 		if err == io.EOF {
 			break
 		}
-		fmt.Printf("log %v", log.Log)
+		logResponse = append(logResponse, *log)
 	}
-	return nil
+	return &logResponse, nil
 }
 
-func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) error {
+func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (*protobuf.Response, error) {
 	res, err := g.client.ExecuteJob(context.Background(), requestForExecute)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	fmt.Println(res)
-	return nil
+	return res, nil
 }
