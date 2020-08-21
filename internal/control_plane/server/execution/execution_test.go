@@ -2,11 +2,16 @@ package execution
 
 import (
 	"context"
+	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/metadata/repository"
 	"octavius/pkg/protobuf"
 	"reflect"
 	"testing"
 )
+
+func init() {
+	logger.Setup()
+}
 
 func Test_execution_SaveMetadataToDb(t *testing.T) {
 	metadataRepoMock := new(repository.MetadataMock)

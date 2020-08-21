@@ -128,6 +128,6 @@ func (client *etcdClient) SetWatchOnPrefix(ctx context.Context, prefix string) c
 
 //Close closes connection to etcd database
 func (client *etcdClient) Close() {
-	logger.Log.Info().Msg("Closing connections to db")
+	logger.Info("Closing connections to db")
 	defer client.db.Close()
 }
