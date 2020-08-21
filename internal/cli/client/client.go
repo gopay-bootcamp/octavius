@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"octavius/pkg/protobuf"
-	"octavius/internal/cli/logger"
 	"time"
 
 	"google.golang.org/grpc"

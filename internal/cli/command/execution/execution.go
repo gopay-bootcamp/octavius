@@ -2,10 +2,10 @@ package execution
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
+	"octavius/internal/cli/logger"
 	"octavius/internal/cli/printer"
 	"strings"
 )
@@ -18,10 +18,6 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 		Example: fmt.Sprintf("octavius execute <job-name> arg1=argvalue1 arg2=argvalue2"),
 		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) < 1 {
-				printer.Println("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ...",color.FgRed)
-				return
-			}
 			jobName := args[0]
 			jobData := map[string]string{}
 
@@ -31,11 +27,7 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 			}
 			client := &client.GrpcClient{}
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
-			if err != nil {
-				printer.Println(fmt.Sprintln(err), color.FgRed)
-				return
-			}
-			printer.Println(fmt.Sprintln(response.Status), color.FgGreen)
+			logger.Error(err, response.Status, printer)
 		},
 	}
 }

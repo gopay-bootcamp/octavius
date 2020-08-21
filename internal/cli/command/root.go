@@ -1,13 +1,13 @@
 package command
 
 import (
-	"fmt"
 	"octavius/internal/cli/command/config"
 	"octavius/internal/cli/command/create"
 	"octavius/internal/cli/command/execution"
 	"octavius/internal/cli/command/getstream"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/fileUtil"
+	"octavius/internal/cli/logger"
 	"octavius/internal/cli/printer"
 
 	"github.com/spf13/cobra"
@@ -37,6 +37,6 @@ func Execute(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer p
 	rootCmd.AddCommand(executeCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		logger.Error(err, "Input Command Execution: ", printer)
 	}
 }

@@ -5,9 +5,9 @@ import (
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/fileUtil"
+	"octavius/internal/cli/logger"
 	"octavius/internal/cli/printer"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -24,17 +24,17 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer pr
 		Run: func(cmd *cobra.Command, args []string) {
 			metadataFileIoReader, err := fileUtil.GetIoReader(metadataFilePath)
 			if err != nil {
-				printer.Println(fmt.Sprintln(err))
+				logger.Error(err, "", printer)
 				return
 			}
 
 			client := &client.GrpcClient{}
 			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
-				printer.Println(fmt.Sprintln(err), color.FgRed)
+				logger.Error(err, "", printer)
 				return
 			}
-			printer.Println(fmt.Sprintf("%s job created", res.Name), color.FgGreen)
+			logger.Info(fmt.Sprintf("%s job created", res.Name), printer)
 		},
 	}
 	createCmd.Flags().StringVarP(&metadataFilePath, "job-path", "", "", "path to metadata.json(required)")
