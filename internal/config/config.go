@@ -80,7 +80,7 @@ func load() ProctorConfig {
 	}
 	proctorConfig := ProctorConfig{
 		viper:    fang,
-		LogLevel: fang.GetString("log_level"),
+		LogLevel: GetStringDefault(fang, "log_level", "info"),
 		EtcdPort: fang.GetString("etcd_port"),
 		AppPort:  fang.GetString("app_port"),
 	}

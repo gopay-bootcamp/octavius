@@ -3,8 +3,8 @@ package server
 import (
 	"fmt"
 	"octavius/internal/control_plane/db/etcd"
+	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/metadata/repository"
-	"octavius/internal/logger"
 
 	"net"
 	"octavius/internal/config"
@@ -22,7 +22,6 @@ func Start() error {
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
-
 	metadataRepository := repository.NewMetadataRepository(etcdClient)
 	exec := execution.NewExec(metadataRepository)
 
@@ -31,7 +30,7 @@ func Start() error {
 	if err != nil {
 		return err
 	}
-	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
+	logger.Log.Info().Msg(fmt.Sprintf("grpc server started on port %v", appPort))
 	server.Serve(listener)
 	return nil
 }
