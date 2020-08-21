@@ -9,11 +9,13 @@ import (
 	"octavius/pkg/protobuf"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
+	"github.com/gogo/protobuf/jsonpb"
 )
 
 type Client interface {
 	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
+	GetStreamLog(string, client.Client) (*[]protobuf.Log, error)
+	ExecuteJob(string, map[string]string, client.Client) (*protobuf.Response, error)
 }
 
 type octaviusClient struct {
@@ -77,4 +79,46 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 		return nil, errors.New("Error occured when sending the grpc request. Check your CPHost")
 	}
 	return res, nil
+}
+
+func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*[]protobuf.Log, error) {
+	err := c.startOctaviusClient(grpcClient)
+	if err != nil {
+		return nil, err
+	}
+
+	postRequestHeader := protobuf.ClientInfo{
+		ClientEmail: c.emailId,
+		AccessToken: c.accessToken,
+	}
+	getStreamPostRequest := protobuf.RequestForStreamLog{
+		ClientInfo: &postRequestHeader,
+		JobName:    jobName,
+	}
+	logResponse, err := c.grpcClient.GetStreamLog(&getStreamPostRequest)
+	if err != nil {
+		return nil, errors.New("error occured when sending the grpc request. Check your CPHost")
+	}
+	return logResponse, nil
+}
+func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) (*protobuf.Response, error) {
+	err := c.startOctaviusClient(grpcClient)
+	if err != nil {
+		return nil, err
+	}
+	postRequestHeader := protobuf.ClientInfo{
+		ClientEmail: c.emailId,
+		AccessToken: c.accessToken,
+	}
+	executePostRequest := protobuf.RequestForExecute{
+		ClientInfo: &postRequestHeader,
+		JobName:    jobName,
+		JobData:    jobData,
+	}
+	response, err := c.grpcClient.ExecuteJob(&executePostRequest)
+	if err != nil {
+		return nil, errors.New("error occured when sending the grpc request. Check your CPHost")
+
+	}
+	return response, nil
 }

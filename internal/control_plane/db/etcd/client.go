@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/coreos/etcd/clientv3"
 	"octavius/internal/config"
 	"octavius/internal/control_plane/logger"
 	"time"
-
-	"github.com/coreos/etcd/clientv3"
 )
 
 //EtcdClient is exported to be used in server/execution
@@ -54,10 +53,13 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error
 	return true, nil
 }
 
+
+
 //PutValue puts the given key-value pair in etcd database
 func (client *etcdClient) PutValue(ctx context.Context, key string, value string) error {
 	_, err := client.db.Put(ctx, key, value)
 	return err
+
 }
 
 //GetValue gets the value of the given key
@@ -101,8 +103,10 @@ func (client *etcdClient) GetAllValues(ctx context.Context, prefix string) ([]st
 	return procs, nil
 }
 
+
 //GetValueWithRevision returns value with revision
 func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (string, error) {
+
 	res, err := client.db.Get(ctx, id, clientv3.WithRev(header))
 	if err != nil {
 		return "", err
