@@ -56,7 +56,7 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*protobuf.MetadataArra
 	if err != nil {
 		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
 		var arr []*protobuf.Metadata
-		res := &protobuf.MetadataArray{Err: errMsg, Value: arr}
+		res := &protobuf.MetadataArray{Err: errMsg, Values: arr}
 		return res, err
 	}
 
@@ -67,6 +67,6 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*protobuf.MetadataArra
 		proto.Unmarshal([]byte(val), metadata)
 		resArr = append(resArr, metadata)
 	}
-	resp := &protobuf.MetadataArray{Err: errMsg, Value: resArr}
+	resp := &protobuf.MetadataArray{Err: errMsg, Values: resArr}
 	return resp, nil
 }

@@ -1,9 +1,10 @@
 package command
 
 import (
-	"github.com/spf13/cobra"
 	"octavius/internal/control_plane/command/start"
 	"octavius/internal/control_plane/logger"
+
+	"github.com/spf13/cobra"
 )
 
 var cfgFile string
@@ -13,7 +14,7 @@ var rootCmd = &cobra.Command{
 	Long:  `Control plane of octavius takes request from cli`,
 }
 
-// Execute the root command and no error returned
+// Execute executes the root command of octavius control plane
 func Execute() {
 	rootCmd.AddCommand(start.NewCmd())
 	err := rootCmd.Execute()
