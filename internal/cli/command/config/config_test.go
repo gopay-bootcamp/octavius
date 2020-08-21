@@ -40,6 +40,7 @@ func TestConfigCmdForConfigFileNotExist(t *testing.T) {
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileNotExistForDirectoryCreationFailure(t *testing.T) {
@@ -55,6 +56,7 @@ func TestConfigCmdForConfigFileNotExistForDirectoryCreationFailure(t *testing.T)
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileNotExistForConfigFileCreationFailure(t *testing.T) {
@@ -71,6 +73,7 @@ func TestConfigCmdForConfigFileNotExistForConfigFileCreationFailure(t *testing.T
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileNotExistForConfigFileWritingFailure(t *testing.T) {
@@ -93,6 +96,7 @@ func TestConfigCmdForConfigFileNotExistForConfigFileWritingFailure(t *testing.T)
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileExist(t *testing.T) {
@@ -118,6 +122,7 @@ func TestConfigCmdForConfigFileExist(t *testing.T) {
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileExistForOldFileReadingFailure(t *testing.T) {
@@ -134,6 +139,7 @@ func TestConfigCmdForConfigFileExistForOldFileReadingFailure(t *testing.T) {
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileExistForUserPermissionReadingFailure(t *testing.T) {
@@ -153,6 +159,7 @@ func TestConfigCmdForConfigFileExistForUserPermissionReadingFailure(t *testing.T
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileExistForNegativeUserInput(t *testing.T) {
@@ -172,6 +179,7 @@ func TestConfigCmdForConfigFileExistForNegativeUserInput(t *testing.T) {
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
 
 func TestConfigCmdForConfigFileExistForConfigFileWritingFailure(t *testing.T) {
@@ -197,4 +205,5 @@ func TestConfigCmdForConfigFileExistForConfigFileWritingFailure(t *testing.T) {
 	testConfigCmd.Execute()
 
 	mockFileUtil.AssertExpectations(t)
+	mockPrinter.AssertExpectations(t)
 }
