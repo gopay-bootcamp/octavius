@@ -21,7 +21,6 @@ var testMetadataArray = &protobuf.MetadataArray{}
 
 var lis *bufconn.Listener
 
-
 func createFakeServer() {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()

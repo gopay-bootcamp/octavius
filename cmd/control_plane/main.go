@@ -2,10 +2,10 @@ package main
 
 import (
 	"octavius/internal/control_plane/command"
-	"octavius/internal/control_plane/logger"
+	log "octavius/internal/control_plane/logger"
 )
 
 func main() {
-	logger.Setup()
+	log.Setup()
 	command.Execute()
 }

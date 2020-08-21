@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func init(){
+func init() {
 	logger.Setup()
 }
 
@@ -77,5 +77,3 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 		})
 	}
 }
-
-

@@ -16,8 +16,6 @@ var rootCmd = &cobra.Command{
 // Execute the root command and no error returned
 func Execute() {
 	rootCmd.AddCommand(start.NewCmd())
-	if err := rootCmd.Execute(); err != nil {
-		logger.Log.Err(err).Msg("Root command error")
-	}
+	err := rootCmd.Execute()
+	logger.ErrorCheck(err, "Root  command execution")
 }
-

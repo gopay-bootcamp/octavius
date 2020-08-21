@@ -29,7 +29,7 @@ func Start() error {
 	if err != nil {
 		return err
 	}
-	logger.Log.Info().Msg(fmt.Sprintf("grpc server started on port %v", appPort))
+	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
 	server.Serve(listener)
 	return nil
 }
