@@ -30,7 +30,13 @@ func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *pro
 	return dataList, err
 }
 
-func (s *octaviusServiceServer) GetStreamLogs(request *procProto.RequestForStreamLog, server procProto.OctaviusServices_GetStreamLogsServer) error {
+func (s *octaviusServiceServer) GetStreamLogs(request *procProto.RequestForStreamLog, stream procProto.OctaviusServices_GetStreamLogsServer) error {
+	logString := &procProto.Log{Log: "lorem ipsum logger logger logger dumb"}
+	err := stream.Send(logString)
+	logger.Error(err, "Sending stream to client")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
