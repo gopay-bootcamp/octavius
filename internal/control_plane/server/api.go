@@ -18,19 +18,15 @@ import (
 // Start the grpc server
 func Start() error {
 	appPort := config.Config().AppPort
-	listener, err := net.Listen("tcp", "localhost:"+appPort)
+	listener, err := net.Listen("tcp", "localhost:"+appPort); if err !=nil {return err}
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
 	metadataRepository := repository.NewMetadataRepository(etcdClient)
 	exec := execution.NewExec(metadataRepository)
-
 	procGrpcServer := NewProcServiceServer(exec)
 	protobuf.RegisterOctaviusServicesServer(server, procGrpcServer)
-	if err != nil {
-		return err
-	}
 	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
-	server.Serve(listener)
-	return nil
+	err = server.Serve(listener)
+	return err
 }

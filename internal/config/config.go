@@ -54,16 +54,16 @@ func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
 }
 
 var once sync.Once
-var config ProctorConfig
+var config OctaviusConfig
 
-type ProctorConfig struct {
+type OctaviusConfig struct {
 	viper    *viper.Viper
 	LogLevel string
 	AppPort  string
 	EtcdPort string
 }
 
-func load() ProctorConfig {
+func load() OctaviusConfig {
 	fang := viper.New()
 
 	fang.SetConfigType("json")
@@ -78,13 +78,13 @@ func load() ProctorConfig {
 	if err != nil {
 		fmt.Println("file not read", err)
 	}
-	proctorConfig := ProctorConfig{
+	octaviusConfig := OctaviusConfig{
 		viper:    fang,
 		LogLevel: GetStringDefault(fang, "log_level", "info"),
 		EtcdPort: fang.GetString("etcd_port"),
 		AppPort:  fang.GetString("app_port"),
 	}
-	return proctorConfig
+	return octaviusConfig
 }
 
 type AtomBool struct{ flag int32 }
@@ -98,10 +98,7 @@ func (b *AtomBool) Set(value bool) {
 }
 
 func (b *AtomBool) Get() bool {
-	if atomic.LoadInt32(&(b.flag)) != 0 {
-		return true
-	}
-	return false
+	return atomic.LoadInt32(&(b.flag)) != 0 
 }
 
 var reset = new(AtomBool)
@@ -114,7 +111,7 @@ func Reset() {
 	reset.Set(true)
 }
 
-func Config() ProctorConfig {
+func Config() OctaviusConfig {
 	once.Do(func() {
 		config = load()
 	})
