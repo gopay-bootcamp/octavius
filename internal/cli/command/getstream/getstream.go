@@ -27,7 +27,7 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 				printer.Println(fmt.Sprintln(err), color.FgRed)
 				return
 			}
-			for _,log := range *logResponse {
+			for _, log := range *logResponse {
 				printer.Println(fmt.Sprintln(log.Log), color.FgYellow)
 			}
 		},

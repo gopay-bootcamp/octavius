@@ -8,11 +8,10 @@ import (
 	"testing"
 )
 
-
 func TestGetStreamCmdHelp(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	mockPrinter := new(printer.MockPrinter)
-	testCreateCmd := NewCmd(mockOctaviusDClient,mockPrinter)
+	testCreateCmd := NewCmd(mockOctaviusDClient, mockPrinter)
 	assert.Equal(t, "Get job log data", testCreateCmd.Short)
 	assert.Equal(t, "Get job log by giving arguments", testCreateCmd.Long)
 }
@@ -41,4 +40,3 @@ func TestGetStreamCmd(t *testing.T) {
 	mockOctaviusDClient.AssertExpectations(t)
 	mockPrinter.AssertExpectations(t)
 }
-

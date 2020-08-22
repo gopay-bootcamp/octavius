@@ -98,7 +98,7 @@ func (b *AtomBool) Set(value bool) {
 }
 
 func (b *AtomBool) Get() bool {
-	return atomic.LoadInt32(&(b.flag)) != 0 
+	return atomic.LoadInt32(&(b.flag)) != 0
 }
 
 var reset = new(AtomBool)

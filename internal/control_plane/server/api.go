@@ -18,7 +18,10 @@ import (
 // Start the grpc server
 func Start() error {
 	appPort := config.Config().AppPort
-	listener, err := net.Listen("tcp", "localhost:"+appPort); if err !=nil {return err}
+	listener, err := net.Listen("tcp", "localhost:"+appPort)
+	if err != nil {
+		return err
+	}
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient()
 	defer etcdClient.Close()
