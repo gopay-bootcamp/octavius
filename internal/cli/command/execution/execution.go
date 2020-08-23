@@ -6,11 +6,10 @@ import (
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/logger"
-	"octavius/internal/cli/printer"
 	"strings"
 )
 
-func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Command {
+func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "execute",
 		Short:   "Execute the existing job",
@@ -27,7 +26,7 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 			}
 			client := &client.GrpcClient{}
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
-			logger.Error(err, response.Status, printer)
+			logger.Error(err, response.Status)
 		},
 	}
 }

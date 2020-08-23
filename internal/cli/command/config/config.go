@@ -31,29 +31,29 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 			isConfigFileExist := fileUtil.IsFileExist(configFilePath)
 
 			if isConfigFileExist == true {
-				logger.Warn(fmt.Sprintln("[Warning] This will overwrite current config:"), printer)
+				logger.Warn(fmt.Sprintln("[Warning] This will overwrite current config:"))
 				existingOctaviusConfig, err := fileUtil.ReadFile(configFilePath)
-				logger.Error(err, fmt.Sprintln(existingOctaviusConfig), printer)
+				logger.Error(err, fmt.Sprintln(existingOctaviusConfig))
 				printer.Println(fmt.Sprintln("\nDo you want to continue (Y/n)?\t"), color.FgYellow)
 				userPermission, err := fileUtil.GetUserInput()
 				if err != nil {
-					logger.Error(err, fmt.Sprintln("error getting user permission for overwriting config"), printer)
+					logger.Error(err, fmt.Sprintln("error getting user permission for overwriting config"))
 					return
 				}
 
 				if userPermission != "y\n" && userPermission != "Y\n" {
-					logger.Info(fmt.Sprintln("Skipped configuring octavius client"), printer)
+					logger.Info(fmt.Sprintln("Skipped configuring octavius client"))
 					return
 				}
 			} else {
 				err := fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
 				if err != nil {
-					logger.Error(err, "Error in creating config file directory", printer)
+					logger.Error(err, "Error in creating config file directory")
 					return
 				}
 				err = fileUtil.CreateFile(configFilePath)
 				if err != nil {
-					logger.Error(err, "Error in creating config file", printer)
+					logger.Error(err, "Error in creating config file")
 					return
 				}
 			}
@@ -66,11 +66,11 @@ func NewCmd(fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command 
 
 			err := fileUtil.WriteFile(configFilePath, configFileContent)
 			if err != nil {
-				logger.Error(err, fmt.Sprintf("Error writing content %v to config file %s \n", configFileContent, configFilePath), printer)
+				logger.Error(err, fmt.Sprintf("Error writing content %v to config file %s \n", configFileContent, configFilePath))
 				return
 			}
 
-			logger.Info("Octavius client configured successfully", printer)
+			logger.Info("Octavius client configured successfully")
 		},
 	}
 	configCmd.Flags().StringVarP(&cpHost, "cp-host", "", "", "CP_HOST port address(required)")

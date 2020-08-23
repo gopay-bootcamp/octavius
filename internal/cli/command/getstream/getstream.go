@@ -20,7 +20,7 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 			jobName := args[0]
 			client := &client.GrpcClient{}
 			logResponse, err := octaviusDaemon.GetStreamLog(jobName, client)
-			logger.Error(err, "Getting Stream", printer)
+			logger.Error(err, "Getting Stream")
 			for _, log := range *logResponse {
 				printer.Println(fmt.Sprintln(log.Log), color.FgYellow)
 			}

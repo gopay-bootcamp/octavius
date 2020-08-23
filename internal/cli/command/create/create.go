@@ -2,17 +2,15 @@ package create
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/fileUtil"
 	"octavius/internal/cli/logger"
-	"octavius/internal/cli/printer"
-
-	"github.com/spf13/cobra"
 )
 
 // NewCmd Returns an instance of Create command for registering Job Metadata in Octavius
-func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer printer.Printer) *cobra.Command {
+func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil) *cobra.Command {
 	var metadataFilePath string
 
 	createCmd := &cobra.Command{
@@ -24,17 +22,17 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer pr
 		Run: func(cmd *cobra.Command, args []string) {
 			metadataFileIoReader, err := fileUtil.GetIoReader(metadataFilePath)
 			if err != nil {
-				logger.Error(err, "", printer)
+				logger.Error(err, "")
 				return
 			}
 
 			client := &client.GrpcClient{}
 			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
-				logger.Error(err, "", printer)
+				logger.Error(err, "")
 				return
 			}
-			logger.Info(fmt.Sprintf("%s job created", res.Name), printer)
+			logger.Info(fmt.Sprintf("%s job created", res.Name))
 		},
 	}
 	createCmd.Flags().StringVarP(&metadataFilePath, "job-path", "", "", "path to metadata.json(required)")

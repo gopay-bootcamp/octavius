@@ -16,6 +16,7 @@ type Logger struct {
 }
 
 var log Logger
+var colorPrinter = printer.GetPrinter()
 
 func Setup() {
 	if (log != Logger{}) {
@@ -39,36 +40,36 @@ func Setup() {
 	return
 }
 
-func Debug(msg string, printer printer.Printer) {
-	printer.Println(fmt.Sprint(msg), color.FgHiGreen)
+func Debug(msg string) {
+	colorPrinter.Println(fmt.Sprint(msg), color.FgHiGreen)
 	log.logger.Debug().Msg(msg)
 }
 
-func Warn(msg string, printer printer.Printer) {
-	printer.Println(fmt.Sprint(msg), color.FgYellow)
+func Warn(msg string) {
+	colorPrinter.Println(fmt.Sprint(msg), color.FgYellow)
 	log.logger.Warn().Msg(msg)
 }
 
-func Panic(msg string, err error, printer printer.Printer) {
-	printer.Println(fmt.Sprint(msg, err), color.FgHiRed)
+func Panic(msg string, err error) {
+	colorPrinter.Println(fmt.Sprint(msg, err))
 	log.logger.Panic().Msgf(msg, err)
 }
 
-func Info(msg string, printer printer.Printer) {
-	printer.Println(fmt.Sprint(msg), color.FgHiGreen)
+func Info(msg string) {
+	colorPrinter.Println(fmt.Sprint(msg), color.FgHiGreen)
 	log.logger.Info().Msg(msg)
 }
 
-func Fatal(msg string, printer printer.Printer) {
-	printer.Println(fmt.Sprint(msg, "\n"), color.FgHiRed)
+func Fatal(msg string) {
+	colorPrinter.Println(fmt.Sprint(msg, "\n"), color.FgHiRed)
 	log.logger.Fatal().Msgf(msg)
 }
 
-func Error(err error, msg string, printer printer.Printer) {
+func Error(err error, msg string) {
 	log.logger.Err(err).Msg(msg)
 	if err != nil {
-		printer.Println(fmt.Sprint(msg, err), color.FgHiRed)
+		colorPrinter.Println(fmt.Sprint(msg, err), color.FgHiRed)
 	} else {
-		printer.Println(fmt.Sprint(msg), color.FgHiGreen)
+		colorPrinter.Println(fmt.Sprint(msg), color.FgHiGreen)
 	}
 }

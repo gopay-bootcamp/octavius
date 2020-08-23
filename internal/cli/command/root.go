@@ -27,16 +27,16 @@ func Execute(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer p
 	configCmd := config.NewCmd(fileUtil, printer)
 	rootCmd.AddCommand(configCmd)
 
-	createCmd := create.NewCmd(octaviusDaemon, fileUtil, printer)
+	createCmd := create.NewCmd(octaviusDaemon, fileUtil)
 	rootCmd.AddCommand(createCmd)
 
 	getstreamCmd := getstream.NewCmd(octaviusDaemon, printer)
 	rootCmd.AddCommand(getstreamCmd)
 
-	executeCmd := execution.NewCmd(octaviusDaemon, printer)
+	executeCmd := execution.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(executeCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		logger.Error(err, "Input Command Execution: ", printer)
+		logger.Error(err, "Input Command Execution: ")
 	}
 }

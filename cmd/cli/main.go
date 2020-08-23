@@ -10,8 +10,8 @@ import (
 )
 
 func main() {
-	logger.Setup()
 	newPrinter := printer.GetPrinter()
+	logger.Setup()
 	fileUtil := fileUtil.NewFileUtil()
 	clientConfigLoader := config.NewLoader()
 	octaviusDaemon := daemon.NewClient(clientConfigLoader)
