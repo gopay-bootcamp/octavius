@@ -1,7 +1,7 @@
 package client
 
 import (
-	"octavius/pkg/protobuf"
+	protobuf "octavius/pkg/protofiles/client_CP"
 
 	"github.com/stretchr/testify/mock"
 )

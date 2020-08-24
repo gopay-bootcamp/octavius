@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"octavius/internal/control_plane/db/etcd"
-	"octavius/pkg/protobuf"
+	protobuf "octavius/pkg/protofiles/client_CP"
 	"reflect"
 	"testing"
 
@@ -23,6 +23,7 @@ func Test_metadataRepository_Save(t *testing.T) {
 		t.Error("error in marshalling metadata")
 	}
 	mockClient.On("PutValue", "metadata/test data", string(val)).Return(nil)
+	mockClient.On("GetValue", "metadata/test data").Return("", nil)
 	type fields struct {
 		etcdClient etcd.EtcdClient
 	}

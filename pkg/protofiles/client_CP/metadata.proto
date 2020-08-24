@@ -1,0 +1,26 @@
+syntax = "proto3";
+option go_package = "octavius/pkg/protofiles/client_CP";
+
+message Secret {
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
+}
+message Arg {
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
+}
+message EnvVars {
+    repeated Secret secrets=1 [json_name="secrets"];
+    repeated Arg args=2 [json_name="args"];
+}
+
+message Metadata {
+    string name=1 [json_name="name"];
+    string description=2 [json_name="description"];
+    string image_name=3 [json_name="image_name"];
+    EnvVars env_vars=4 [json_name="env_vars"];
+    repeated string authorized_groups=5 [json_name="authorized_groups"];
+    string author=6 [json_name="author"];
+    string contributors=7 [json_name="contributors"];
+    string organization=8 [json_name="organization"];
+}

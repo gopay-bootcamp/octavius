@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
-	"octavius/pkg/protobuf"
+	protobuf "octavius/pkg/protofiles/client_CP"
 	"testing"
 	"time"
 
@@ -24,7 +24,7 @@ var lis *bufconn.Listener
 func createFakeServer() {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
-	protobuf.RegisterOctaviusServicesServer(s, &server{})
+	protobuf.RegisterClientCPServicesServer(s, &server{})
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -38,7 +38,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
-func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.OctaviusServices_GetStreamLogsServer) error {
+func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.ClientCPServices_GetStreamLogsServer) error {
 	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
 	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
 	return nil
@@ -70,7 +70,7 @@ func TestCreateMetadata(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewOctaviusServicesClient(conn)
+	client := protobuf.NewClientCPServicesClient(conn)
 	testClient := GrpcClient{
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
@@ -89,7 +89,7 @@ func TestExecuteJob(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewOctaviusServicesClient(conn)
+	client := protobuf.NewClientCPServicesClient(conn)
 	testClient := GrpcClient{
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
@@ -108,7 +108,7 @@ func TestGetStream(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewOctaviusServicesClient(conn)
+	client := protobuf.NewClientCPServicesClient(conn)
 	testClient := GrpcClient{
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,

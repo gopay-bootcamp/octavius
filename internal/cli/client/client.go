@@ -6,7 +6,7 @@ import (
 	"errors"
 	"io"
 
-	"octavius/pkg/protobuf"
+	protobuf "octavius/pkg/protofiles/client_CP"
 	"time"
 
 	"google.golang.org/grpc"
@@ -21,7 +21,7 @@ type Client interface {
 }
 
 type GrpcClient struct {
-	client                protobuf.OctaviusServicesClient
+	client                protobuf.ClientCPServicesClient
 	connectionTimeoutSecs time.Duration
 }
 
@@ -30,7 +30,7 @@ func (g *GrpcClient) ConnectClient(cpHost string) error {
 	if err != nil {
 		return errors.New("error dialing to CP host server")
 	}
-	grpcClient := protobuf.NewOctaviusServicesClient(conn)
+	grpcClient := protobuf.NewClientCPServicesClient(conn)
 	g.client = grpcClient
 	g.connectionTimeoutSecs = time.Second
 	return nil

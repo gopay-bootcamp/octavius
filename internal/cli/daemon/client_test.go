@@ -3,7 +3,7 @@ package daemon
 import (
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
-	"octavius/pkg/protobuf"
+	protobuf "octavius/pkg/protofiles/client_CP"
 	"strings"
 	"testing"
 	"time"

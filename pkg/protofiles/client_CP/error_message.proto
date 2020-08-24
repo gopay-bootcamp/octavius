@@ -1,0 +1,7 @@
+syntax = "proto3";
+option go_package = "octavius/pkg/protofiles/client_CP";
+
+message Error{
+    int64 error_code=1;
+    string error_message=2;
+}

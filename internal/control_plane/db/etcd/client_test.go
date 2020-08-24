@@ -2,14 +2,23 @@ package etcd
 
 import (
 	"context"
+	"octavius/internal/control_plane/logger"
 	"testing"
 	"time"
 )
 
-var requestTimeout = 10 * time.Second
+var (
+	requestTimeout = 10 * time.Second
+	dialTimeout    = 2 * time.Second
+	etcdPort       = "localhost:2379"
+)
+
+func init() {
+	logger.Setup("info")
+}
 
 func TestNewClient(t *testing.T) {
-	client := NewClient()
+	client := NewClient(dialTimeout, etcdPort)
 	defer client.Close()
 	if client == nil {
 		t.Fatal("client returned nil")
@@ -17,7 +26,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestEtcdClient_PutValue(t *testing.T) {
-	client := NewClient()
+	client := NewClient(dialTimeout, etcdPort)
 	defer client.Close()
 	if client == nil {
 		t.Fatal("client returned nil")
@@ -31,11 +40,13 @@ func TestEtcdClient_PutValue(t *testing.T) {
 }
 
 func TestEtcdClient_DeleteKey(t *testing.T) {
-	client := NewClient()
+	client := NewClient(dialTimeout, etcdPort)
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	_, err := client.GetValue(ctx, "test_key")
-
+	if err != nil {
+		t.Error("error in getting value")
+	}
 	status, err := client.DeleteKey(ctx, "test_key")
 	if err != nil {
 		t.Error("error in deleting key")
@@ -56,7 +67,7 @@ func TestEtcdClient_DeleteKey(t *testing.T) {
 }
 
 func TestEtcdClient_GetValue(t *testing.T) {
-	client := NewClient()
+	client := NewClient(dialTimeout, etcdPort)
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	err := client.PutValue(ctx, "test_key", "test value")
@@ -73,7 +84,7 @@ func TestEtcdClient_GetValue(t *testing.T) {
 	}
 }
 func TestEtcdClient_GetValueWithRevision(t *testing.T) {
-	client := NewClient()
+	client := NewClient(dialTimeout, etcdPort)
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 

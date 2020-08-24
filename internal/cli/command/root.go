@@ -30,7 +30,7 @@ func Execute(octaviusDaemon daemon.Client, fileUtil fileUtil.FileUtil, printer p
 	createCmd := create.NewCmd(octaviusDaemon, fileUtil)
 	rootCmd.AddCommand(createCmd)
 
-	getstreamCmd := getstream.NewCmd(octaviusDaemon, printer)
+	getstreamCmd := getstream.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(getstreamCmd)
 
 	executeCmd := execution.NewCmd(octaviusDaemon)

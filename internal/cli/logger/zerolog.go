@@ -5,7 +5,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/rs/zerolog"
 	"octavius/internal/cli/printer"
-	"octavius/internal/config"
 	"octavius/pkg/constant"
 	"os"
 	"time"
@@ -22,9 +21,9 @@ func Setup() {
 	if (log != Logger{}) {
 		return
 	}
-	logLevel, err := zerolog.ParseLevel(config.Config().LogLevel)
+	logLevel, err := zerolog.ParseLevel("info")
 	if err != nil {
-		logLevel, _ = zerolog.ParseLevel("info")
+		fmt.Println("log level parsing problem")
 	}
 	f, err := os.OpenFile("logs.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
