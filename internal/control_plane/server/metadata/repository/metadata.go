@@ -42,14 +42,18 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
 		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "key already present"}
+		val,_=proto.Marshal(errMsg)
 		res := &protobuf.MetadataName{Err: errMsg, Name: ""}
-		return res, errors.New("key already present")
+		return res, errors.New(string(val))
 	}
 
 	if err != nil {
-		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in getting from etcd"}
-		res := &protobuf.MetadataName{Err: errMsg, Name: ""}
-		return res, err
+		if err.Error()!="no value found"{
+			errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in getting from etcd"}
+			res := &protobuf.MetadataName{Err: errMsg, Name: ""}
+			return res, err
+		}
+		
 	}
 
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
