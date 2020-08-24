@@ -48,7 +48,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	}
 
 	if err != nil {
-		if err.Error()!="no value found"{
+		if err.Error() != "no value found" {
 			errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in getting from etcd"}
 			res := &protobuf.MetadataName{Err: errMsg, Name: ""}
 			return res, err
