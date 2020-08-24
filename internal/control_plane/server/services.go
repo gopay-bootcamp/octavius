@@ -20,7 +20,7 @@ func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesSe
 
 func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName, error) {
 	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
-	logger.Error(err, "Posting Metadata")
+	logger.Error(err, "Job Create Request Received - Posting Metadata to etcd")
 	return name, err
 }
 
@@ -33,13 +33,11 @@ func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *pro
 func (s *octaviusServiceServer) GetStreamLogs(request *procProto.RequestForStreamLog, stream procProto.OctaviusServices_GetStreamLogsServer) error {
 	logString := &procProto.Log{Log: "lorem ipsum logger logger logger dumb"}
 	err := stream.Send(logString)
-	logger.Error(err, "Sending stream to client")
-	if err != nil {
-		return err
-	}
-	return nil
+	logger.Error(err, "GetStream Request Received - Sending stream to client")
+	return err
 }
 
 func (s *octaviusServiceServer) ExecuteJob(ctx context.Context, execute *procProto.RequestForExecute) (*procProto.Response, error) {
-	panic("implement me")
+	logger.Fatal("Execution is yet to be implemented")
+	return nil, nil
 }
