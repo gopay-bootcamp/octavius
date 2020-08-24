@@ -1,12 +1,6 @@
 syntax = "proto3";
 option go_package = "octavius/pkg/protobuf";
 
-message Error{
-    int64 error_code=1;
-    string error_message=2;
-
-}
-
 message Secret {
     string name=1 [json_name="name"];
     string description=2 [json_name="description"];
@@ -57,8 +51,7 @@ message Response {
     string status = 1;
 }
 message MetadataName {
-    Error err=1;
-    string name=2;
+    string name=1;
 }
 
 message RequestToGetAllMetadata{
@@ -66,8 +59,7 @@ message RequestToGetAllMetadata{
 }
 
 message MetadataArray{
-    Error err=1;
-    repeated Metadata values=2;
+    repeated Metadata values=1;
 
 }
 
