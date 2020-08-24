@@ -1,16 +1,16 @@
 package execution
 
 import (
+	"errors"
 	"fmt"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
-	"octavius/internal/cli/printer"
+	"octavius/internal/cli/logger"
 	"strings"
 )
 
-func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Command {
+func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "execute",
 		Short:   "Execute the existing job",
@@ -19,7 +19,7 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) < 1 {
-				printer.Println("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ...",color.FgRed)
+				logger.Error(errors.New("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ..."),"")
 				return
 			}
 			jobName := args[0]
@@ -31,11 +31,7 @@ func NewCmd(octaviusDaemon daemon.Client, printer printer.Printer) *cobra.Comman
 			}
 			client := &client.GrpcClient{}
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
-			if err != nil {
-				printer.Println(fmt.Sprintln(err), color.FgRed)
-				return
-			}
-			printer.Println(fmt.Sprintln(response.Status), color.FgGreen)
+			logger.Error(err, response.Status)
 		},
 	}
 }

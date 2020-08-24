@@ -84,15 +84,15 @@ func TestExecuteJob(t *testing.T) {
 	}
 	testExecuteRequest := protobuf.RequestForExecute{
 		ClientInfo: &testRequestHeader,
-		JobName: "DemoJob",
-		JobData: jobData,
+		JobName:    "DemoJob",
+		JobData:    jobData,
 	}
 	executedResponse := protobuf.Response{
 		Status: "success",
 	}
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("ExecuteJob", &testExecuteRequest).Return(&executedResponse,nil).Once()
+	mockGrpcClient.On("ExecuteJob", &testExecuteRequest).Return(&executedResponse, nil).Once()
 	res, err := testClient.ExecuteJob("DemoJob", jobData, &mockGrpcClient)
 
 	assert.Nil(t, err)
@@ -102,7 +102,7 @@ func TestExecuteJob(t *testing.T) {
 
 }
 
-func TestGetStream(t *testing.T)  {
+func TestGetStream(t *testing.T) {
 	mockGrpcClient := client.MockGrpcClient{}
 	mockConfigLoader := config.MockLoader{}
 	testClient := NewClient(&mockConfigLoader)
@@ -119,7 +119,7 @@ func TestGetStream(t *testing.T)  {
 	}
 	testGetStreamRequest := protobuf.RequestForStreamLog{
 		ClientInfo: &testRequestHeader,
-		JobName: "DemoJob",
+		JobName:    "DemoJob",
 	}
 	var logResponse []protobuf.Log
 	log1 := &protobuf.Log{
@@ -133,7 +133,7 @@ func TestGetStream(t *testing.T)  {
 
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("GetStreamLog", &testGetStreamRequest).Return(&logResponse,nil).Once()
+	mockGrpcClient.On("GetStreamLog", &testGetStreamRequest).Return(&logResponse, nil).Once()
 	res, err := testClient.GetStreamLog("DemoJob", &mockGrpcClient)
 
 	assert.Nil(t, err)

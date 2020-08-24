@@ -28,7 +28,6 @@ func (m *MockGrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForSt
 }
 
 func (m *MockGrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (*protobuf.Response, error) {
-	args := m.Called(requestForExecute )
+	args := m.Called(requestForExecute)
 	return args.Get(0).(*protobuf.Response), args.Error(1)
 }
-

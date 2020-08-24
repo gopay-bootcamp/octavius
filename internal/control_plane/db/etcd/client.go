@@ -53,8 +53,6 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error
 	return true, nil
 }
 
-
-
 //PutValue puts the given key-value pair in etcd database
 func (client *etcdClient) PutValue(ctx context.Context, key string, value string) error {
 	_, err := client.db.Put(ctx, key, value)
@@ -102,7 +100,6 @@ func (client *etcdClient) GetAllValues(ctx context.Context, prefix string) ([]st
 	}
 	return procs, nil
 }
-
 
 //GetValueWithRevision returns value with revision
 func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, header int64) (string, error) {

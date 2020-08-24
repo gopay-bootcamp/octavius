@@ -38,7 +38,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
-func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.OctaviusServices_GetStreamLogsServer) (error) {
+func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.OctaviusServices_GetStreamLogsServer) error {
 	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
 	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
 	return nil
@@ -47,7 +47,7 @@ func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServ
 func (s *server) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
 	return &protobuf.Response{
 		Status: "success",
-	},nil
+	}, nil
 }
 
 func (s *server) PostMetadata(context.Context, *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {

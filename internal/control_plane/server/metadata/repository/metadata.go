@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"context"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/pkg/protobuf"
@@ -36,8 +37,25 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 		res := &protobuf.MetadataName{Err: errMsg, Name: ""}
 		return res, err
 	}
-
 	dbKey := prefix + key
+
+	gr, err := c.etcdClient.GetValue(ctx, dbKey)
+	if gr != "" {
+		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "key already present"}
+		val,_=proto.Marshal(errMsg)
+		res := &protobuf.MetadataName{Err: errMsg, Name: ""}
+		return res, errors.New(string(val))
+	}
+
+	if err != nil {
+		if err.Error()!="no value found"{
+			errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in getting from etcd"}
+			res := &protobuf.MetadataName{Err: errMsg, Name: ""}
+			return res, err
+		}
+		
+	}
+
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
 		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
@@ -56,7 +74,7 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*protobuf.MetadataArra
 	if err != nil {
 		errMsg := &protobuf.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
 		var arr []*protobuf.Metadata
-		res := &protobuf.MetadataArray{Err: errMsg, Value: arr}
+		res := &protobuf.MetadataArray{Err: errMsg, Values: arr}
 		return res, err
 	}
 
@@ -67,6 +85,6 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*protobuf.MetadataArra
 		proto.Unmarshal([]byte(val), metadata)
 		resArr = append(resArr, metadata)
 	}
-	resp := &protobuf.MetadataArray{Err: errMsg, Value: resArr}
+	resp := &protobuf.MetadataArray{Err: errMsg, Values: resArr}
 	return resp, nil
 }

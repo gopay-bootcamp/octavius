@@ -2,58 +2,58 @@ syntax = "proto3";
 option go_package = "octavius/pkg/protobuf";
 
 message Error{
-    int64 errorCode=1;
-    string errorMessage=2;
+    int64 error_code=1;
+    string error_message=2;
 
 }
 
-message secret {
+message Secret {
     string name=1 [json_name="name"];
     string description=2 [json_name="description"];
 }
-message arg {
+message Arg {
     string name=1 [json_name="name"];
     string description=2 [json_name="description"];
 }
-message env_vars {
-    repeated secret secrets=1 [json_name="secrets"];
-    repeated arg args=2 [json_name="args"];
+message EnvVars {
+    repeated Secret secrets=1 [json_name="secrets"];
+    repeated Arg args=2 [json_name="args"];
 }
 
-message metadata {
+message Metadata {
     string name=1 [json_name="name"];
     string description=2 [json_name="description"];
     string image_name=3 [json_name="image_name"];
-    env_vars env_vars=4 [json_name="env_vars"];
+    EnvVars env_vars=4 [json_name="env_vars"];
     repeated string authorized_groups=5 [json_name="authorized_groups"];
     string author=6 [json_name="author"];
     string contributors=7 [json_name="contributors"];
     string organization=8 [json_name="organization"];
 }
 
-message client_info {
+message ClientInfo {
     string client_email=1;
     string access_token=2;
 }
 
-message request_to_post_metadata {
-    metadata metadata=1;
-    client_info client_info=2;
+message RequestToPostMetadata {
+    Metadata metadata=1;
+    ClientInfo client_info=2;
 }
 
 
-message request_for_stream_log {
-    client_info client_info=1;
+message RequestForStreamLog {
+    ClientInfo client_info=1;
     string job_name=2;
 }
 
-message request_for_execute{
-    client_info client_info=1;
+message RequestForExecute{
+    ClientInfo client_info=1;
     string job_name=2;
     map<string,string> job_data=3;
 }
 
-message response {
+message Response {
     string status = 1;
 }
 message MetadataName {
@@ -61,24 +61,24 @@ message MetadataName {
     string name=2;
 }
 
-message request_to_get_all_metadata{
+message RequestToGetAllMetadata{
 
 }
 
-message metadataArray{
+message MetadataArray{
     Error err=1;
-    repeated metadata value=2;
+    repeated Metadata values=2;
 
 }
 
-message log{
+message Log{
     string log=1;
 }
 service OctaviusServices{
 
-   rpc GetStreamLogs(request_for_stream_log) returns (stream log);
-   rpc ExecuteJob(request_for_execute) returns (response);
-   rpc Post_metadata(request_to_post_metadata) returns (MetadataName);
-   rpc Get_all_metadata(request_to_get_all_metadata) returns (metadataArray);
+   rpc GetStreamLogs(RequestForStreamLog) returns (stream Log);
+   rpc ExecuteJob(RequestForExecute) returns (Response);
+   rpc PostMetadata(RequestToPostMetadata) returns (MetadataName);
+   rpc GetAllMetadata(RequestToGetAllMetadata) returns (MetadataArray);
 
 }
