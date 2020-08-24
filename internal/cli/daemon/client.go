@@ -75,10 +75,7 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	}
 
 	res, err := c.grpcClient.CreateMetadata(&metadataPostRequest)
-	if err != nil {
-		return nil, errors.New("Error occured when sending the grpc request. Check your CPHost")
-	}
-	return res, nil
+	return res, err
 }
 
 func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*[]protobuf.Log, error) {
