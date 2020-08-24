@@ -23,7 +23,7 @@ build: proto_files cli server
 
 .PHONY: proto_files
 proto_files:
-	# bash ./proto_gen_ecp.sh
+	bash ./proto_gen_ecp.sh
 	bash ./proto_gen_ccp.sh
 
 .PHONY: server
