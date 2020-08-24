@@ -16,8 +16,7 @@ import (
 func TestCreateCmdHelp(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	mockFileUtil := new(fileUtil.MockFileUtil)
-	mockPrinter := new(printer.MockPrinter)
-	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil, mockPrinter)
+	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil)
 	assert.Equal(t, "Create new octavius job metadata", testCreateCmd.Short)
 	assert.Equal(t, "This command helps create new jobmetadata to your CP host with proper metadata.json file", testCreateCmd.Long)
 	assert.Equal(t, "octavius create --job-path <filepath>/metadata.json", testCreateCmd.Example)
@@ -27,7 +26,7 @@ func TestCreateCmd(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	mockFileUtil := new(fileUtil.MockFileUtil)
 	mockPrinter := new(printer.MockPrinter)
-	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil, mockPrinter)
+	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil)
 	testMetadataName := &protobuf.MetadataName{
 		Name: "name",
 	}
@@ -47,7 +46,7 @@ func TestCreateCmdForIoError(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	mockFileUtil := new(fileUtil.MockFileUtil)
 	mockPrinter := new(printer.MockPrinter)
-	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil, mockPrinter)
+	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil)
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader(""), errors.New("test io error"))
 	mockPrinter.On("Println", fmt.Sprintln("test io error")).Once()
 
