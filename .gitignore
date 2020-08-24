@@ -19,3 +19,4 @@ job_data_example/config/
 .idea/
 pkg/protobuf/*.go
 .DS_Store
+logs.txt
