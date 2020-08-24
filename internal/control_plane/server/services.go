@@ -20,17 +20,23 @@ func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesSe
 
 func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName, error) {
 	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
-	logger.ErrorCheck(err, "Posting Metadata")
+	logger.Error(err, "Posting Metadata")
 	return name, err
 }
 
 func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray, error) {
 	dataList, err := s.procExec.ReadAllMetadata(ctx)
-	logger.ErrorCheck(err, "Getting Metadata")
+	logger.Error(err, "Getting Metadata")
 	return dataList, err
 }
 
-func (s *octaviusServiceServer) GetStreamLogs(request *procProto.RequestForStreamLog, server procProto.OctaviusServices_GetStreamLogsServer) error {
+func (s *octaviusServiceServer) GetStreamLogs(request *procProto.RequestForStreamLog, stream procProto.OctaviusServices_GetStreamLogsServer) error {
+	logString := &procProto.Log{Log: "lorem ipsum logger logger logger dumb"}
+	err := stream.Send(logString)
+	logger.Error(err, "Sending stream to client")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
