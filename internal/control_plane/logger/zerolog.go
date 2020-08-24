@@ -22,12 +22,14 @@ func Setup() {
 		return
 	}
 	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
+	f, _ := os.OpenFile("auditLogs.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	multi := zerolog.MultiLevelWriter(f, consoleWriter)
 	logLevel, err := zerolog.ParseLevel(config.Config().LogLevel)
 	if err != nil {
 		logLevel, _ = zerolog.ParseLevel("info")
 	}
-	logInit := zerolog.New(consoleWriter).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
-	zerolog.TimeFieldFormat = time.RFC822
+	logInit := zerolog.New(multi).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
+	zerolog.TimeFieldFormat = time.RFC850
 	logInit.Level(logLevel)
 	log = Logger{
 		logger: &logInit,

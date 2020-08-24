@@ -1,7 +1,6 @@
 package execution
 
 import (
-	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
