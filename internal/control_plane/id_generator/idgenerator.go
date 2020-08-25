@@ -5,13 +5,11 @@ import (
 	"octavius/internal/control_plane/logger"
 )
 
-func NextID()(int, error) {
+func NextID() uint64 {
 	var idGenerator = id.NewSonyflake(id.Settings{})
 	uid, err := idGenerator.NextID()
 	if err != nil {
 		logger.Error(err, "unique id generation failed")
 	}
-	return int(uid), err
+	return uid
 }
-
-
