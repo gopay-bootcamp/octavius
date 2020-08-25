@@ -21,8 +21,9 @@ func NewProcServiceServer(exec execution.Execution) protobuf.ClientCPServicesSer
 }
 
 func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
-	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
 	uid := id_generator.NextID()
+	ctx = context.WithValue(ctx, "uid", uid)
+	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
 	logger.Error(err, fmt.Sprintf("%v Job Create Request Received - Posting Metadata to etcd", uid))
 	return name, err
 }
@@ -35,8 +36,8 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *pr
 
 func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStreamLog, stream protobuf.ClientCPServices_GetStreamLogsServer) error {
 	logString := &protobuf.Log{Log: "lorem ipsum logger logger logger dumb"}
-	err := stream.Send(logString)
 	uid := id_generator.NextID()
+	err := stream.Send(logString)
 	logger.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
 	return err
 }
