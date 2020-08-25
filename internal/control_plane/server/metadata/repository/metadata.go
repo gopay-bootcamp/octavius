@@ -36,34 +36,26 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 
 	if err != nil {
 		errMsg := octaviusErrors.New(2, errors.New("error in marshalling metadata"))
-		res := &protobuf.MetadataName{Name: ""}
-		return res, errMsg
+		return nil, errMsg
 	}
 	dbKey := prefix + key
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
-
-		errMsg := octaviusErrors.New(3, errors.New("key already present"))
-		res := &protobuf.MetadataName{Name: ""}
-		return res, errMsg
+		errMsg := octaviusErrors.New(2, errors.New("key already present"))
+		return nil, errMsg
 	}
 
 	if err != nil {
 		if err.Error()!="no value found"{
-			errMsg := octaviusErrors.New(3, errors.New("error in getting from etcd"))
-			res := &protobuf.MetadataName{Name: ""}
-			return res, errMsg
-
+			return nil, err
 		}
 
 	}
 
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
-		errMsg := octaviusErrors.New(3, errors.New("error in saving to etcd"))
-		res := &protobuf.MetadataName{Name: ""}
-		return res, errMsg
+		return nil, err
 	}
 
 	res := &protobuf.MetadataName{Name: key}
