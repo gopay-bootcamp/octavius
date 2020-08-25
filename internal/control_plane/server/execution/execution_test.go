@@ -3,7 +3,7 @@ package execution
 import (
 	"context"
 	"octavius/internal/control_plane/logger"
-	"octavius/internal/control_plane/server/metadata/repository"
+	repository "octavius/internal/control_plane/server/repository/metadata"
 	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"reflect"
 	"testing"

@@ -2,7 +2,8 @@ syntax = "proto3";
 option go_package = "octavius/internal/pkg/protofiles/executor_CP";
 
 message Ping {
-    int64 health = 1;
+    string ID = 1;
+    int64 health = 2;
 }
 
 message HealthResponse {

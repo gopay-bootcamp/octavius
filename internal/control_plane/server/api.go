@@ -6,7 +6,7 @@ import (
 	"octavius/internal/control_plane/config"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/logger"
-	"octavius/internal/control_plane/server/metadata/repository"
+	repository "octavius/internal/control_plane/server/repository/metadata"
 	"os"
 	"os/signal"
 	"syscall"
