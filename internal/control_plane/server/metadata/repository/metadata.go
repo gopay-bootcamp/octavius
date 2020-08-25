@@ -53,7 +53,6 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 			res := &clientCPproto.MetadataName{Err: errMsg, Name: ""}
 			return res, err
 		}
-
 	}
 
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
