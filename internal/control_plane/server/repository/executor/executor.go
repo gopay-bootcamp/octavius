@@ -10,11 +10,14 @@ import (
 
 const (
 	registerPrefix = "executor/register/"
+	statusPrefix   = "executor/status/"
 )
 
 //MetadataRepository interface for functions related to metadata repository
 type ExecutorRepository interface {
 	Save(ctx context.Context, key string, executorInfo *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
+	CheckIfPresent(ctx context.Context, key string) (bool, error)
+	UpdateExecutorStatus(ctx context.Context, key string, health string) error
 }
 
 type executorRepository struct {
@@ -39,4 +42,26 @@ func (e *executorRepository) Save(ctx context.Context, key string, register *exe
 		return &executorCPproto.RegisterResponse{Registered: false}, err
 	}
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
+}
+
+func (e *executorRepository) UpdateExecutorStatus(ctx context.Context, key string, health string) error {
+	dbKey := statusPrefix + key
+	err := e.etcdClient.PutValue(ctx, dbKey, health)
+	return err
+}
+
+func (e *executorRepository) CheckIfPresent(ctx context.Context, key string) (bool, error) {
+	dbKey := registerPrefix + key
+	gr, err := e.etcdClient.GetValue(ctx, dbKey)
+	if err != nil {
+		if err.Error() != "no value found" {
+			return true, err
+		} else {
+			return false, err
+		}
+	}
+	if gr != "" {
+		return true, nil
+	}
+	return false, nil
 }

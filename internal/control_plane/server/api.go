@@ -45,13 +45,11 @@ func Start() error {
 
 	dialTimeout := 2 * time.Second
 	etcdHost := "localhost:" + config.Config().EtcdPort
-
 	appPort := config.Config().AppPort
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	if err != nil {
 		return err
 	}
-
 	etcdClient := etcd.NewClient(dialTimeout, etcdHost)
 	defer etcdClient.Close()
 	metadataRepository := metadataRepo.NewMetadataRepository(etcdClient)
@@ -59,7 +57,6 @@ func Start() error {
 	exec := execution.NewExec(metadataRepository, executorRepository)
 	clientCPGrpcServer := NewProcServiceServer(exec)
 	executorCPGrpcServer := NewExecutorServiceServer(exec)
-
 	go startClientCPServer(listener, clientCPGrpcServer)
 	go startExecutorCPServer(listener, executorCPGrpcServer)
 

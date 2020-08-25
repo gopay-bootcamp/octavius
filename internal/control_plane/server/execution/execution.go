@@ -2,11 +2,15 @@ package execution
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"octavius/internal/control_plane/logger"
 	executorRepo "octavius/internal/control_plane/server/repository/executor"
 	metadataRepo "octavius/internal/control_plane/server/repository/metadata"
-	"octavius/internal/control_plane/server/timer"
 	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
+	"sync"
+	"time"
 )
 
 // Execution interface for methods related to execution
@@ -14,19 +18,22 @@ type Execution interface {
 	SaveMetadataToDb(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
+	executorRegistered(ctx context.Context, id string) (bool, error)
+	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 }
 
 type execution struct {
 	metadataRepo      metadataRepo.MetadataRepository
 	executorRepo      executorRepo.ExecutorRepository
-	activeExecutorMap map[string](chan int64)
+	activeExecutorMap *sync.Map
 }
 
 // NewExec creates a new instance of metadata respository
 func NewExec(metadataRepo metadataRepo.MetadataRepository, executorRepo executorRepo.ExecutorRepository) Execution {
 	return &execution{
-		metadataRepo: metadataRepo,
-		executorRepo: executorRepo,
+		metadataRepo:      metadataRepo,
+		executorRepo:      executorRepo,
+		activeExecutorMap: new(sync.Map),
 	}
 }
 
@@ -48,42 +55,64 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 	return res, err
 }
 
-func StartHealthCheck(activeExecutorMap map[string](chan int64), healthChan chan int64) {
-	//start a timer
+func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string) {
+	ticker := time.NewTicker(time.Second)
+	status := make(chan bool)
+	deadline := 200
+	presentTime := 0
 
-	select:
-		timerChan: //deadline cross
-		heathChan:	//when ping is recieved
+	for {
+		select {
+		case health := <-healthChan:
+			err := e.executorRepo.UpdateExecutorStatus(ctx, id, health)
+			if err != nil {
+				logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
+				status <- true
+			}
+			presentTime = 0
+			logger.Info(fmt.Sprintf("health status for executor with %s id is %s", id, health))
+		case expired := <-status:
+			if expired {
+				err := e.executorRepo.UpdateExecutorStatus(ctx, id, "expired")
+				if err != nil {
+					logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
+				}
+				logger.Info(fmt.Sprintf("deadline for executor with %s id expired", id))
+				ticker.Stop()
+				activeExecutorMap.Delete(id)
+				close(healthChan)
+			}
+		case <-ticker.C:
+			presentTime++
+			if presentTime > deadline {
+				status <- true
+			}
+			status <- false
+		}
+	}
+}
 
-	//if timer expires
-		//close channel
-		//delete from map
+func (e *execution) executorRegistered(ctx context.Context, id string) (bool, error) {
+	return e.executorRepo.CheckIfPresent(ctx, id)
 }
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
-	if _, ok := e.activeExecutorMap[executorID]; ok {
-		e.activeExecutorMap[executorID] <- request.Health
+	if channel, ok := e.activeExecutorMap.Load(executorID); ok {
+		channel.(chan string) <- request.State
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
-	//if the executor id is present in the etcd create a health chan and pass it to the checking routine
-	if notPresentInEtcd {
-		return &executorCPproto.HealthResponse{Recieved: false}, nil
-	}
-	if inPresentInEtcd {
-		healthChan := make(chan int64)
-		e.activeExecutorMap[executorID] = healthChan
-		go StartHealthCheck(e.activeExecutorMap, healthChan)
-	}
-	timerInstance := timer.GetTimer()
-	// map of channels
-	// initialize timer in channel
-	// reset timer in channel
-	//
 
-	//check if the executor is registered
-	//timer
-	//channel
-	//if timer expires update status as dead
-	//update etcd with present ping status
+	registered, err := e.executorRegistered(ctx, request.ID)
+	if err != nil {
+		return nil, err
+	}
+	if !registered {
+		return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered. Please register this executor first!")
+	} else {
+		healthChan := make(chan string)
+		e.activeExecutorMap.Store(executorID, healthChan)
+		go e.StartHealthCheck(ctx, e.activeExecutorMap, executorID, healthChan)
+	}
+	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
