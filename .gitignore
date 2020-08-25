@@ -17,6 +17,6 @@ default.etcd
 job_data_example/config/
 .vscode/
 .idea/
-pkg/protofiles/**/*.go
+internal/pkg/protofiles/**/*.go
 .DS_Store
 logs.txt
