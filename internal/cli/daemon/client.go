@@ -6,16 +6,16 @@ import (
 	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"time"
 
 	"github.com/gogo/protobuf/jsonpb"
 )
 
 type Client interface {
-	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
-	GetStreamLog(string, client.Client) (*[]protobuf.Log, error)
-	ExecuteJob(string, map[string]string, client.Client) (*protobuf.Response, error)
+	CreateMetadata(io.Reader, client.Client) (*clientCPproto.MetadataName, error)
+	GetStreamLog(string, client.Client) (*[]clientCPproto.Log, error)
+	ExecuteJob(string, map[string]string, client.Client) (*clientCPproto.Response, error)
 }
 
 type octaviusClient struct {
@@ -53,8 +53,8 @@ func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
 }
 
 // CreateMetadata take metadata file handler and grpc client
-func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.MetadataName, error) {
-	metadata := protobuf.Metadata{}
+func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*clientCPproto.MetadataName, error) {
+	metadata := clientCPproto.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
@@ -65,11 +65,11 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 		return nil, err
 	}
 
-	postRequestHeader := protobuf.ClientInfo{
+	postRequestHeader := clientCPproto.ClientInfo{
 		ClientEmail: c.emailId,
 		AccessToken: c.accessToken,
 	}
-	metadataPostRequest := protobuf.RequestToPostMetadata{
+	metadataPostRequest := clientCPproto.RequestToPostMetadata{
 		Metadata:   &metadata,
 		ClientInfo: &postRequestHeader,
 	}
@@ -78,17 +78,17 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	return res, err
 }
 
-func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*[]protobuf.Log, error) {
+func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*[]clientCPproto.Log, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return nil, err
 	}
 
-	postRequestHeader := protobuf.ClientInfo{
+	postRequestHeader := clientCPproto.ClientInfo{
 		ClientEmail: c.emailId,
 		AccessToken: c.accessToken,
 	}
-	getStreamPostRequest := protobuf.RequestForStreamLog{
+	getStreamPostRequest := clientCPproto.RequestForStreamLog{
 		ClientInfo: &postRequestHeader,
 		JobName:    jobName,
 	}
@@ -98,16 +98,16 @@ func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) 
 	}
 	return logResponse, nil
 }
-func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) (*protobuf.Response, error) {
+func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) (*clientCPproto.Response, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return nil, err
 	}
-	postRequestHeader := protobuf.ClientInfo{
+	postRequestHeader := clientCPproto.ClientInfo{
 		ClientEmail: c.emailId,
 		AccessToken: c.accessToken,
 	}
-	executePostRequest := protobuf.RequestForExecute{
+	executePostRequest := clientCPproto.RequestForExecute{
 		ClientInfo: &postRequestHeader,
 		JobName:    jobName,
 		JobData:    jobData,

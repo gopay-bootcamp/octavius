@@ -6,22 +6,22 @@ import (
 	"errors"
 	"io"
 
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"time"
 
 	"google.golang.org/grpc"
 )
 
 type Client interface {
-	GetStreamLog(*protobuf.RequestForStreamLog) (*[]protobuf.Log, error)
-	ExecuteJob(*protobuf.RequestForExecute) (*protobuf.Response, error)
+	GetStreamLog(*clientCPproto.RequestForStreamLog) (*[]clientCPproto.Log, error)
+	ExecuteJob(*clientCPproto.RequestForExecute) (*clientCPproto.Response, error)
 
-	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
+	CreateMetadata(*clientCPproto.RequestToPostMetadata) (*clientCPproto.MetadataName, error)
 	ConnectClient(cpHost string) error
 }
 
 type GrpcClient struct {
-	client                protobuf.ClientCPServicesClient
+	client                clientCPproto.ClientCPServicesClient
 	connectionTimeoutSecs time.Duration
 }
 
@@ -30,13 +30,13 @@ func (g *GrpcClient) ConnectClient(cpHost string) error {
 	if err != nil {
 		return errors.New("error dialing to CP host server")
 	}
-	grpcClient := protobuf.NewClientCPServicesClient(conn)
+	grpcClient := clientCPproto.NewClientCPServicesClient(conn)
 	g.client = grpcClient
 	g.connectionTimeoutSecs = time.Second
 	return nil
 }
 
-func (g *GrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
+func (g *GrpcClient) CreateMetadata(metadataPostRequest *clientCPproto.RequestToPostMetadata) (*clientCPproto.MetadataName, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
 	res, err := g.client.PostMetadata(ctx, metadataPostRequest)
@@ -46,12 +46,12 @@ func (g *GrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostM
 	return res, nil
 }
 
-func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) (*[]protobuf.Log, error) {
+func (g *GrpcClient) GetStreamLog(requestForStreamLog *clientCPproto.RequestForStreamLog) (*[]clientCPproto.Log, error) {
 	responseStream, err := g.client.GetStreamLogs(context.Background(), requestForStreamLog)
 	if err != nil {
 		return nil, err
 	}
-	var logResponse []protobuf.Log
+	var logResponse []clientCPproto.Log
 	for {
 		log, err := responseStream.Recv()
 		if err == io.EOF {
@@ -62,7 +62,7 @@ func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 	return &logResponse, nil
 }
 
-func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (*protobuf.Response, error) {
+func (g *GrpcClient) ExecuteJob(requestForExecute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
 	res, err := g.client.ExecuteJob(context.Background(), requestForExecute)
 	if err != nil {
 		return nil, err

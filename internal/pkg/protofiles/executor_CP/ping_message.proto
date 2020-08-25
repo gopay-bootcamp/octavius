@@ -1,0 +1,10 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles/executor_CP";
+
+message Ping {
+    int64 health = 1;
+}
+
+message HealthResponse {
+    bool recieved = 1;
+}

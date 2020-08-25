@@ -1,11 +1,12 @@
 package execution
 
 import (
-	"github.com/stretchr/testify/assert"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/logger"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -26,7 +27,7 @@ func TestExecuteCmd(t *testing.T) {
 	var jobData = map[string]string{
 		"Namespace": "default",
 	}
-	executedResponse := &protobuf.Response{
+	executedResponse := &clientCPproto.Response{
 		Status: "success",
 	}
 

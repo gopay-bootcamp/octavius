@@ -1,11 +1,12 @@
 package getstream
 
 import (
-	"github.com/stretchr/testify/assert"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/logger"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -22,11 +23,11 @@ func TestGetStreamCmdHelp(t *testing.T) {
 func TestGetStreamCmd(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	testCreateCmd := NewCmd(mockOctaviusDClient)
-	var logResponse []protobuf.Log
-	log1 := &protobuf.Log{
+	var logResponse []clientCPproto.Log
+	log1 := &clientCPproto.Log{
 		Log: "Test log 1",
 	}
-	log2 := &protobuf.Log{
+	log2 := &clientCPproto.Log{
 		Log: "Test log 2",
 	}
 	logResponse = append(logResponse, *log1)

@@ -5,7 +5,7 @@ import (
 	"octavius/internal/cli/daemon"
 	"octavius/internal/cli/fileUtil"
 	"octavius/internal/cli/logger"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"strings"
 	"testing"
 
@@ -29,7 +29,7 @@ func TestCreateCmd(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	mockFileUtil := new(fileUtil.MockFileUtil)
 	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil)
-	testMetadataName := &protobuf.MetadataName{
+	testMetadataName := &clientCPproto.MetadataName{
 		Name: "name",
 	}
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader("test-metadata-handler-string"), nil)

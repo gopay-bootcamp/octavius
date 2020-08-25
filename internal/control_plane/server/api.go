@@ -7,13 +7,37 @@ import (
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/metadata/repository"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"octavius/internal/control_plane/server/execution"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
 
 	"google.golang.org/grpc"
 )
+
+func startClientCPServer(listener net.Listener, clientServer clientCPproto.ClientCPServicesServer) {
+	server := grpc.NewServer()
+	clientCPproto.RegisterClientCPServicesServer(server, clientServer)
+	logger.Info(fmt.Sprintln("Started client server at port: ", listener.Addr().String()))
+	err := server.Serve(listener)
+	if err != nil {
+		logger.Fatal("Failed to start Client Server")
+	}
+}
+
+func startExecutorCPServer(listener net.Listener, executorServer executorCPproto.ExecutorCPServicesServer) {
+	server := grpc.NewServer()
+	executorCPproto.RegisterExecutorCPServicesServer(server, executorServer)
+	logger.Info(fmt.Sprintln("Started executor server at port: ", listener.Addr().String()))
+	err := server.Serve(listener)
+	if err != nil {
+		logger.Fatal("Failed to start executor server")
+	}
+}
 
 // Start the grpc server
 func Start() error {
@@ -27,14 +51,21 @@ func Start() error {
 		return err
 	}
 
-	server := grpc.NewServer()
 	etcdClient := etcd.NewClient(dialTimeout, etcdHost)
 	defer etcdClient.Close()
 	metadataRepository := repository.NewMetadataRepository(etcdClient)
 	exec := execution.NewExec(metadataRepository)
 	clientCPGrpcServer := NewProcServiceServer(exec)
-	protobuf.RegisterClientCPServicesServer(server, clientCPGrpcServer)
-	logger.Info(fmt.Sprintf("grpc server started on port %v", appPort))
-	err = server.Serve(listener)
-	return err
+	executorCPGrpcServer := NewExecutorServiceServer(exec)
+
+	go startClientCPServer(listener, clientCPGrpcServer)
+	go startExecutorCPServer(listener, executorCPGrpcServer)
+
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt)
+	signal.Notify(sigint, syscall.SIGTERM)
+
+	<-sigint
+
+	return nil
 }

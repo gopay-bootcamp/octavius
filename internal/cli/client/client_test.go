@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"testing"
 	"time"
 
@@ -17,14 +17,14 @@ const (
 	bufSize = 1024 * 1024
 )
 
-var testMetadataArray = &protobuf.MetadataArray{}
+var testMetadataArray = &clientCPproto.MetadataArray{}
 
 var lis *bufconn.Listener
 
 func createFakeServer() {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
-	protobuf.RegisterClientCPServicesServer(s, &server{})
+	clientCPproto.RegisterClientCPServicesServer(s, &server{})
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -38,25 +38,25 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
-func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.ClientCPServices_GetStreamLogsServer) error {
-	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
-	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
+func (s *server) GetStreamLogs(streamLog *clientCPproto.RequestForStreamLog, logsServer clientCPproto.ClientCPServices_GetStreamLogsServer) error {
+	logsServer.Send(&clientCPproto.Log{Log: "Test log 1"})
+	logsServer.Send(&clientCPproto.Log{Log: "Test log 2"})
 	return nil
 }
 
-func (s *server) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
-	return &protobuf.Response{
+func (s *server) ExecuteJob(ctx context.Context, execute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
+	return &clientCPproto.Response{
 		Status: "success",
 	}, nil
 }
 
-func (s *server) PostMetadata(context.Context, *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
-	return &protobuf.MetadataName{
+func (s *server) PostMetadata(context.Context, *clientCPproto.RequestToPostMetadata) (*clientCPproto.MetadataName, error) {
+	return &clientCPproto.MetadataName{
 		Name: "name",
 	}, nil
 }
 
-func (s *server) GetAllMetadata(context.Context, *protobuf.RequestToGetAllMetadata) (*protobuf.MetadataArray, error) {
+func (s *server) GetAllMetadata(context.Context, *clientCPproto.RequestToGetAllMetadata) (*clientCPproto.MetadataArray, error) {
 	return nil, nil
 }
 
@@ -70,12 +70,12 @@ func TestCreateMetadata(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	client := clientCPproto.NewClientCPServicesClient(conn)
 	testClient := GrpcClient{
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
 	}
-	testPostRequest := &protobuf.RequestToPostMetadata{}
+	testPostRequest := &clientCPproto.RequestToPostMetadata{}
 	res, err := testClient.CreateMetadata(testPostRequest)
 	assert.Nil(t, err)
 	assert.Equal(t, "name", res.Name)
@@ -89,12 +89,12 @@ func TestExecuteJob(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	client := clientCPproto.NewClientCPServicesClient(conn)
 	testClient := GrpcClient{
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
 	}
-	testExecuteRequest := &protobuf.RequestForExecute{}
+	testExecuteRequest := &clientCPproto.RequestForExecute{}
 	res, err := testClient.ExecuteJob(testExecuteRequest)
 	assert.Nil(t, err)
 	assert.Equal(t, "success", res.Status)
@@ -108,12 +108,12 @@ func TestGetStream(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	client := clientCPproto.NewClientCPServicesClient(conn)
 	testClient := GrpcClient{
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
 	}
-	testGetStreamRequest := &protobuf.RequestForStreamLog{}
+	testGetStreamRequest := &clientCPproto.RequestForStreamLog{}
 	res, err := testClient.GetStreamLog(testGetStreamRequest)
 	assert.Nil(t, err)
 	var actual [2]string

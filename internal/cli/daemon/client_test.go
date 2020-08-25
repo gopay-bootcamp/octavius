@@ -3,7 +3,7 @@ package daemon
 import (
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"strings"
 	"testing"
 	"time"
@@ -32,24 +32,24 @@ func TestCreateMetadata(t *testing.T) {
 			"organization": "gopay-systems"
 	}`)
 
-	testMetadata := protobuf.Metadata{
+	testMetadata := clientCPproto.Metadata{
 		Name:         "test-name",
 		ImageName:    "test-image",
 		Author:       "test-author",
 		Organization: "gopay-systems",
 	}
 
-	testRequestHeader := protobuf.ClientInfo{
+	testRequestHeader := clientCPproto.ClientInfo{
 		ClientEmail: "jaimin.rathod@go-jek.com",
 		AccessToken: "AllowMe",
 	}
 
-	testPostRequest := protobuf.RequestToPostMetadata{
+	testPostRequest := clientCPproto.RequestToPostMetadata{
 		Metadata:   &testMetadata,
 		ClientInfo: &testRequestHeader,
 	}
 
-	testPostMetadataName := protobuf.MetadataName{
+	testPostMetadataName := clientCPproto.MetadataName{
 		Name: "success",
 	}
 
@@ -75,19 +75,19 @@ func TestExecuteJob(t *testing.T) {
 		AccessToken:           "AllowMe",
 		ConnectionTimeoutSecs: time.Second,
 	}
-	testRequestHeader := protobuf.ClientInfo{
+	testRequestHeader := clientCPproto.ClientInfo{
 		ClientEmail: "akshay.busa@go-jek.com",
 		AccessToken: "AllowMe",
 	}
 	var jobData = map[string]string{
 		"Namespace": "default",
 	}
-	testExecuteRequest := protobuf.RequestForExecute{
+	testExecuteRequest := clientCPproto.RequestForExecute{
 		ClientInfo: &testRequestHeader,
 		JobName:    "DemoJob",
 		JobData:    jobData,
 	}
-	executedResponse := protobuf.Response{
+	executedResponse := clientCPproto.Response{
 		Status: "success",
 	}
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
@@ -113,19 +113,19 @@ func TestGetStream(t *testing.T) {
 		AccessToken:           "AllowMe",
 		ConnectionTimeoutSecs: time.Second,
 	}
-	testRequestHeader := protobuf.ClientInfo{
+	testRequestHeader := clientCPproto.ClientInfo{
 		ClientEmail: "akshay.busa@go-jek.com",
 		AccessToken: "AllowMe",
 	}
-	testGetStreamRequest := protobuf.RequestForStreamLog{
+	testGetStreamRequest := clientCPproto.RequestForStreamLog{
 		ClientInfo: &testRequestHeader,
 		JobName:    "DemoJob",
 	}
-	var logResponse []protobuf.Log
-	log1 := &protobuf.Log{
+	var logResponse []clientCPproto.Log
+	log1 := &clientCPproto.Log{
 		Log: "Test log 1",
 	}
-	log2 := &protobuf.Log{
+	log2 := &clientCPproto.Log{
 		Log: "Test log 2",
 	}
 	logResponse = append(logResponse, *log1)

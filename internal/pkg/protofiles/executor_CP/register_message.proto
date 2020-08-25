@@ -1,0 +1,11 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles/executor_CP";
+
+message RegisterRequest{
+    string ID = 1;
+    string executor_info = 2;
+}
+
+message RegisterResponse{
+    bool registered = 1;
+}

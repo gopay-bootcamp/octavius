@@ -4,7 +4,7 @@ import (
 	"context"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/metadata/repository"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"reflect"
 	"testing"
 )
@@ -16,15 +16,15 @@ func init() {
 func Test_execution_SaveMetadataToDb(t *testing.T) {
 	metadataRepoMock := new(repository.MetadataMock)
 
-	metadataVal := &protobuf.Metadata{
+	metadataVal := &clientCPproto.Metadata{
 		Author:      "littlestar642",
 		ImageName:   "demo image",
 		Name:        "test data",
 		Description: "sample test metadata",
 	}
-	metadataResp := &protobuf.MetadataName{
+	metadataResp := &clientCPproto.MetadataName{
 		Name: "test data",
-		Err: &protobuf.Error{
+		Err: &clientCPproto.Error{
 			ErrorCode:    0,
 			ErrorMessage: "no error",
 		},
@@ -35,13 +35,13 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 	}
 	type args struct {
 		ctx      context.Context
-		metadata *protobuf.Metadata
+		metadata *clientCPproto.Metadata
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *protobuf.MetadataName
+		want    *clientCPproto.MetadataName
 		wantErr bool
 	}{
 		{
@@ -52,9 +52,9 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 				ctx:      context.Background(),
 				metadata: metadataVal,
 			},
-			want: &protobuf.MetadataName{
+			want: &clientCPproto.MetadataName{
 				Name: "test data",
-				Err: &protobuf.Error{
+				Err: &clientCPproto.Error{
 					ErrorCode:    0,
 					ErrorMessage: "no error",
 				},
