@@ -4,13 +4,13 @@ import (
 	"context"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/metadata/repository"
-	"octavius/pkg/protobuf"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 	"reflect"
 	"testing"
 )
 
 func init() {
-	logger.Setup()
+	logger.Setup("info")
 }
 
 func Test_execution_SaveMetadataToDb(t *testing.T) {

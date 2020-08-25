@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"octavius/internal/control_plane/db/etcd"
-	"octavius/pkg/protobuf"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 
 	"github.com/gogo/protobuf/proto"
 )

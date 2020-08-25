@@ -69,6 +69,7 @@ func load() OctaviusConfig {
 	fang.SetConfigType("json")
 	fang.SetConfigName("config")
 	fang.AddConfigPath(".")
+
 	value, available := os.LookupEnv("CONFIG_LOCATION")
 	if available {
 		fang.AddConfigPath(value)

@@ -6,10 +6,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"octavius/internal/cli/config"
 	"octavius/internal/cli/fileUtil"
+	"octavius/internal/cli/logger"
 	"octavius/internal/cli/printer"
 	"testing"
 )
 
+func init() {
+	logger.Setup()
+}
 func TestConfigCmdHelp(t *testing.T) {
 	mockFileUtil := new(fileUtil.MockFileUtil)
 	mockPrinter := new(printer.MockPrinter)
@@ -34,7 +38,7 @@ func TestConfigCmdForConfigFileNotExist(t *testing.T) {
 	configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, "AllowMe")
 	configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, 10)
 	mockFileUtil.On("WriteFile", "job_data_example/config/octavius_client.yaml", configFileContent).Return(nil).Once()
-	mockPrinter.On("Println", fmt.Sprintln("Octavius client configured successfully")).Once()
+	mockPrinter.On("Println", fmt.Sprintf("Octavius client configured successfully")).Once()
 
 	testConfigCmd.SetArgs([]string{"--cp-host", "localhost:5050", "--email-id", "jaimin.rathod@go-jek.com", "--time-out", "10", "--token", "AllowMe"})
 	testConfigCmd.Execute()

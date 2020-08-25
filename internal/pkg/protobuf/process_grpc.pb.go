@@ -17,6 +17,8 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OctaviusServicesClient interface {
+	GetStreamLogs(ctx context.Context, in *RequestForStreamLog, opts ...grpc.CallOption) (OctaviusServices_GetStreamLogsClient, error)
+	ExecuteJob(ctx context.Context, in *RequestForExecute, opts ...grpc.CallOption) (*Response, error)
 	PostMetadata(ctx context.Context, in *RequestToPostMetadata, opts ...grpc.CallOption) (*MetadataName, error)
 	GetAllMetadata(ctx context.Context, in *RequestToGetAllMetadata, opts ...grpc.CallOption) (*MetadataArray, error)
 }
@@ -29,9 +31,50 @@ func NewOctaviusServicesClient(cc grpc.ClientConnInterface) OctaviusServicesClie
 	return &octaviusServicesClient{cc}
 }
 
+func (c *octaviusServicesClient) GetStreamLogs(ctx context.Context, in *RequestForStreamLog, opts ...grpc.CallOption) (OctaviusServices_GetStreamLogsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_OctaviusServices_serviceDesc.Streams[0], "/OctaviusServices/GetStreamLogs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &octaviusServicesGetStreamLogsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type OctaviusServices_GetStreamLogsClient interface {
+	Recv() (*Log, error)
+	grpc.ClientStream
+}
+
+type octaviusServicesGetStreamLogsClient struct {
+	grpc.ClientStream
+}
+
+func (x *octaviusServicesGetStreamLogsClient) Recv() (*Log, error) {
+	m := new(Log)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *octaviusServicesClient) ExecuteJob(ctx context.Context, in *RequestForExecute, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/OctaviusServices/ExecuteJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *octaviusServicesClient) PostMetadata(ctx context.Context, in *RequestToPostMetadata, opts ...grpc.CallOption) (*MetadataName, error) {
 	out := new(MetadataName)
-	err := c.cc.Invoke(ctx, "/OctaviusServices/Post_metadata", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/OctaviusServices/PostMetadata", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +83,7 @@ func (c *octaviusServicesClient) PostMetadata(ctx context.Context, in *RequestTo
 
 func (c *octaviusServicesClient) GetAllMetadata(ctx context.Context, in *RequestToGetAllMetadata, opts ...grpc.CallOption) (*MetadataArray, error) {
 	out := new(MetadataArray)
-	err := c.cc.Invoke(ctx, "/OctaviusServices/Get_all_metadata", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/OctaviusServices/GetAllMetadata", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +94,8 @@ func (c *octaviusServicesClient) GetAllMetadata(ctx context.Context, in *Request
 // All implementations should embed UnimplementedOctaviusServicesServer
 // for forward compatibility
 type OctaviusServicesServer interface {
+	GetStreamLogs(*RequestForStreamLog, OctaviusServices_GetStreamLogsServer) error
+	ExecuteJob(context.Context, *RequestForExecute) (*Response, error)
 	PostMetadata(context.Context, *RequestToPostMetadata) (*MetadataName, error)
 	GetAllMetadata(context.Context, *RequestToGetAllMetadata) (*MetadataArray, error)
 }
@@ -59,6 +104,12 @@ type OctaviusServicesServer interface {
 type UnimplementedOctaviusServicesServer struct {
 }
 
+func (*UnimplementedOctaviusServicesServer) GetStreamLogs(*RequestForStreamLog, OctaviusServices_GetStreamLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetStreamLogs not implemented")
+}
+func (*UnimplementedOctaviusServicesServer) ExecuteJob(context.Context, *RequestForExecute) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteJob not implemented")
+}
 func (*UnimplementedOctaviusServicesServer) PostMetadata(context.Context, *RequestToPostMetadata) (*MetadataName, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostMetadata not implemented")
 }
@@ -68,6 +119,45 @@ func (*UnimplementedOctaviusServicesServer) GetAllMetadata(context.Context, *Req
 
 func RegisterOctaviusServicesServer(s *grpc.Server, srv OctaviusServicesServer) {
 	s.RegisterService(&_OctaviusServices_serviceDesc, srv)
+}
+
+func _OctaviusServices_GetStreamLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(RequestForStreamLog)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(OctaviusServicesServer).GetStreamLogs(m, &octaviusServicesGetStreamLogsServer{stream})
+}
+
+type OctaviusServices_GetStreamLogsServer interface {
+	Send(*Log) error
+	grpc.ServerStream
+}
+
+type octaviusServicesGetStreamLogsServer struct {
+	grpc.ServerStream
+}
+
+func (x *octaviusServicesGetStreamLogsServer) Send(m *Log) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _OctaviusServices_ExecuteJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestForExecute)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OctaviusServicesServer).ExecuteJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OctaviusServices/ExecuteJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OctaviusServicesServer).ExecuteJob(ctx, req.(*RequestForExecute))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _OctaviusServices_PostMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -111,14 +201,24 @@ var _OctaviusServices_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*OctaviusServicesServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Post_metadata",
+			MethodName: "ExecuteJob",
+			Handler:    _OctaviusServices_ExecuteJob_Handler,
+		},
+		{
+			MethodName: "PostMetadata",
 			Handler:    _OctaviusServices_PostMetadata_Handler,
 		},
 		{
-			MethodName: "Get_all_metadata",
+			MethodName: "GetAllMetadata",
 			Handler:    _OctaviusServices_GetAllMetadata_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetStreamLogs",
+			Handler:       _OctaviusServices_GetStreamLogs_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "pkg/protobuf/process.proto",
 }
