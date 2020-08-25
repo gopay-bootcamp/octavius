@@ -1,0 +1,26 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles/client_CP";
+
+import "internal/pkg/protofiles/client_CP/client_info.proto";
+
+// GetStreamLogs service
+message RequestForStreamLog {
+    ClientInfo client_info=1;
+    string job_name=2;
+}
+
+message Log{
+    string log=1;
+}
+
+
+// ExecuteJobs service
+message RequestForExecute{
+    ClientInfo client_info=1;
+    string job_name=2;
+    map<string,string> job_data=3;
+}
+
+message Response {
+    string status = 1;
+}

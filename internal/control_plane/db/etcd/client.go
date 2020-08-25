@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	"octavius/internal/config"
 	"octavius/internal/control_plane/logger"
 	"time"
 )
@@ -26,14 +25,8 @@ type etcdClient struct {
 	db *clientv3.Client
 }
 
-var (
-	dialTimeout = 2 * time.Second
-	etcdHost    = "localhost:" + config.Config().EtcdPort
-)
-
 //NewClient returns a new client of etcd database
-func NewClient() EtcdClient {
-
+func NewClient(dialTimeout time.Duration, etcdHost string) EtcdClient {
 	db, _ := clientv3.New(clientv3.Config{
 		DialTimeout: dialTimeout,
 		Endpoints:   []string{etcdHost},

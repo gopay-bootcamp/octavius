@@ -4,38 +4,35 @@ import (
 	"context"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/execution"
-	procProto "octavius/pkg/protobuf"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 )
 
-type octaviusServiceServer struct {
+type clientCPServicesServer struct {
 	procExec execution.Execution
 }
 
 // NewProcServiceServer used to create a new execution context
-func NewProcServiceServer(exec execution.Execution) procProto.OctaviusServicesServer {
-	return &octaviusServiceServer{
+func NewProcServiceServer(exec execution.Execution) protobuf.ClientCPServicesServer {
+	return &clientCPServicesServer{
 		procExec: exec,
 	}
 }
 
-func (s *octaviusServiceServer) PostMetadata(ctx context.Context, request *procProto.RequestToPostMetadata) (*procProto.MetadataName, error) {
+func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
 	logger.Error(err, "Posting Metadata")
 	return name, err
 }
 
-func (s *octaviusServiceServer) GetAllMetadata(ctx context.Context, request *procProto.RequestToGetAllMetadata) (*procProto.MetadataArray, error) {
+func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *protobuf.RequestToGetAllMetadata) (*protobuf.MetadataArray, error) {
 	dataList, err := s.procExec.ReadAllMetadata(ctx)
 	logger.Error(err, "Getting Metadata")
 	return dataList, err
 }
 
-func (s *octaviusServiceServer) ExecuteJob(ctx context.Context, execute *procProto.RequestForExecute) (*procProto.Response, error) {
-	panic("implement me")
-}
 
-func (s *octaviusServiceServer) GetStreamLogs(request *procProto.RequestForStreamLog, stream procProto.OctaviusServices_GetStreamLogsServer) error {
-	logString := &procProto.Log{Log: "lorem ipsum logger logger logger dumb"}
+func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStreamLog, stream protobuf.ClientCPServices_GetStreamLogsServer) error {
+	logString := &protobuf.Log{Log: "lorem ipsum logger logger logger dumb"}
 	err := stream.Send(logString)
 	logger.Error(err, "Sending stream to client")
 	if err != nil {
@@ -43,3 +40,8 @@ func (s *octaviusServiceServer) GetStreamLogs(request *procProto.RequestForStrea
 	}
 	return nil
 }
+
+func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
+	panic("implement me")
+}
+

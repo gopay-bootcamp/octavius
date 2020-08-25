@@ -1,0 +1,30 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles/client_CP";
+
+import "internal/pkg/protofiles/client_CP/metadata.proto";
+import "internal/pkg/protofiles/client_CP/client_info.proto";
+import "internal/pkg/protofiles/client_CP/error_message.proto";
+
+
+// PostMetadata service
+message RequestToPostMetadata {
+    Metadata metadata=1;
+    ClientInfo client_info=2;
+}
+
+message MetadataName {
+    Error err=1;
+    string name=2;
+}
+
+
+// GetAllMetadata service
+message RequestToGetAllMetadata{
+
+}
+
+message MetadataArray{
+    Error err=1;
+    repeated Metadata values=2;
+}
+

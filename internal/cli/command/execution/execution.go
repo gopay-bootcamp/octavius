@@ -19,7 +19,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) < 1 {
-				logger.Error(errors.New("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ..."),"")
+				logger.Error(errors.New("Incorrect command argument format, the correct format is: \n octavius execute <job-name> arg1=argvalue1 arg2=argvalue2 ..."), "")
 				return
 			}
 			jobName := args[0]

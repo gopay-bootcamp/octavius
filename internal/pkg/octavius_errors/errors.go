@@ -2,7 +2,7 @@ package octaviusErrors
 
 import (
 	"fmt"
-	"octavius/pkg/constant"
+	"octavius/internal/pkg/constant"
 )
 
 type errorStruct struct {

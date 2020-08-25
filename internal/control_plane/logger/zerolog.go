@@ -1,12 +1,11 @@
 package logger
 
 import (
-	"octavius/internal/config"
-	"octavius/pkg/constant"
+	"fmt"
+	"github.com/rs/zerolog"
+	"octavius/internal/pkg/constant"
 	"os"
 	"time"
-
-	"github.com/rs/zerolog"
 )
 
 //Logger holds the pointer to zerolog.Logger object
@@ -17,14 +16,14 @@ type Logger struct {
 var log Logger
 
 //Setup intializes the logger object
-func Setup() {
+func Setup(configLogLevel string) {
 	if (log != Logger{}) {
 		return
 	}
 	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
-	logLevel, err := zerolog.ParseLevel(config.Config().LogLevel)
+	logLevel, err := zerolog.ParseLevel(configLogLevel)
 	if err != nil {
-		logLevel, _ = zerolog.ParseLevel("info")
+		fmt.Println("log level parsing problem")
 	}
 	logInit := zerolog.New(consoleWriter).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
 	zerolog.TimeFieldFormat = time.RFC822
@@ -32,7 +31,6 @@ func Setup() {
 	log = Logger{
 		logger: &logInit,
 	}
-	return
 }
 
 //Debug logs the message at debug level

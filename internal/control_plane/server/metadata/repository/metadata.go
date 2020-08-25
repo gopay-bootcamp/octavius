@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"octavius/internal/control_plane/db/etcd"
-	"octavius/pkg/octavius_errors"
-	"octavius/pkg/protobuf"
+	"octavius/internal/pkg/octavius_errors"
+
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 
 	"github.com/gogo/protobuf/proto"
 )
@@ -42,6 +43,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
+
 		errMsg := octaviusErrors.New(3, errors.New("key already present"))
 		res := &protobuf.MetadataName{Name: ""}
 		return res, errMsg
@@ -52,8 +54,9 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 			errMsg := octaviusErrors.New(3, errors.New("error in getting from etcd"))
 			res := &protobuf.MetadataName{Name: ""}
 			return res, errMsg
+
 		}
-		
+
 	}
 
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
