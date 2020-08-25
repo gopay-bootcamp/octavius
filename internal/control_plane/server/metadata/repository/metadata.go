@@ -47,7 +47,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	}
 
 	if err != nil {
-		if err.Error()!="no value found"{
+		if err.Error() != "no value found" {
 			return nil, err
 		}
 

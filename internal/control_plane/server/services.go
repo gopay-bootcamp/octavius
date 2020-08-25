@@ -30,7 +30,6 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *pr
 	return dataList, err
 }
 
-
 func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStreamLog, stream protobuf.ClientCPServices_GetStreamLogsServer) error {
 	logString := &protobuf.Log{Log: "lorem ipsum logger logger logger dumb"}
 	err := stream.Send(logString)
@@ -44,4 +43,3 @@ func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStrea
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
 	panic("implement me")
 }
-

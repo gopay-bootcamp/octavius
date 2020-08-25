@@ -2,10 +2,10 @@ package daemon
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
+	octaviusErrors "octavius/internal/pkg/octavius_errors"
 	protobuf "octavius/internal/pkg/protofiles/client_CP"
 	"time"
 
@@ -57,7 +57,7 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	metadata := protobuf.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
+		return nil, octaviusErrors.New(1, err)
 	}
 
 	err = c.startOctaviusClient(grpcClient)
