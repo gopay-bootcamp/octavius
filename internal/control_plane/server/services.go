@@ -37,7 +37,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStrea
 	return err
 }
 
-func (s *octaviusServiceServer) ExecuteJob(ctx context.Context, execute *procProto.RequestForExecute) (*procProto.Response, error) {
+func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
 	logger.Fatal("Execution is yet to be implemented")
 	return nil, nil
 
