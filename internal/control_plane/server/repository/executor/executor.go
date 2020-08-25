@@ -15,9 +15,9 @@ const (
 
 //MetadataRepository interface for functions related to metadata repository
 type ExecutorRepository interface {
-	Save(ctx context.Context, key string, executorInfo *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
-	CheckIfPresent(ctx context.Context, key string) (bool, error)
-	UpdateExecutorStatus(ctx context.Context, key string, health string) error
+	Save(ctx context.Context, key string, executorInfo *executorCPproto.ExecutorInfo) (*executorCPproto.RegisterResponse, error)
+	Get(ctx context.Context, key string) (*executorCPproto.ExecutorInfo, error)
+	UpdateStatus(ctx context.Context, key string, health string) error
 }
 
 type executorRepository struct {
@@ -31,9 +31,9 @@ func NewExecutorRepository(client etcd.EtcdClient) ExecutorRepository {
 	}
 }
 
-func (e *executorRepository) Save(ctx context.Context, key string, register *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
+func (e *executorRepository) Save(ctx context.Context, key string, executorInfo *executorCPproto.ExecutorInfo) (*executorCPproto.RegisterResponse, error) {
 	dbKey := registerPrefix + key
-	val, err := proto.Marshal(register)
+	val, err := proto.Marshal(executorInfo)
 	if err != nil {
 		return &executorCPproto.RegisterResponse{}, err
 	}
@@ -44,21 +44,18 @@ func (e *executorRepository) Save(ctx context.Context, key string, register *exe
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
 }
 
-func (e *executorRepository) UpdateExecutorStatus(ctx context.Context, key string, health string) error {
+func (e *executorRepository) UpdateStatus(ctx context.Context, key string, health string) error {
 	dbKey := statusPrefix + key
 	return e.etcdClient.PutValue(ctx, dbKey, health)
 }
 
-func (e *executorRepository) CheckIfPresent(ctx context.Context, key string) (bool, error) {
+func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPproto.ExecutorInfo, error) {
 	dbKey := registerPrefix + key
-	gr, err := e.etcdClient.GetValue(ctx, dbKey)
+	infoString, err := e.etcdClient.GetValue(ctx, dbKey)
 	if err != nil {
-		if err.Error() != "no value found" {
-			return true, err
-		}
+		return nil, err
 	}
-	if gr != "" {
-		return true, nil
-	}
-	return false, nil
+	executor := &executorCPproto.ExecutorInfo{}
+	proto.Unmarshal([]byte(infoString), executor)
+	return executor, nil
 }

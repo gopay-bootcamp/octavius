@@ -15,10 +15,9 @@ import (
 
 // Execution interface for methods related to execution
 type Execution interface {
-	SaveMetadataToDb(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
+	SaveMetadata(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
-	executorRegistered(ctx context.Context, id string) (bool, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 }
 
@@ -37,8 +36,8 @@ func NewExec(metadataRepo metadataRepo.MetadataRepository, executorRepo executor
 	}
 }
 
-//SaveMetadataToDb calls the repository/metadata Save() function and returns MetadataName
-func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error) {
+//SaveMetadata calls the repository/metadata Save() function and returns MetadataName
+func (e *execution) SaveMetadata(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error) {
 	return e.metadataRepo.Save(ctx, metadata.Name, metadata)
 }
 
@@ -47,49 +46,78 @@ func (e *execution) ReadAllMetadata(ctx context.Context) (*clientCPproto.Metadat
 	return e.metadataRepo.GetAll(ctx)
 }
 
+//RegisterExecutor saves executor information in DB
 func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
 	key := request.ID
-	return e.executorRepo.Save(ctx, key, request)
+	value := request.ExecutorInfo
+	return e.executorRepo.Save(ctx, key, value)
 }
 
 func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string) {
-	ticker := time.NewTicker(time.Second)
-	expiredStatus := make(chan bool)
-	deadline := 200
-	presentTime := 0
-
+	endTime := time.After(time.Minute)
+	cleanUpChan := make(chan struct{})
+	err := e.executorRepo.UpdateStatus(ctx, id, "free")
+	if err != nil {
+		logger.Error(fmt.Errorf("error in updating status for executor with %s id", id), "")
+		cleanUpChan <- struct{}{}
+	}
 	for {
 		select {
 		case health := <-healthChan:
-			err := e.executorRepo.UpdateExecutorStatus(ctx, id, health)
+			err := e.executorRepo.UpdateStatus(ctx, id, health)
 			if err != nil {
-				logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
-				expiredStatus <- true
+				logger.Error(fmt.Errorf("error in updating status for executor with %s id", id), "")
+				cleanUpChan <- struct{}{}
 			}
-			presentTime = 0
-		case expired := <-expiredStatus:
-			if expired {
-				err := e.executorRepo.UpdateExecutorStatus(ctx, id, "expired")
-				if err != nil {
-					logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
-				}
-				logger.Info(fmt.Sprintf("deadline for executor with %s id expired", id))
-				ticker.Stop()
-				activeExecutorMap.Delete(id)
-				close(healthChan)
+			endTime = time.After(time.Minute)
+		case <-endTime:
+			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
+			if err != nil {
+				logger.Error(fmt.Errorf("error in updating status for executor with %s id", id), "")
+				cleanUpChan <- struct{}{}
 			}
-		case <-ticker.C:
-			presentTime++
-			if presentTime > deadline {
-				expiredStatus <- true
-			}
-			expiredStatus <- false
+			logger.Info(fmt.Sprintf("deadline for executor with %s id expired", id))
+			cleanUpChan <- struct{}{}
+		case <-cleanUpChan:
+			activeExecutorMap.Delete(id)
+			close(healthChan)
+			endTime = nil
+			return
 		}
 	}
-}
+	// ticker := time.NewTicker(time.Second)
+	// expiredStatus := make(chan bool)
+	// deadline := 200
+	// presentTime := 0
 
-func (e *execution) executorRegistered(ctx context.Context, id string) (bool, error) {
-	return e.executorRepo.CheckIfPresent(ctx, id)
+	// for {
+	// 	select {
+	// 	case health := <-healthChan:
+	// 		err := e.executorRepo.UpdateExecutorStatus(ctx, id, health)
+	// 		if err != nil {
+	// 			logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
+	// 			expiredStatus <- true
+	// 		}
+	// 		presentTime = 0
+	// 	case expired := <-expiredStatus:
+	// 		if expired {
+	// 			err := e.executorRepo.UpdateExecutorStatus(ctx, id, "expired")
+	// 			if err != nil {
+	// 				logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
+	// 			}
+	// 			logger.Info(fmt.Sprintf("deadline for executor with %s id expired", id))
+	// 			ticker.Stop()
+	// 			activeExecutorMap.Delete(id)
+	// 			close(healthChan)
+	// 		}
+	// 	case <-ticker.C:
+	// 		presentTime++
+	// 		if presentTime > deadline {
+	// 			expiredStatus <- true
+	// 		}
+	// 		expiredStatus <- false
+	// 	}
+	// }
 }
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
@@ -99,13 +127,13 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
 
-	registered, err := e.executorRegistered(ctx, request.ID)
+	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
-		logger.Error(err, "error in registering executor")
+		if err.Error() == "no value found" {
+			return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered. Please register this executor first!")
+		}
+		logger.Error(err, "error in getting executor from repo")
 		return nil, err
-	}
-	if !registered {
-		return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered. Please register this executor first!")
 	}
 
 	healthChan := make(chan string)

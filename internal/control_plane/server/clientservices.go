@@ -27,7 +27,7 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 		logger.Error(err, "Error while assigning is to the request")
 	}
 	ctx = context.WithValue(ctx, "uid", uid)
-	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
+	name, err := s.procExec.SaveMetadata(ctx, request.Metadata)
 	logger.Error(err, fmt.Sprintf("%v Job Create Request Received - Posting Metadata to etcd", uid))
 	return name, err
 }

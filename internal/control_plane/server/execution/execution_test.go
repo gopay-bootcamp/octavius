@@ -64,15 +64,15 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := &execution{
-				metadata: tt.fields.metadata,
+				metadataRepo: tt.fields.metadata,
 			}
-			got, err := e.SaveMetadataToDb(tt.args.ctx, tt.args.metadata)
+			got, err := e.SaveMetadata(tt.args.ctx, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("execution.SaveMetadataToDb() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("execution.SaveMetadata() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("execution.SaveMetadataToDb() = %v, want %v", got, tt.want)
+				t.Errorf("execution.SaveMetadata() = %v, want %v", got, tt.want)
 			}
 		})
 	}
