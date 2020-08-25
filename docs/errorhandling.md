@@ -10,3 +10,5 @@
         - 4: for Executor  		 
 
 2. Print or Log error message using Error() or directly print `errMsg`
+
+- NOTE:- Use this method only while using any third party functions.
