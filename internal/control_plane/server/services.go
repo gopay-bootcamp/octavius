@@ -20,7 +20,7 @@ func NewProcServiceServer(exec execution.Execution) protobuf.ClientCPServicesSer
 
 func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	name, err := s.procExec.SaveMetadataToDb(ctx, request.Metadata)
-	logger.Error(err, "Posting Metadata")
+	logger.Error(err, "Job Create Request Received - Posting Metadata to etcd")
 	return name, err
 }
 
@@ -33,13 +33,12 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *pr
 func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStreamLog, stream protobuf.ClientCPServices_GetStreamLogsServer) error {
 	logString := &protobuf.Log{Log: "lorem ipsum logger logger logger dumb"}
 	err := stream.Send(logString)
-	logger.Error(err, "Sending stream to client")
-	if err != nil {
-		return err
-	}
-	return nil
+	logger.Error(err, "GetStream Request Received - Sending stream to client")
+	return err
 }
 
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
-	panic("implement me")
+	logger.Fatal("Execution is yet to be implemented")
+	return nil, nil
+
 }
