@@ -3,7 +3,7 @@ package logger
 import (
 	"fmt"
 	"github.com/rs/zerolog"
-	"octavius/pkg/constant"
+	"octavius/internal/pkg/constant"
 	"os"
 	"time"
 )

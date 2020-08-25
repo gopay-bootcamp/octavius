@@ -1,9 +1,9 @@
 syntax = "proto3";
-option go_package = "octavius/pkg/protofiles/client_CP";
+option go_package = "octavius/internal/pkg/protofiles/client_CP";
 
-import "pkg/protofiles/client_CP/metadata.proto";
-import "pkg/protofiles/client_CP/client_info.proto";
-import "pkg/protofiles/client_CP/error_message.proto";
+import "internal/pkg/protofiles/client_CP/metadata.proto";
+import "internal/pkg/protofiles/client_CP/client_info.proto";
+import "internal/pkg/protofiles/client_CP/error_message.proto";
 
 
 // PostMetadata service

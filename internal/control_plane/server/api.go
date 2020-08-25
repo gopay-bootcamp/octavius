@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"octavius/internal/control_plane/server/execution"
-	protobuf "octavius/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 
 	"google.golang.org/grpc"
 )

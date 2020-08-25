@@ -3,7 +3,7 @@ package execution
 import (
 	"context"
 	"octavius/internal/control_plane/server/metadata/repository"
-	protobuf "octavius/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 )
 
 // Execution interface for methods related to execution

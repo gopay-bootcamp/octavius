@@ -6,7 +6,7 @@ import (
 	"errors"
 	"io"
 
-	protobuf "octavius/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 	"time"
 
 	"google.golang.org/grpc"

@@ -220,5 +220,5 @@ var _ClientCPServices_serviceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "pkg/protofiles/client_CP/client_cp_service.proto",
+	Metadata: "internal/pkg/protofiles/client_CP/client_cp_service.proto",
 }

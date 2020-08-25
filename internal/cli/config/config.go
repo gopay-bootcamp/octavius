@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"octavius/pkg/constant"
+	"octavius/internal/pkg/constant"
 	"os"
 	"time"
 

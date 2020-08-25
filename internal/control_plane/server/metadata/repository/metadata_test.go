@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"octavius/internal/control_plane/db/etcd"
-	protobuf "octavius/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 	"reflect"
 	"testing"
 

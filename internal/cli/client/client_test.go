@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
-	protobuf "octavius/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_CP"
 	"testing"
 	"time"
 

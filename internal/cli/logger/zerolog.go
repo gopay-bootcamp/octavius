@@ -5,7 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/rs/zerolog"
 	"octavius/internal/cli/printer"
-	"octavius/pkg/constant"
+	"octavius/internal/pkg/constant"
 	"os"
 	"time"
 )
