@@ -35,8 +35,8 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *pr
 }
 
 func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStreamLog, stream protobuf.ClientCPServices_GetStreamLogsServer) error {
-	logString := &protobuf.Log{Log: "lorem ipsum logger logger logger dumb"}
 	uid := id_generator.NextID()
+	logString := &protobuf.Log{RequestId: uid, Log: "lorem ipsum logger logger logger dumb"}
 	err := stream.Send(logString)
 	logger.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
 	return err

@@ -10,7 +10,8 @@ message RequestForStreamLog {
 }
 
 message Log{
-    string log=1;
+    uint64 request_id = 1;
+    string log=2;
 }
 
 
