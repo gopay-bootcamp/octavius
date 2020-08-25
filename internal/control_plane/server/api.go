@@ -6,7 +6,8 @@ import (
 	"octavius/internal/control_plane/config"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/logger"
-	repository "octavius/internal/control_plane/server/repository/metadata"
+	executorRepo "octavius/internal/control_plane/server/repository/executor"
+	metadataRepo "octavius/internal/control_plane/server/repository/metadata"
 	"os"
 	"os/signal"
 	"syscall"
@@ -53,8 +54,9 @@ func Start() error {
 
 	etcdClient := etcd.NewClient(dialTimeout, etcdHost)
 	defer etcdClient.Close()
-	metadataRepository := repository.NewMetadataRepository(etcdClient)
-	exec := execution.NewExec(metadataRepository)
+	metadataRepository := metadataRepo.NewMetadataRepository(etcdClient)
+	executorRepository := executorRepo.NewExecutorRepository(etcdClient)
+	exec := execution.NewExec(metadataRepository, executorRepository)
 	clientCPGrpcServer := NewProcServiceServer(exec)
 	executorCPGrpcServer := NewExecutorServiceServer(exec)
 
