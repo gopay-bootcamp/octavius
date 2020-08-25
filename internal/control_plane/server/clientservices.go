@@ -45,7 +45,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 	if err != nil {
 		logger.Error(err, "Error while assigning is to the request")
 	}
-	logString := &clientCPproto.Log{RequestId: uid, Log: "lorem ipsum logger logger logger dumb"}
+	logString := &clientCPproto.Log{RequestId:uid, Log: "lorem ipsum logger logger logger dumb"}
 	err = stream.Send(logString)
 	logger.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
 	return err
