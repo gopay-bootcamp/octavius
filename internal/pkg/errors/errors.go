@@ -1,4 +1,4 @@
-package octaviusErrors
+package errors
 
 import (
 	"fmt"

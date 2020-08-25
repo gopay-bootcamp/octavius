@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"octavius/internal/control_plane/db/etcd"
-	"octavius/internal/pkg/octavius_errors"
+	octerr "octavius/internal/pkg/errors"
 
 	protobuf "octavius/internal/pkg/protofiles/client_CP"
 
@@ -35,14 +35,14 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	val, err := proto.Marshal(metadata)
 
 	if err != nil {
-		errMsg := octaviusErrors.New(2, errors.New("error in marshalling metadata"))
+		errMsg := octerr.New(2, errors.New("error in marshalling metadata"))
 		return nil, errMsg
 	}
 	dbKey := prefix + key
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
-		errMsg := octaviusErrors.New(2, errors.New("key already present"))
+		errMsg := octerr.New(2, errors.New("key already present"))
 		return nil, errMsg
 	}
 
@@ -66,7 +66,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 func (c *metadataRepository) GetAll(ctx context.Context) (*protobuf.MetadataArray, error) {
 	res, err := c.etcdClient.GetAllValues(ctx, prefix)
 	if err != nil {
-		errMsg := octaviusErrors.New(3, errors.New("error in saving to etcd"))
+		errMsg := octerr.New(3, errors.New("error in saving to etcd"))
 		var arr []*protobuf.Metadata
 		res := &protobuf.MetadataArray{Values: arr}
 		return res, errMsg

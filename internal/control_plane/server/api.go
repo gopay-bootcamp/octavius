@@ -7,6 +7,7 @@ import (
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/metadata/repository"
+	octerr "octavius/internal/pkg/errors"
 	"time"
 
 	"octavius/internal/control_plane/server/execution"
@@ -24,7 +25,7 @@ func Start() error {
 	appPort := config.Config().AppPort
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	if err != nil {
-		return err
+		return octerr.New(2, err)
 	}
 
 	server := grpc.NewServer()

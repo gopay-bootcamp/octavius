@@ -4,7 +4,7 @@ import (
 	"context"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/execution"
-	octaviusErrors "octavius/internal/pkg/octavius_errors"
+	octerr "octavius/internal/pkg/errors"
 	protobuf "octavius/internal/pkg/protofiles/client_CP"
 )
 
@@ -35,7 +35,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStrea
 	logString := &protobuf.Log{Log: "lorem ipsum logger logger logger dumb"}
 	err := stream.Send(logString)
 	logger.Error(err, "Sending stream to client")
-	errMsg := octaviusErrors.New(2, err)
+	errMsg := octerr.New(2, err)
 	if err != nil {
 		return errMsg
 	}

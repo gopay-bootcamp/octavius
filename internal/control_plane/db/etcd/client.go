@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"octavius/internal/control_plane/logger"
-	octaviusErrors "octavius/internal/pkg/octavius_errors"
+	octerr "octavius/internal/pkg/errors"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -42,7 +42,7 @@ func NewClient(dialTimeout time.Duration, etcdHost string) EtcdClient {
 func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error) {
 	_, err := client.db.Delete(ctx, id)
 	if err != nil {
-		return false, octaviusErrors.New(3, err)
+		return false, octerr.New(3, err)
 	}
 
 	return true, nil
@@ -51,7 +51,7 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error
 //PutValue puts the given key-value pair in etcd database
 func (client *etcdClient) PutValue(ctx context.Context, key string, value string) error {
 	_, err := client.db.Put(ctx, key, value)
-	return octaviusErrors.New(3, err)
+	return octerr.New(3, err)
 
 }
 
@@ -59,11 +59,11 @@ func (client *etcdClient) PutValue(ctx context.Context, key string, value string
 func (client *etcdClient) GetValue(ctx context.Context, id string) (string, error) {
 	res, err := client.db.Get(ctx, id)
 	if err != nil {
-		return "", octaviusErrors.New(3, err)
+		return "", octerr.New(3, err)
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return "", octaviusErrors.New(3, errors.New("no value found"))
+		return "", octerr.New(3, errors.New("no value found"))
 	}
 	return string(gr.Kvs[0].Value), nil
 }
@@ -72,11 +72,11 @@ func (client *etcdClient) GetValue(ctx context.Context, id string) (string, erro
 func (client *etcdClient) GetProcRevisionByID(ctx context.Context, id string) (int64, error) {
 	res, err := client.db.Get(ctx, id)
 	if err != nil {
-		return -1, octaviusErrors.New(3, err)
+		return -1, octerr.New(3, err)
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return -1, octaviusErrors.New(3, errors.New("no value found"))
+		return -1, octerr.New(3, errors.New("no value found"))
 	}
 	return gr.Header.Revision, nil
 }
@@ -85,7 +85,7 @@ func (client *etcdClient) GetProcRevisionByID(ctx context.Context, id string) (i
 func (client *etcdClient) GetAllValues(ctx context.Context, prefix string) ([]string, error) {
 	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
 	if err != nil {
-		return nil, octaviusErrors.New(3, err)
+		return nil, octerr.New(3, err)
 	}
 	var procs []string
 	gr := res.OpResponse().Get()
@@ -101,11 +101,11 @@ func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, h
 
 	res, err := client.db.Get(ctx, id, clientv3.WithRev(header))
 	if err != nil {
-		return "", octaviusErrors.New(3, err)
+		return "", octerr.New(3, err)
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return "", octaviusErrors.New(3, errors.New("no value found"))
+		return "", octerr.New(3, errors.New("no value found"))
 	}
 	return string(gr.Kvs[0].Value), nil
 }
