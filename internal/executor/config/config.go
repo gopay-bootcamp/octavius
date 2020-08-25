@@ -77,7 +77,7 @@ func load() OctaviusConfig {
 	//will be nil if file is read properly
 	err := fang.ReadInConfig()
 	if err != nil {
-		fmt.Println("file not read", err)
+		return OctaviusConfig{}
 	}
 	octaviusConfig := OctaviusConfig{
 		viper:    fang,

@@ -17,9 +17,6 @@ var log Logger
 
 //Setup intializes the logger object
 func Setup(configLogLevel string) {
-	if (log != Logger{}) {
-		return
-	}
 	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
 	f, _ := os.OpenFile("auditLogs.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	multi := zerolog.MultiLevelWriter(f, consoleWriter)

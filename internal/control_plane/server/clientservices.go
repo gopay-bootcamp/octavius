@@ -38,14 +38,14 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 	return dataList, err
 }
 
-
-
 func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestForStreamLog, stream clientCPproto.ClientCPServices_GetStreamLogsServer) error {
 	uid, err := id_generator.NextID()
 	if err != nil {
 		logger.Error(err, "Error while assigning is to the request")
 	}
-	logString := &clientCPproto.Log{RequestId:uid, Log: "lorem ipsum logger logger logger dumb"}
+
+	// TODO: relay stream logs from executor
+	logString := &clientCPproto.Log{RequestId: uid, Log: "lorem ipsum logger logger logger dumb"}
 	err = stream.Send(logString)
 	logger.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
 	return err

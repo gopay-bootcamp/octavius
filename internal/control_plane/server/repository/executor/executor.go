@@ -35,19 +35,18 @@ func (e *executorRepository) Save(ctx context.Context, key string, register *exe
 	dbKey := registerPrefix + key
 	val, err := proto.Marshal(register)
 	if err != nil {
-		return &executorCPproto.RegisterResponse{Registered: false}, err
+		return &executorCPproto.RegisterResponse{}, err
 	}
 	err = e.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
-		return &executorCPproto.RegisterResponse{Registered: false}, err
+		return &executorCPproto.RegisterResponse{}, err
 	}
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
 }
 
 func (e *executorRepository) UpdateExecutorStatus(ctx context.Context, key string, health string) error {
 	dbKey := statusPrefix + key
-	err := e.etcdClient.PutValue(ctx, dbKey, health)
-	return err
+	return e.etcdClient.PutValue(ctx, dbKey, health)
 }
 
 func (e *executorRepository) CheckIfPresent(ctx context.Context, key string) (bool, error) {
@@ -56,8 +55,6 @@ func (e *executorRepository) CheckIfPresent(ctx context.Context, key string) (bo
 	if err != nil {
 		if err.Error() != "no value found" {
 			return true, err
-		} else {
-			return false, err
 		}
 	}
 	if gr != "" {

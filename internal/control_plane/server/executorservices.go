@@ -18,11 +18,9 @@ func NewExecutorServiceServer(exec execution.Execution) executorCPproto.Executor
 }
 
 func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
-	ack, err := e.procExec.UpdateExecutorStatus(ctx, ping)
-	return ack, err
+	return e.procExec.UpdateExecutorStatus(ctx, ping)
 }
 
 func (e *executorCPServicesServer) Register(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
-	ack, err := e.procExec.RegisterExecutor(ctx, request)
-	return ack, err
+	return e.procExec.RegisterExecutor(ctx, request)
 }

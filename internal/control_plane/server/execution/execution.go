@@ -39,25 +39,22 @@ func NewExec(metadataRepo metadataRepo.MetadataRepository, executorRepo executor
 
 //SaveMetadataToDb calls the repository/metadata Save() function and returns MetadataName
 func (e *execution) SaveMetadataToDb(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error) {
-	result, err := e.metadataRepo.Save(ctx, metadata.Name, metadata)
-	return result, err
+	return e.metadataRepo.Save(ctx, metadata.Name, metadata)
 }
 
 //ReadAllMetadata calls the repository/metadata GetAll() and returns MetadataArray
 func (e *execution) ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error) {
-	result, err := e.metadataRepo.GetAll(ctx)
-	return result, err
+	return e.metadataRepo.GetAll(ctx)
 }
 
 func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
 	key := request.ID
-	res, err := e.executorRepo.Save(ctx, key, request)
-	return res, err
+	return e.executorRepo.Save(ctx, key, request)
 }
 
 func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string) {
 	ticker := time.NewTicker(time.Second)
-	status := make(chan bool)
+	expiredStatus := make(chan bool)
 	deadline := 200
 	presentTime := 0
 
@@ -67,11 +64,10 @@ func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *syn
 			err := e.executorRepo.UpdateExecutorStatus(ctx, id, health)
 			if err != nil {
 				logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
-				status <- true
+				expiredStatus <- true
 			}
 			presentTime = 0
-			logger.Info(fmt.Sprintf("health status for executor with %s id is %s", id, health))
-		case expired := <-status:
+		case expired := <-expiredStatus:
 			if expired {
 				err := e.executorRepo.UpdateExecutorStatus(ctx, id, "expired")
 				if err != nil {
@@ -85,9 +81,9 @@ func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *syn
 		case <-ticker.C:
 			presentTime++
 			if presentTime > deadline {
-				status <- true
+				expiredStatus <- true
 			}
-			status <- false
+			expiredStatus <- false
 		}
 	}
 }
@@ -105,14 +101,15 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 
 	registered, err := e.executorRegistered(ctx, request.ID)
 	if err != nil {
+		logger.Error(err, "error in registering executor")
 		return nil, err
 	}
 	if !registered {
 		return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered. Please register this executor first!")
-	} else {
-		healthChan := make(chan string)
-		e.activeExecutorMap.Store(executorID, healthChan)
-		go e.StartHealthCheck(ctx, e.activeExecutorMap, executorID, healthChan)
 	}
+
+	healthChan := make(chan string)
+	e.activeExecutorMap.Store(executorID, healthChan)
+	go e.StartHealthCheck(ctx, e.activeExecutorMap, executorID, healthChan)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
