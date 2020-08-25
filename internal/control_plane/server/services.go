@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"octavius/internal/control_plane/id_generator"
 	"octavius/internal/control_plane/logger"
@@ -43,7 +44,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStrea
 }
 
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
-	uid := id_generator.NextID()
-	logger.Fatal(fmt.Sprintf("%v Execution is yet to be implemented", uid))
-	return nil, nil
+	//will be utilized after implementation
+	//uid := id_generator.NextID()
+	return nil, errors.New("not implemented yet")
 }
