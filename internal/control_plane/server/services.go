@@ -48,7 +48,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStrea
 	logString := &protobuf.Log{RequestId: uid, Log: "lorem ipsum logger logger logger dumb"}
 	err = stream.Send(logString)
 	logger.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
-  errMsg := octerr.New(2, err)
+  	errMsg := octerr.New(2, err)
 	if err != nil {
 		return errMsg
   }

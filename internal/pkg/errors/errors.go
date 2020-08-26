@@ -9,7 +9,6 @@ type errorStruct struct {
 	errorCode int
 	err       error
 }
-
 //New intializes the error struct with error code and error
 func New(errorCode int, err error) error {
 	return &errorStruct{errorCode, err}

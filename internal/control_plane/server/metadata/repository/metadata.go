@@ -47,8 +47,9 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 		return nil, errMsg
 	}
 
+	check := octerr.New(3, errors.New(constant.NoValueFound)).Error()
 	if err != nil {
-		if err.Error() != constant.NoValueFound {
+		if err.Error() != check {
 			return nil, err
 		}
 	}

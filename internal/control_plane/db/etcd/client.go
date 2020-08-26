@@ -52,7 +52,10 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error
 //PutValue puts the given key-value pair in etcd database
 func (client *etcdClient) PutValue(ctx context.Context, key string, value string) error {
 	_, err := client.db.Put(ctx, key, value)
-	return octerr.New(3, err)
+	if err != nil {
+		return octerr.New(3, err)
+	}
+	return nil
 
 }
 
