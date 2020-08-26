@@ -2,10 +2,11 @@ package getstream
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
-	"octavius/internal/cli/logger"
+	"octavius/internal/pkg/log"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
@@ -18,9 +19,11 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			jobName := args[0]
 			client := &client.GrpcClient{}
 			logResponse, err := octaviusDaemon.GetStreamLog(jobName, client)
-			logger.Error(err, "Getting Stream")
-			for _, log := range *logResponse {
-				logger.Info(fmt.Sprintln(log.Log))
+			if err != nil {
+				log.Error(err, "error when getting stream")
+			}
+			for _, logResp := range *logResponse {
+				log.Info(fmt.Sprintln(logResp.Log))
 			}
 		},
 	}

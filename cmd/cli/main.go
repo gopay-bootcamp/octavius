@@ -4,16 +4,15 @@ import (
 	"octavius/internal/cli/command"
 	"octavius/internal/cli/config"
 	"octavius/internal/cli/daemon"
-	"octavius/internal/cli/fileUtil"
-	"octavius/internal/cli/logger"
-	"octavius/internal/cli/printer"
+	"octavius/internal/pkg/log"
 )
 
 func main() {
-	newPrinter := printer.GetPrinter()
-	logger.Setup()
-	fileUtil := fileUtil.NewFileUtil()
+	// TODO: get log level from config and define log file path if any
+	log.Init("info", "")
+
 	clientConfigLoader := config.NewLoader()
 	octaviusDaemon := daemon.NewClient(clientConfigLoader)
-	command.Execute(octaviusDaemon, fileUtil, newPrinter)
+
+	command.Execute(octaviusDaemon)
 }
