@@ -55,7 +55,6 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 
 func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string) {
 	timer := time.NewTimer(time.Minute)
-	deadline := timer.C
 	cleanUpChan := make(chan struct{})
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
 	if err != nil {
@@ -72,7 +71,7 @@ func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *syn
 			}
 			timer.Stop()
 			timer.Reset(time.Minute)
-		case <-deadline:
+		case <-timer.C:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
 				logger.Error(fmt.Errorf("error in updating status for executor with %s id", id), "")
