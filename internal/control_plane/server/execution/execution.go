@@ -54,7 +54,8 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 }
 
 func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string) {
-	endTime := time.After(time.Minute)
+	timer := time.NewTimer(time.Minute)
+	deadline := timer.C
 	cleanUpChan := make(chan struct{})
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
 	if err != nil {
@@ -69,8 +70,9 @@ func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *syn
 				logger.Error(fmt.Errorf("error in updating status for executor with %s id", id), "")
 				cleanUpChan <- struct{}{}
 			}
-			endTime = time.After(time.Minute)
-		case <-endTime:
+			timer.Stop()
+			timer.Reset(time.Minute)
+		case <-deadline:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
 				logger.Error(fmt.Errorf("error in updating status for executor with %s id", id), "")
@@ -81,43 +83,10 @@ func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *syn
 		case <-cleanUpChan:
 			activeExecutorMap.Delete(id)
 			close(healthChan)
-			endTime = nil
+			timer.Stop()
 			return
 		}
 	}
-	// ticker := time.NewTicker(time.Second)
-	// expiredStatus := make(chan bool)
-	// deadline := 200
-	// presentTime := 0
-
-	// for {
-	// 	select {
-	// 	case health := <-healthChan:
-	// 		err := e.executorRepo.UpdateExecutorStatus(ctx, id, health)
-	// 		if err != nil {
-	// 			logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
-	// 			expiredStatus <- true
-	// 		}
-	// 		presentTime = 0
-	// 	case expired := <-expiredStatus:
-	// 		if expired {
-	// 			err := e.executorRepo.UpdateExecutorStatus(ctx, id, "expired")
-	// 			if err != nil {
-	// 				logger.Error(errors.New(fmt.Sprintf("error in updating status for executor with %s id", id)), "")
-	// 			}
-	// 			logger.Info(fmt.Sprintf("deadline for executor with %s id expired", id))
-	// 			ticker.Stop()
-	// 			activeExecutorMap.Delete(id)
-	// 			close(healthChan)
-	// 		}
-	// 	case <-ticker.C:
-	// 		presentTime++
-	// 		if presentTime > deadline {
-	// 			expiredStatus <- true
-	// 		}
-	// 		expiredStatus <- false
-	// 	}
-	// }
 }
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
