@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -54,16 +55,17 @@ func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
 }
 
 var once sync.Once
-var config OctaviusConfig
+var config OctaviusExecutorConfig
 
-type OctaviusConfig struct {
-	viper    *viper.Viper
-	LogLevel string
-	AppPort  string
-	EtcdPort string
+type OctaviusExecutorConfig struct {
+	viper          *viper.Viper
+	cpHost         string
+	ID             string
+	accessToken    string
+	connTimeOutSec time.Duration
 }
 
-func load() OctaviusConfig {
+func load() OctaviusExecutorConfig {
 	fang := viper.New()
 
 	fang.SetConfigType("json")
@@ -77,9 +79,9 @@ func load() OctaviusConfig {
 	//will be nil if file is read properly
 	err := fang.ReadInConfig()
 	if err != nil {
-		return OctaviusConfig{}
+		return OctaviusExecutorConfig{}
 	}
-	octaviusConfig := OctaviusConfig{
+	octaviusConfig := OctaviusExecutorConfig{
 		viper:    fang,
 		LogLevel: GetStringDefault(fang, "log_level", "info"),
 		EtcdPort: fang.GetString("etcd_port"),
@@ -112,7 +114,7 @@ func Reset() {
 	reset.Set(true)
 }
 
-func Config() OctaviusConfig {
+func Config() OctaviusExecutorConfig {
 	once.Do(func() {
 		config = load()
 	})

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"octavius/internal/control_plane/db/etcd"
+	"octavius/internal/pkg/constant"
 	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 
 	"github.com/gogo/protobuf/proto"
@@ -57,7 +58,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
-		errMsg := &clientCPproto.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
+		errMsg := &clientCPproto.Error{ErrorCode: 3, ErrorMessage: constant.EtcdSaveError}
 		res := &clientCPproto.MetadataName{Err: errMsg, Name: ""}
 		return res, err
 	}
@@ -71,7 +72,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error) {
 	res, err := c.etcdClient.GetAllValues(ctx, prefix)
 	if err != nil {
-		errMsg := &clientCPproto.Error{ErrorCode: 3, ErrorMessage: "error in saving to etcd"}
+		errMsg := &clientCPproto.Error{ErrorCode: 3, ErrorMessage: constant.EtcdSaveError}
 		var arr []*clientCPproto.Metadata
 		res := &clientCPproto.MetadataArray{Err: errMsg, Values: arr}
 		return res, err

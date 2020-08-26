@@ -75,7 +75,6 @@ func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *syn
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
 				logger.Error(fmt.Errorf("error in updating status for executor with %s id", id), "")
-				cleanUpChan <- struct{}{}
 			}
 			logger.Info(fmt.Sprintf("deadline for executor with %s id expired", id))
 			cleanUpChan <- struct{}{}
@@ -100,7 +99,6 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		if err.Error() == "no value found" {
 			return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered. Please register this executor first!")
 		}
-		logger.Error(err, "error in getting executor from repo")
 		return nil, err
 	}
 

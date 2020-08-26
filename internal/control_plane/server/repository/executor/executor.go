@@ -13,7 +13,7 @@ const (
 	statusPrefix   = "executor/status/"
 )
 
-//MetadataRepository interface for functions related to metadata repository
+//ExecutorRepository interface for functions related to metadata repository
 type ExecutorRepository interface {
 	Save(ctx context.Context, key string, executorInfo *executorCPproto.ExecutorInfo) (*executorCPproto.RegisterResponse, error)
 	Get(ctx context.Context, key string) (*executorCPproto.ExecutorInfo, error)
@@ -24,7 +24,7 @@ type executorRepository struct {
 	etcdClient etcd.EtcdClient
 }
 
-//NewMetadataRepository initializes metadataRepository with the given etcdClient
+//NewExecutorRepository initializes metadataRepository with the given etcdClient
 func NewExecutorRepository(client etcd.EtcdClient) ExecutorRepository {
 	return &executorRepository{
 		etcdClient: client,
@@ -56,6 +56,9 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 		return nil, err
 	}
 	executor := &executorCPproto.ExecutorInfo{}
-	proto.Unmarshal([]byte(infoString), executor)
+	err = proto.Unmarshal([]byte(infoString), executor)
+	if err != nil {
+		return nil, err
+	}
 	return executor, nil
 }

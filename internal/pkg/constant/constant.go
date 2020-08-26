@@ -18,3 +18,5 @@ const JobSucceeded = "SUCCEEDED"
 const JobFailed = "FAILED"
 const JobWaiting = "WAITING"
 const LoggerSkipFrameCount = 3
+
+const EtcdSaveError = "error in saving to etcd"
