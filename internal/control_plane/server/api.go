@@ -21,13 +21,11 @@ func Start() error {
 
 	dialTimeout := 2 * time.Second
 	etcdHost := "localhost:" + config.Config().EtcdPort
-
 	appPort := config.Config().AppPort
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	if err != nil {
 		return octerr.New(2, err)
 	}
-
 	server := grpc.NewServer()
 	etcdClient := etcd.NewClient(dialTimeout, etcdHost)
 	defer etcdClient.Close()

@@ -51,7 +51,6 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 		if err.Error() != constant.NoValueFound {
 			return nil, err
 		}
-
 	}
 
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
