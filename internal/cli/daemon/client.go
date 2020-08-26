@@ -2,10 +2,10 @@ package daemon
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
+	octerr "octavius/internal/pkg/errors"
 	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"time"
 
@@ -57,7 +57,7 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	metadata := clientCPproto.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintln("Error unmarshalling metadata.json file: ", err))
+		return nil, octerr.New(1, err)
 	}
 
 	err = c.startOctaviusClient(grpcClient)
@@ -93,10 +93,7 @@ func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) 
 		JobName:    jobName,
 	}
 	logResponse, err := c.grpcClient.GetStreamLog(&getStreamPostRequest)
-	if err != nil {
-		return nil, errors.New("error occured when sending the grpc request. Check your CPHost")
-	}
-	return logResponse, nil
+	return logResponse, err
 }
 func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) (*clientCPproto.Response, error) {
 	err := c.startOctaviusClient(grpcClient)
@@ -113,9 +110,5 @@ func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, g
 		JobData:    jobData,
 	}
 	response, err := c.grpcClient.ExecuteJob(&executePostRequest)
-	if err != nil {
-		return nil, errors.New("error occured when sending the grpc request. Check your CPHost")
-
-	}
-	return response, nil
+	return response, err
 }

@@ -7,7 +7,8 @@ import (
 	"octavius/internal/control_plane/id_generator"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/execution"
-	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
+	octerr "octavius/internal/pkg/errors"
+	clientCPproto "octavius/internal/pkg/errors/protofiles/client_CP"
 )
 
 type clientCPServicesServer struct {
@@ -51,7 +52,11 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 	logString := &clientCPproto.Log{RequestId: uid, Log: "lorem ipsum logger logger logger dumb"}
 	err = stream.Send(logString)
 	logger.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
-	return err
+	errMsg := octerr.New(2, err)
+	if err != nil {
+		return errMsg
+	}
+	return nil
 }
 
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {

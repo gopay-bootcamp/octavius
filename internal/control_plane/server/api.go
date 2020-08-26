@@ -6,11 +6,16 @@ import (
 	"octavius/internal/control_plane/config"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/logger"
+<<<<<<< HEAD
 	executorRepo "octavius/internal/control_plane/server/repository/executor"
 	metadataRepo "octavius/internal/control_plane/server/repository/metadata"
 	"os"
 	"os/signal"
 	"syscall"
+=======
+	"octavius/internal/control_plane/server/metadata/repository"
+	octerr "octavius/internal/pkg/errors"
+>>>>>>> 441336cc28324122804d568039465967c2c8be26
 	"time"
 
 	"octavius/internal/control_plane/server/execution"
@@ -44,7 +49,7 @@ func Start() error {
 	appPort := config.Config().AppPort
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	if err != nil {
-		return err
+		return octerr.New(2, err)
 	}
 	etcdClient := etcd.NewClient(dialTimeout, etcdHost)
 	defer etcdClient.Close()

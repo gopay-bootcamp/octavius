@@ -2,10 +2,9 @@ package client
 
 import (
 	"context"
-
-	"errors"
 	"io"
 
+	octerr "octavius/internal/pkg/errors"
 	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	"time"
 
@@ -28,7 +27,7 @@ type GrpcClient struct {
 func (g *GrpcClient) ConnectClient(cpHost string) error {
 	conn, err := grpc.Dial(cpHost, grpc.WithInsecure())
 	if err != nil {
-		return errors.New("error dialing to CP host server")
+		return octerr.New(2, err)
 	}
 	grpcClient := clientCPproto.NewClientCPServicesClient(conn)
 	g.client = grpcClient
