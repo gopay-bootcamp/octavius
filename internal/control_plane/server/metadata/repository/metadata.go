@@ -36,14 +36,14 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	val, err := proto.Marshal(metadata)
 
 	if err != nil {
-		errMsg := octerr.New(2, errors.New("error in marshalling metadata"))
+		errMsg := octerr.New(2, err)
 		return nil, errMsg
 	}
 	dbKey := prefix + key
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
-		errMsg := octerr.New(2, errors.New("key already present"))
+		errMsg := octerr.New(2, errors.New(constant.KeyAlreadyPresent))
 		return nil, errMsg
 	}
 
@@ -66,7 +66,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 func (c *metadataRepository) GetAll(ctx context.Context) (*protobuf.MetadataArray, error) {
 	res, err := c.etcdClient.GetAllValues(ctx, prefix)
 	if err != nil {
-		errMsg := octerr.New(3, errors.New("error in saving to etcd"))
+		errMsg := octerr.New(3, errors.New(constant.EtcdSaveError))
 		var arr []*protobuf.Metadata
 		res := &protobuf.MetadataArray{Values: arr}
 		return res, errMsg
