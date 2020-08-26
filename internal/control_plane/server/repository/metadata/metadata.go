@@ -3,6 +3,9 @@ package metadata
 import (
 	"context"
 	"errors"
+	"fmt"
+	"octavius/internal/control_plane/logger"
+
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/pkg/constant"
 	octerr "octavius/internal/pkg/errors"
@@ -33,6 +36,7 @@ func NewMetadataRepository(client etcd.EtcdClient) MetadataRepository {
 
 //Save marshals metadata and saves the value in etcd database with the given key
 func (c *metadataRepository) Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error) {
+
 	val, err := proto.Marshal(metadata)
 
 	if err != nil {
@@ -53,6 +57,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 		}
 	}
 
+	logger.Info(fmt.Sprintf("Request ID: %v, saving metadata to etcd", ctx.Value("uid")))
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
 		return nil, err

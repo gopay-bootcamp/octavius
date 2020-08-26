@@ -2,10 +2,11 @@ package logger
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
 	"octavius/internal/pkg/constant"
 	"os"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 //Logger holds the pointer to zerolog.Logger object

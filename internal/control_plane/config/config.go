@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -57,17 +58,18 @@ var once sync.Once
 var config OctaviusConfig
 
 type OctaviusConfig struct {
-	viper    *viper.Viper
-	LogLevel string
-	AppPort  string
-	EtcdPort string
+	viper                *viper.Viper
+	LogLevel             string
+	AppPort              string
+	EtcdPort             string
+	ExecutorPingDeadline time.Duration
 }
 
 func load() OctaviusConfig {
 	fang := viper.New()
 
 	fang.SetConfigType("json")
-	fang.SetConfigName("config")
+	fang.SetConfigName("controller_config")
 	fang.AddConfigPath(".")
 
 	value, available := os.LookupEnv("CONFIG_LOCATION")
@@ -80,10 +82,11 @@ func load() OctaviusConfig {
 		fmt.Println("file not read", err)
 	}
 	octaviusConfig := OctaviusConfig{
-		viper:    fang,
-		LogLevel: GetStringDefault(fang, "log_level", "info"),
-		EtcdPort: fang.GetString("etcd_port"),
-		AppPort:  fang.GetString("app_port"),
+		viper:                fang,
+		LogLevel:             GetStringDefault(fang, "log_level", "info"),
+		EtcdPort:             fang.GetString("etcd_port"),
+		AppPort:              fang.GetString("app_port"),
+		ExecutorPingDeadline: fang.GetDuration("executor_ping_deadline"),
 	}
 	return octaviusConfig
 }

@@ -6,22 +6,18 @@ import (
 	"octavius/internal/control_plane/config"
 	"octavius/internal/control_plane/db/etcd"
 	"octavius/internal/control_plane/logger"
-<<<<<<< HEAD
+	"octavius/internal/control_plane/server/execution"
 	executorRepo "octavius/internal/control_plane/server/repository/executor"
 	metadataRepo "octavius/internal/control_plane/server/repository/metadata"
+	octerr "octavius/internal/pkg/errors"
+	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
 	"os"
 	"os/signal"
 	"syscall"
-=======
-	"octavius/internal/control_plane/server/metadata/repository"
-	octerr "octavius/internal/pkg/errors"
->>>>>>> 441336cc28324122804d568039465967c2c8be26
 	"time"
 
-	"octavius/internal/control_plane/server/execution"
-	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
-
+	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
 )
 
@@ -58,6 +54,16 @@ func Start() error {
 	exec := execution.NewExec(metadataRepository, executorRepository)
 	clientCPGrpcServer := NewProcServiceServer(exec)
 	executorCPGrpcServer := NewExecutorServiceServer(exec)
+
+	m := cmux.New(listener)
+	grpc1 := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
+	grpc2 := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
+	server1 := grpc1.NewServer()
+	server2 := grpc2.NewServer()
+	clientCPproto.RegisterClientCPServicesServer(server1, clientCPServicesServer)
+	executorCPproto.RegisterExecutorCPServicesServer(server2, executorCPServicesServer)
+	go server1.Serve(grpc1)
+	go sever2.Serve(grpc2)
 
 	errReturn := make(chan error)
 	go startClientCPServer(listener, clientCPGrpcServer, errReturn)

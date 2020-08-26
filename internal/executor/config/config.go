@@ -1,10 +1,7 @@
 package config
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -17,41 +14,9 @@ func GetStringDefault(viper *viper.Viper, key string, defaultValue string) strin
 	return viper.GetString(key)
 }
 
-//will be utilized in further implementation, line 18-53
-func GetArrayString(viper *viper.Viper, key string) []string {
-	return strings.Split(viper.GetString(key), ",")
-}
-
-func GetArrayStringDefault(viper *viper.Viper, key string, defaultValue []string) []string {
-	viper.SetDefault(key, strings.Join(defaultValue, ","))
-	return strings.Split(viper.GetString(key), ",")
-}
-
-func GetBoolDefault(viper *viper.Viper, key string, defaultValue bool) bool {
+func GetIntDefault(viper *viper.Viper, key string, defaultValue int) int {
 	viper.SetDefault(key, defaultValue)
-	return viper.GetBool(key)
-}
-
-func GetInt64Ref(viper *viper.Viper, key string) *int64 {
-	value := viper.GetInt64(key)
-	return &value
-}
-
-func GetInt32Ref(viper *viper.Viper, key string) *int32 {
-	value := viper.GetInt32(key)
-	return &value
-}
-
-func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
-	var jsonStr = []byte(viper.GetString(key))
-	var annotations map[string]string
-
-	err := json.Unmarshal(jsonStr, &annotations)
-	if err != nil {
-		_ = fmt.Errorf("invalid Value for key %s, errors %v", key, err.Error())
-	}
-
-	return annotations
+	return viper.GetInt(key)
 }
 
 var once sync.Once
@@ -59,17 +24,19 @@ var config OctaviusExecutorConfig
 
 type OctaviusExecutorConfig struct {
 	viper          *viper.Viper
-	cpHost         string
+	CPHost         string
 	ID             string
-	accessToken    string
-	connTimeOutSec time.Duration
+	AccessToken    string
+	ConnTimeOutSec time.Duration
+	LogLevel       string
+	PingInterval   time.Duration
 }
 
 func load() OctaviusExecutorConfig {
 	fang := viper.New()
 
 	fang.SetConfigType("json")
-	fang.SetConfigName("config")
+	fang.SetConfigName("executor_config")
 	fang.AddConfigPath(".")
 
 	value, available := os.LookupEnv("CONFIG_LOCATION")
@@ -82,10 +49,13 @@ func load() OctaviusExecutorConfig {
 		return OctaviusExecutorConfig{}
 	}
 	octaviusConfig := OctaviusExecutorConfig{
-		viper:    fang,
-		LogLevel: GetStringDefault(fang, "log_level", "info"),
-		EtcdPort: fang.GetString("etcd_port"),
-		AppPort:  fang.GetString("app_port"),
+		viper:          fang,
+		LogLevel:       GetStringDefault(fang, "log_level", "info"),
+		CPHost:         fang.GetString("cp_host"),
+		ID:             fang.GetString("id"),
+		AccessToken:    fang.GetString("access_token"),
+		ConnTimeOutSec: time.Duration(GetIntDefault(fang, "conn_time_out", 10)) * time.Second,
+		PingInterval:   time.Duration(GetIntDefault(fang, "ping_interval", 30)) * time.Second,
 	}
 	return octaviusConfig
 }

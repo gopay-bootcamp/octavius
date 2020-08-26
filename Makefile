@@ -19,7 +19,7 @@ CONFIG_LOCATION := $(SRC_DIR)
 $(@info $(shell mkdir -p $(OUT_DIR) $(BIN_DIR) $(PLUGIN_DIR))
 
 .PHONY: build
-build: proto_files cli server
+build: proto_files cli server executor
 
 .PHONY: proto_files
 proto_files:
@@ -29,7 +29,12 @@ proto_files:
 .PHONY: server
 server:
 	PROCTOR_AUTH_PLUGIN_BINARY=$(PLUGIN_DIR)/auth.so \
-	go build -race -o $(BIN_DIR)/control_plane ./cmd/control_plane/main.go
+	go build -race -o $(BIN_DIR)/controller ./cmd/control_plane/main.go
+
+.PHONY: executor
+executor:
+	PROCTOR_AUTH_PLUGIN_BINARY=$(PLUGIN_DIR)/auth.so \
+	go build -race -o $(BIN_DIR)/executor ./cmd/executor/main.go
 
 .PHONY: start-server
 start-server:
