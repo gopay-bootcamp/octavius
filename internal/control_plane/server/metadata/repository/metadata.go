@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"octavius/internal/control_plane/db/etcd"
+	"octavius/internal/pkg/constant"
 	octerr "octavius/internal/pkg/errors"
 
 	protobuf "octavius/internal/pkg/protofiles/client_CP"
@@ -47,7 +48,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	}
 
 	if err != nil {
-		if err.Error() != "no value found" {
+		if err.Error() != constant.NoValueFound {
 			return nil, err
 		}
 

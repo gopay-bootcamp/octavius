@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"octavius/internal/control_plane/logger"
+	"octavius/internal/pkg/constant"
 	octerr "octavius/internal/pkg/errors"
 	"time"
 
@@ -63,7 +64,7 @@ func (client *etcdClient) GetValue(ctx context.Context, id string) (string, erro
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return "", octerr.New(3, errors.New("no value found"))
+		return "", octerr.New(3, errors.New(constant.NoValueFound))
 	}
 	return string(gr.Kvs[0].Value), nil
 }
@@ -76,7 +77,7 @@ func (client *etcdClient) GetProcRevisionByID(ctx context.Context, id string) (i
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return -1, octerr.New(3, errors.New("no value found"))
+		return -1, octerr.New(3, errors.New(constant.NoValueFound))
 	}
 	return gr.Header.Revision, nil
 }
@@ -105,7 +106,7 @@ func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, h
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return "", octerr.New(3, errors.New("no value found"))
+		return "", octerr.New(3, errors.New(constant.NoValueFound))
 	}
 	return string(gr.Kvs[0].Value), nil
 }

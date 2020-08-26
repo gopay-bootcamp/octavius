@@ -1,7 +1,8 @@
 # Error Handling
 
 1. Create custom error message using package octaviusErrors while returning the error
-    - `errMsg := Errors.New(<error-code>, <error>)`
+    - `import octerr "octavius/internal/pkg/errors"`
+    - `errMsg := octerr.New(<error-code>, <error>)`
     - for <error-code> refer the below map
         - 0: for No Error
         - 1: for Client
