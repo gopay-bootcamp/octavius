@@ -7,6 +7,7 @@ import (
 	"octavius/internal/control_plane/id_generator"
 	"octavius/internal/control_plane/logger"
 	"octavius/internal/control_plane/server/execution"
+	octerr "octavius/internal/pkg/errors"
 	protobuf "octavius/internal/pkg/protofiles/client_CP"
 )
 
@@ -39,6 +40,7 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *pr
 }
 
 func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStreamLog, stream protobuf.ClientCPServices_GetStreamLogsServer) error {
+
 	uid, err := id_generator.NextID()
 	if err != nil {
 		logger.Error(err, "Error while assigning is to the request")
@@ -46,7 +48,11 @@ func (s *clientCPServicesServer) GetStreamLogs(request *protobuf.RequestForStrea
 	logString := &protobuf.Log{RequestId: uid, Log: "lorem ipsum logger logger logger dumb"}
 	err = stream.Send(logString)
 	logger.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
-	return err
+  errMsg := octerr.New(2, err)
+	if err != nil {
+		return errMsg
+  }
+	return nil
 }
 
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {

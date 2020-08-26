@@ -1,5 +1,4 @@
 CP_HOST: localhost:3000
-EMAIL_ID: avinash.jaiswal@go-jek.com
-ACCESS_TOKEN: winterShouldCome
-CONNECTION_TIMEOUT_SECS: 30
-
+EMAIL_ID: 
+ACCESS_TOKEN: 
+CONNECTION_TIMEOUT_SECS: 0
