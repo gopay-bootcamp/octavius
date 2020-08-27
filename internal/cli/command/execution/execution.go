@@ -2,13 +2,15 @@ package execution
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
-	"octavius/internal/cli/logger"
+	"octavius/internal/pkg/log"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
+// NewCmd create a command for execution
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "execute",
@@ -26,7 +28,9 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			}
 			client := &client.GrpcClient{}
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
-			logger.Error(err, response.Status)
+			if err != nil {
+				log.Error(err, response.Status)
+			}
 		},
 	}
 }
