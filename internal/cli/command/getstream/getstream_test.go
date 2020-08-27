@@ -1,15 +1,16 @@
 package getstream
 
 import (
-	"github.com/stretchr/testify/assert"
 	"octavius/internal/cli/daemon"
-	"octavius/internal/cli/logger"
+	"octavius/internal/pkg/log"
 	protobuf "octavius/internal/pkg/protofiles/client_CP"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
-	logger.Setup()
+	log.Init("info", "")
 }
 
 func TestGetStreamCmdHelp(t *testing.T) {

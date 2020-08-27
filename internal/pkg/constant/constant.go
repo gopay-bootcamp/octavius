@@ -1,5 +1,7 @@
 package constant
 
+// what is the difference between error code and constant error below?
+
 var ErrorCode = map[int]string{
 	0: "No Error",
 	1: "Client",
@@ -8,15 +10,21 @@ var ErrorCode = map[int]string{
 	4: "Executor",
 }
 
-const ConfigOctaviusHostMissingError = "Config Error!!!\nMandatory config CP_HOST is missing in Octavius Config file."
-
-const ClientError = "malformed request"
-const ServerError = "Something went wrong"
-const NoValueFound = "no value found"
-const KeyAlreadyPresent = "key already present"
-const EtcdSaveError = "error in saving to etcd"
-const JobNotFound = "Job not found"
-const JobSucceeded = "SUCCEEDED"
-const JobFailed = "FAILED"
-const JobWaiting = "WAITING"
-const LoggerSkipFrameCount = 3
+// group the const
+const (
+	
+	// error messages
+	ConfigOctaviusHostMissingError = "Config Error\nMandatory config CP_HOST is missing in Octavius Config file."
+	ClientError                    = "malformed request"
+	ServerError                    = "Something went wrong"
+	NoValueFound                   = "no value found"
+	KeyAlreadyPresent              = "key already present"
+	EtcdSaveError                  = "error in saving to etcd"
+	JobNotFound                    = "Job not found"
+	JobSucceeded                   = "SUCCEEDED"
+	JobFailed                      = "FAILED"
+	JobWaiting                     = "WAITING"
+	
+	// LoggerSkipFrameCount is for ...
+	LoggerSkipFrameCount           = 3
+)
