@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"octavius/internal/pkg/constant"
 	"context"
 	"errors"
 	"fmt"
@@ -104,7 +105,7 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
-		if err.Error() == "no value found" {
+		if err.Error() == constant.NoValueFound {
 			return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered")
 		}
 		return nil, err

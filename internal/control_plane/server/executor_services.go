@@ -36,5 +36,15 @@ func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *execut
 }
 
 func (e *executorCPServicesServer) Register(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
-	return e.procExec.RegisterExecutor(ctx, request)
+	uuid, err := id_generator.NextID()
+	if err != nil {
+		logger.Error(err, "Error while assigning id to the request")
+	}
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	logger.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, request.ID))
+	res,err:= e.procExec.RegisterExecutor(ctx, request)
+	if err != nil {
+		logger.Error(err,fmt.Sprintf("request id: %v, error in registering executor with id %s",uuid, request.ID))
+	}
+	return res,err
 }

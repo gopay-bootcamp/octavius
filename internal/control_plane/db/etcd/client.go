@@ -1,6 +1,7 @@
 package etcd
 
 import (
+	"google.golang.org/grpc/status"
 	"context"
 	"errors"
 	"fmt"
@@ -43,7 +44,7 @@ func NewClient(dialTimeout time.Duration, etcdHost string) EtcdClient {
 func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error) {
 	_, err := client.db.Delete(ctx, id)
 	if err != nil {
-		return false, octerr.New(3, err)
+		return false, status.Error(3,"error in deleting")
 	}
 
 	return true, nil
@@ -52,19 +53,22 @@ func (client *etcdClient) DeleteKey(ctx context.Context, id string) (bool, error
 //PutValue puts the given key-value pair in etcd database
 func (client *etcdClient) PutValue(ctx context.Context, key string, value string) error {
 	_, err := client.db.Put(ctx, key, value)
-	return octerr.New(3, err)
-
+	if err !=nil{
+		return status.Error(3,"error in putting value")
+	}
+	return nil
 }
 
 //GetValue gets the value of the given key
 func (client *etcdClient) GetValue(ctx context.Context, id string) (string, error) {
 	res, err := client.db.Get(ctx, id)
 	if err != nil {
-		return "", octerr.New(3, err)
+		return "", status.Error(3," error in getting value")
+
 	}
 	gr := res.OpResponse().Get()
 	if len(gr.Kvs) == 0 {
-		return "", octerr.New(3, errors.New(constant.NoValueFound))
+		return "", status.Error(3,"no value found")
 	}
 	return string(gr.Kvs[0].Value), nil
 }

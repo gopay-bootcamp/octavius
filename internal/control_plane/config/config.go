@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -72,10 +71,6 @@ func load() OctaviusConfig {
 	fang.SetConfigName("controller_config")
 	fang.AddConfigPath(".")
 
-	value, available := os.LookupEnv("CONFIG_LOCATION")
-	if available {
-		fang.AddConfigPath(value)
-	}
 	//will be nil if file is read properly
 	err := fang.ReadInConfig()
 	if err != nil {
@@ -86,7 +81,7 @@ func load() OctaviusConfig {
 		LogLevel:             GetStringDefault(fang, "log_level", "info"),
 		EtcdPort:             fang.GetString("etcd_port"),
 		AppPort:              fang.GetString("app_port"),
-		ExecutorPingDeadline: fang.GetDuration("executor_ping_deadline"),
+		// ExecutorPingDeadline: fang.GetDuration("executor_ping_deadline"),
 	}
 	return octaviusConfig
 }

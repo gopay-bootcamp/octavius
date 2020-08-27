@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"octavius/internal/executor/logger"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
@@ -32,7 +33,6 @@ func (e *executorClient) StartClient() error {
 	e.cpHost = config.Config().CPHost
 	e.accessToken = config.Config().AccessToken
 	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
-
 	err := e.grpcClient.ConnectClient(e.cpHost)
 	if err != nil {
 		return err
@@ -41,9 +41,9 @@ func (e *executorClient) StartClient() error {
 }
 
 func (e *executorClient) StartPing() {
+	logger.Info("starting ping")
 	for {
 		e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: "stale"})
 		time.Sleep(config.Config().PingInterval)
 	}
-
 }

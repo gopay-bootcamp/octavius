@@ -27,13 +27,13 @@ func NewProcServiceServer(exec execution.Execution) clientCPproto.ClientCPServic
 func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clientCPproto.RequestToPostMetadata) (*clientCPproto.MetadataName, error) {
 	uuid, err := id_generator.NextID()
 	if err != nil {
-		logger.Error(err, "Error while assigning id to the request")
+		logger.Error(err, "error while assigning id to the request")
 	}
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	logger.Info(fmt.Sprintf("request ID: %v, Post Metadata Request Received", uuid))
+	logger.Info(fmt.Sprintf("request ID: %v, PostMetadata request received", uuid))
 	name, err := s.procExec.SaveMetadata(ctx, request.Metadata)
 	if err != nil {
-		logger.Error(err, "error in saving to etcd")
+		logger.Error(err, fmt.Sprintf("request ID: %v, error in saving to etcd", uuid))
 	}
 	return name, err
 }
@@ -41,10 +41,10 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *clientCPproto.RequestToGetAllMetadata) (*clientCPproto.MetadataArray, error) {
 	uuid, err := id_generator.NextID()
 	if err != nil {
-		logger.Error(err, "Error while assigning id to the request")
+		logger.Error(err, "error while assigning id to the request")
 	}
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	logger.Info(fmt.Sprintf("request ID: %v, Get All Metadata Request Received", uuid))
+	logger.Info(fmt.Sprintf("request ID: %v, GetAllMetadata request received", uuid))
 	dataList, err := s.procExec.ReadAllMetadata(ctx)
 	return dataList, err
 }

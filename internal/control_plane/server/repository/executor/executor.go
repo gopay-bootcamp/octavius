@@ -1,6 +1,9 @@
 package executor
 
 import (
+	"octavius/internal/control_plane/util"
+	"fmt"
+	"octavius/internal/executor/logger"
 	"context"
 	"octavius/internal/control_plane/db/etcd"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
@@ -41,6 +44,7 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 	if err != nil {
 		return &executorCPproto.RegisterResponse{}, err
 	}
+	logger.Info(fmt.Sprintf("request id:%v, saved executor %s info to etcd",util.ContextKeyUUID,key))
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
 }
 

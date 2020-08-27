@@ -12,7 +12,7 @@ const ConfigOctaviusHostMissingError = "Config Error!!!\nMandatory config CP_HOS
 
 const ClientError = "malformed request"
 const ServerError = "Something went wrong"
-const NoValueFound = "no value found"
+const NoValueFound = "rpc error: code = InvalidArgument desc = no value found"
 const KeyAlreadyPresent = "key already present"
 const EtcdSaveError = "error in saving to etcd"
 const JobNotFound = "Job not found"

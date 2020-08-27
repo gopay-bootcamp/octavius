@@ -1,7 +1,7 @@
 package start
 
 import (
-	"fmt"
+	"octavius/internal/executor/logger"
 	"octavius/internal/executor/daemon"
 
 	"github.com/spf13/cobra"
@@ -14,9 +14,9 @@ func NewCmd(executorDaemon daemon.Client) *cobra.Command {
 		Short: "Start Executor",
 		Long:  `Start Executor for communicating with Control Plane`,
 		Run: func(cmd *cobra.Command, args []string) {
-			executorDaemon.StartClient()
-			go executorDaemon.StartPing()
-			fmt.Println("Starting Executor")
+			err:=executorDaemon.StartClient()
+			logger.Error(err,"client started successfully")
+			executorDaemon.StartPing()
 		},
 	}
 }
