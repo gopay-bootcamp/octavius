@@ -40,6 +40,8 @@ func Init(configLogLevel string, logFile string) error {
 			return err
 		}
 		multi = zerolog.MultiLevelWriter(f, consoleWriter)
+	} else {
+		multi = zerolog.MultiLevelWriter(consoleWriter)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850

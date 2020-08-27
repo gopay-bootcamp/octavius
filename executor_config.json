@@ -1,0 +1,8 @@
+{
+    "log_level": "info",
+    "cp_host": "localhost:3000",
+    "ping_interval": 2,
+    "access_token":"something",
+    "id":"random-ID",
+    "conn_time_out":10
+}
