@@ -1,10 +1,7 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -17,41 +14,9 @@ func GetStringDefault(viper *viper.Viper, key string, defaultValue string) strin
 	return viper.GetString(key)
 }
 
-//will be utilized in further implementation, line 18-53
-func GetArrayString(viper *viper.Viper, key string) []string {
-	return strings.Split(viper.GetString(key), ",")
-}
-
-func GetArrayStringDefault(viper *viper.Viper, key string, defaultValue []string) []string {
-	viper.SetDefault(key, strings.Join(defaultValue, ","))
-	return strings.Split(viper.GetString(key), ",")
-}
-
-func GetBoolDefault(viper *viper.Viper, key string, defaultValue bool) bool {
+func GetIntDefault(viper *viper.Viper, key string, defaultValue int) int {
 	viper.SetDefault(key, defaultValue)
-	return viper.GetBool(key)
-}
-
-func GetInt64Ref(viper *viper.Viper, key string) *int64 {
-	value := viper.GetInt64(key)
-	return &value
-}
-
-func GetInt32Ref(viper *viper.Viper, key string) *int32 {
-	value := viper.GetInt32(key)
-	return &value
-}
-
-func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
-	var jsonStr = []byte(viper.GetString(key))
-	var annotations map[string]string
-
-	err := json.Unmarshal(jsonStr, &annotations)
-	if err != nil {
-		_ = fmt.Errorf("invalid Value for key %s, errors %v", key, err.Error())
-	}
-
-	return annotations
+	return viper.GetInt(key)
 }
 
 var once sync.Once
@@ -72,10 +37,6 @@ func load() OctaviusConfig {
 	fang.SetConfigName("controller_config")
 	fang.AddConfigPath(".")
 
-	value, available := os.LookupEnv("CONFIG_LOCATION")
-	if available {
-		fang.AddConfigPath(value)
-	}
 	//will be nil if file is read properly
 	err := fang.ReadInConfig()
 	if err != nil {
@@ -86,7 +47,7 @@ func load() OctaviusConfig {
 		LogLevel:             GetStringDefault(fang, "log_level", "info"),
 		EtcdPort:             fang.GetString("etcd_port"),
 		AppPort:              fang.GetString("app_port"),
-		ExecutorPingDeadline: fang.GetDuration("executor_ping_deadline"),
+		ExecutorPingDeadline: time.Duration(GetIntDefault(fang, "executor_ping_deadline", 30)) * time.Second,
 	}
 	return octaviusConfig
 }

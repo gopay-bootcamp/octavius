@@ -31,7 +31,7 @@ func (g *GrpcClient) ConnectClient(cpHost string) error {
 	}
 	grpcClient := clientCPproto.NewClientCPServicesClient(conn)
 	g.client = grpcClient
-	g.connectionTimeoutSecs = time.Second
+	g.connectionTimeoutSecs = time.Duration(20)*time.Second
 	return nil
 }
 

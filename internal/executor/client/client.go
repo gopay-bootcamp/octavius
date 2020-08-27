@@ -11,6 +11,7 @@ import (
 
 type Client interface {
 	Ping(ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
+	Register(request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	ConnectClient(cpHost string) error
 }
 
@@ -38,4 +39,14 @@ func (g *GrpcClient) Ping(ping *executorCPproto.Ping) (*executorCPproto.HealthRe
 		return nil, err
 	}
 	return res, nil
+}
+
+func (g *GrpcClient) Register(request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
+	defer cancel()
+	res, err := g.client.Register(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return res, err
 }

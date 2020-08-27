@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
+	"octavius/internal/executor/logger"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
 	"time"
 )
 
 type Client interface {
+	RegisterClient() (bool, error)
 	StartClient() error
 	StartPing()
 }
@@ -33,7 +35,6 @@ func (e *executorClient) StartClient() error {
 	e.cpHost = config.Config().CPHost
 	e.accessToken = config.Config().AccessToken
 	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
-
 	err := e.grpcClient.ConnectClient(e.cpHost)
 	if err != nil {
 		return err
@@ -41,13 +42,29 @@ func (e *executorClient) StartClient() error {
 	return nil
 }
 
+func (e *executorClient) RegisterClient() (bool, error) {
+	executorInfo := &executorCPproto.ExecutorInfo{
+		Info: e.accessToken,
+	}
+	regsiterRequest := &executorCPproto.RegisterRequest{
+		ID:           e.id,
+		ExecutorInfo: executorInfo,
+	}
+	res, err := e.grpcClient.Register(regsiterRequest)
+	if err != nil {
+		return false, err
+	}
+	return res.Registered, nil
+}
+
 func (e *executorClient) StartPing() {
+	logger.Info("starting ping")
 	for {
 		res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: "stale"})
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Printf("%v", res)
+		fmt.Printf("%v \n", res)
 		time.Sleep(config.Config().PingInterval)
 	}
 }

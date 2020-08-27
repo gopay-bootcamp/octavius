@@ -1,6 +1,8 @@
 package metadata
 
 import (
+	"google.golang.org/grpc/status"
+	"octavius/internal/control_plane/util"
 	"context"
 	"errors"
 	"fmt"
@@ -40,14 +42,14 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 	val, err := proto.Marshal(metadata)
 
 	if err != nil {
-		errMsg := octerr.New(2, err)
+		errMsg := status.Error(2,"error in marshalling")
 		return nil, errMsg
 	}
 	dbKey := prefix + key
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
-		errMsg := octerr.New(2, errors.New(constant.KeyAlreadyPresent))
+		errMsg := status.Error(2,constant.KeyAlreadyPresent)
 		return nil, errMsg
 	}
 
@@ -57,7 +59,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 		}
 	}
 
-	logger.Info(fmt.Sprintf("Request ID: %v, saving metadata to etcd", ctx.Value("uid")))
+	logger.Info(fmt.Sprintf("Request ID: %v, saving metadata to etcd", ctx.Value(util.ContextKeyUUID)))
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
 		return nil, err

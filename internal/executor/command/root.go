@@ -1,6 +1,7 @@
 package command
 
 import (
+	"octavius/internal/executor/command/register"
 	"octavius/internal/executor/command/start"
 	"octavius/internal/executor/daemon"
 	"octavius/internal/executor/logger"
@@ -17,6 +18,9 @@ var rootCmd = &cobra.Command{
 
 // Execute executes the root command of octavius control plane
 func Execute(executorDaemon daemon.Client) {
+
+	registerCmd := register.NewCmd(executorDaemon)
+	rootCmd.AddCommand(registerCmd)
 
 	startCmd := start.NewCmd(executorDaemon)
 	rootCmd.AddCommand(startCmd)

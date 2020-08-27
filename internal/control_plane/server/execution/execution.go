@@ -8,6 +8,7 @@ import (
 	"octavius/internal/control_plane/logger"
 	executorRepo "octavius/internal/control_plane/server/repository/executor"
 	metadataRepo "octavius/internal/control_plane/server/repository/metadata"
+	"octavius/internal/pkg/constant"
 	octerr "octavius/internal/pkg/errors"
 	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
@@ -21,7 +22,7 @@ type Execution interface {
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
-	StartExecutorHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string, errChan chan error)
+	StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string)
 }
 
 type execution struct {
@@ -57,12 +58,14 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 }
 
 //StartExecutionHealthCheck checks for executor ping at regular interval
-func (e *execution) StartExecutorHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string, errChan chan error) {
+func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string) {
+	ctx := context.Background()
 	timer := time.NewTimer(config.Config().ExecutorPingDeadline)
 	cleanUpChan := make(chan struct{})
+	logger.Info(fmt.Sprintf("opening connection with executor: %s", id))
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
 	if err != nil {
-		errChan <- octerr.New(2, err)
+		logger.Error(octerr.New(2, err), "")
 		cleanUpChan <- struct{}{}
 	}
 	for {
@@ -70,10 +73,9 @@ func (e *execution) StartExecutorHealthCheck(ctx context.Context, activeExecutor
 		case health := <-healthChan:
 			err := e.executorRepo.UpdateStatus(ctx, id, health)
 			if err != nil {
-				errChan <- octerr.New(2, err)
+				logger.Error(octerr.New(2, err), "")
 				cleanUpChan <- struct{}{}
 			}
-			errChan <- nil
 			timer.Stop()
 			timer.Reset(config.Config().ExecutorPingDeadline)
 		case <-timer.C:
@@ -82,13 +84,12 @@ func (e *execution) StartExecutorHealthCheck(ctx context.Context, activeExecutor
 				logger.Error(octerr.New(2, err), "ping not recieved")
 				cleanUpChan <- struct{}{}
 			}
-			errChan <- nil
-			logger.Info(fmt.Sprintf("deadline for executor with %s id expired", id))
+			logger.Info(fmt.Sprintf("deadline exceeded for executor with %s id, reallocating jobs", id))
 			cleanUpChan <- struct{}{}
 		case <-cleanUpChan:
+			logger.Info(fmt.Sprintf("closing connection with executor: %s", id))
 			activeExecutorMap.Delete(id)
 			close(healthChan)
-			close(errChan)
 			timer.Stop()
 			return
 		}
@@ -97,16 +98,14 @@ func (e *execution) StartExecutorHealthCheck(ctx context.Context, activeExecutor
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
-	errChan := make(chan error)
 	if channel, ok := e.activeExecutorMap.Load(executorID); ok {
 		channel.(chan string) <- request.State
-		err := <-errChan
-		return &executorCPproto.HealthResponse{Recieved: true}, err
+		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
 
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
-		if err.Error() == "no value found" {
+		if err.Error() == constant.NoValueFound {
 			return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered")
 		}
 		return nil, err
@@ -115,7 +114,6 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	healthChan := make(chan string)
 
 	e.activeExecutorMap.Store(executorID, healthChan)
-	go e.StartExecutorHealthCheck(ctx, e.activeExecutorMap, executorID, healthChan, errChan)
-	err = <-errChan
-	return &executorCPproto.HealthResponse{Recieved: true}, err
+	go e.StartExecutorHealthCheck(e.activeExecutorMap, executorID, healthChan)
+	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
