@@ -17,7 +17,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
 )
 
@@ -54,16 +53,6 @@ func Start() error {
 	exec := execution.NewExec(metadataRepository, executorRepository)
 	clientCPGrpcServer := NewProcServiceServer(exec)
 	executorCPGrpcServer := NewExecutorServiceServer(exec)
-
-	m := cmux.New(listener)
-	grpc1 := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
-	grpc2 := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
-	server1 := grpc1.NewServer()
-	server2 := grpc2.NewServer()
-	clientCPproto.RegisterClientCPServicesServer(server1, clientCPServicesServer)
-	executorCPproto.RegisterExecutorCPServicesServer(server2, executorCPServicesServer)
-	go server1.Serve(grpc1)
-	go sever2.Serve(grpc2)
 
 	errReturn := make(chan error)
 	go startClientCPServer(listener, clientCPGrpcServer, errReturn)

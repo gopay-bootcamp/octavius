@@ -15,7 +15,8 @@ func NewCmd(executorDaemon daemon.Client) *cobra.Command {
 		Long:  `Start Executor for communicating with Control Plane`,
 		Run: func(cmd *cobra.Command, args []string) {
 			executorDaemon.StartClient()
-			go executorDaemon.StartPing()
+			executorDaemon.StartPing()
+
 			fmt.Println("Starting Executor")
 		},
 	}

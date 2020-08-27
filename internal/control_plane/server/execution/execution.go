@@ -21,6 +21,7 @@ type Execution interface {
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
+	StartExecutorHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string, errChan chan error)
 }
 
 type execution struct {
@@ -55,7 +56,8 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 	return e.executorRepo.Save(ctx, key, value)
 }
 
-func (e *execution) StartHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string, errChan chan error) {
+//StartExecutionHealthCheck checks for executor ping at regular interval
+func (e *execution) StartExecutorHealthCheck(ctx context.Context, activeExecutorMap *sync.Map, id string, healthChan chan string, errChan chan error) {
 	timer := time.NewTimer(config.Config().ExecutorPingDeadline)
 	cleanUpChan := make(chan struct{})
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
@@ -113,7 +115,7 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	healthChan := make(chan string)
 
 	e.activeExecutorMap.Store(executorID, healthChan)
-	go e.StartHealthCheck(ctx, e.activeExecutorMap, executorID, healthChan, errChan)
+	go e.StartExecutorHealthCheck(ctx, e.activeExecutorMap, executorID, healthChan, errChan)
 	err = <-errChan
 	return &executorCPproto.HealthResponse{Recieved: true}, err
 }

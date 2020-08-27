@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"fmt"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
@@ -42,8 +43,11 @@ func (e *executorClient) StartClient() error {
 
 func (e *executorClient) StartPing() {
 	for {
-		e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: "stale"})
+		res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: "stale"})
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("%v", res)
 		time.Sleep(config.Config().PingInterval)
 	}
-
 }
