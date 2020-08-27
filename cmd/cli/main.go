@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// TODO: get log level from config and define log file path if any
-	if err := octlog.Init("info", ""); err != nil {
+	if err := octlog.Init("info", "./logs.txt"); err != nil {
 		log.Fatal("fail to initialize octavius log")
 	}
 

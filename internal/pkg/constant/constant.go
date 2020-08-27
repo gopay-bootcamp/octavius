@@ -12,19 +12,19 @@ var ErrorCode = map[int]string{
 
 // group the const
 const (
-	
+
 	// error messages
-	ConfigOctaviusHostMissingError = "Config Error\nMandatory config CP_HOST is missing in Octavius Config file."
+	ConfigOctaviusHostMissingError = "config error: mandatory config CP_HOST is missing in octavius config file."
 	ClientError                    = "malformed request"
-	ServerError                    = "Something went wrong"
+	ServerError                    = "something went wrong"
 	NoValueFound                   = "no value found"
 	KeyAlreadyPresent              = "key already present"
 	EtcdSaveError                  = "error in saving to etcd"
-	JobNotFound                    = "Job not found"
-	JobSucceeded                   = "SUCCEEDED"
-	JobFailed                      = "FAILED"
-	JobWaiting                     = "WAITING"
-	
+	JobNotFound                    = "job not found"
+	JobSucceeded                   = "succeeded"
+	JobFailed                      = "failed"
+	JobWaiting                     = "waiting"
+
 	// LoggerSkipFrameCount is for ...
-	LoggerSkipFrameCount           = 3
+	LoggerSkipFrameCount = 3
 )
