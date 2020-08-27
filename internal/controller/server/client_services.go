@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	octerr "octavius/internal/pkg/errors"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 )
 
@@ -33,6 +32,7 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 	uuid, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
@@ -50,6 +50,7 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 	uuid, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
@@ -65,16 +66,18 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestForStreamLog, stream clientCPproto.ClientCPServices_GetStreamLogsServer) error {
 	uuid, err := idgen.NextID()
 	if err != nil {
-		log.Error(err, "Error while assigning is to the request")
+		log.Error(err, "error while assigning is to the request")
+		return status.Error(codes.Internal, err.Error())
 	}
 
 	// TODO: relay stream logs from executor
 	logString := &clientCPproto.Log{RequestId: uuid, Log: "lorem ipsum logger logger logger dumb"}
+	log.Info(fmt.Sprintf("request ID: %v, getstream request received", uuid))
+
 	err = stream.Send(logString)
-	log.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uuid))
-	errMsg := octerr.New(2, err)
 	if err != nil {
-		return errMsg
+		log.Error(errors.New(fmt.Sprintf("request id: %v, error in streaming logs, error details: %v", uuid, err)), "")
+		return status.Error(codes.Internal, err.Error())
 	}
 	return nil
 }

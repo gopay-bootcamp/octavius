@@ -28,20 +28,21 @@ func Start() error {
 	defer etcdClient.Close()
 
 	metadataRepository := metadataRepo.NewMetadataRepository(etcdClient)
+
 	executorRepository := executorRepo.NewExecutorRepository(etcdClient)
 
 	exec := execution.NewExec(metadataRepository, executorRepository)
 	clientCPGrpcServer := NewProcServiceServer(exec)
 	executorCPGrpcServer := NewExecutorServiceServer(exec)
 
+	server := grpc.NewServer()
+	clientCPproto.RegisterClientCPServicesServer(server, clientCPGrpcServer)
+	executorCPproto.RegisterExecutorCPServicesServer(server, executorCPGrpcServer)
+
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
-
-	server := grpc.NewServer()
-	clientCPproto.RegisterClientCPServicesServer(server, clientCPGrpcServer)
-	executorCPproto.RegisterExecutorCPServicesServer(server, executorCPGrpcServer)
 
 	log.Info(fmt.Sprintln("Started server at port: ", listener.Addr().String()))
 	err = server.Serve(listener)

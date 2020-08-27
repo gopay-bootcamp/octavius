@@ -120,5 +120,5 @@ var _ExecutorCPServices_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/pkg/protofiles/executor_CP/executor_cp_services.proto",
+	Metadata: "internal/pkg/protofiles/executor_cp/executor_cp_services.proto",
 }

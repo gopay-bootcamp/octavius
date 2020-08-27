@@ -8,6 +8,9 @@ import (
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"octavius/internal/pkg/util"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type executorCPServicesServer struct {
@@ -25,14 +28,14 @@ func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *execut
 	uuid, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, recieve health check from executor with id %s", uuid, ping.ID))
-
 	res, err := e.procExec.UpdateExecutorStatus(ctx, ping)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, error in health check for executor with id %s", uuid, ping.ID))
+		return nil, err
 	}
 	return res, err
 }
@@ -41,6 +44,7 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 	uuid, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
@@ -49,6 +53,7 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 	res, err := e.procExec.RegisterExecutor(ctx, request)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, error in registering executor with id %s", uuid, request.ID))
+		return nil, err
 	}
 	return res, err
 }

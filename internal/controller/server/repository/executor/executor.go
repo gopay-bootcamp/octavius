@@ -53,7 +53,6 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 
 func (e *executorRepository) UpdateStatus(ctx context.Context, key string, health string) error {
 	dbKey := statusPrefix + key
-	log.Info(fmt.Sprintf("request id: %v, updating status of executor: %s with value: %s", util.ContextKeyUUID, key, health))
 	return e.etcdClient.PutValue(ctx, dbKey, health)
 }
 
@@ -69,8 +68,5 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 	executor := &executorCPproto.ExecutorInfo{}
 
 	err = proto.Unmarshal([]byte(infoString), executor)
-	if err != nil {
-		return nil, err
-	}
-	return executor, nil
+	return executor, err
 }

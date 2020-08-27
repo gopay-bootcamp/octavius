@@ -34,19 +34,13 @@ func (g *GrpcClient) ConnectClient(cpHost string) error {
 func (g *GrpcClient) Ping(ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
-	res, err := g.client.HealthCheck(ctx, ping)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+
+	return g.client.HealthCheck(ctx, ping)
 }
 
 func (g *GrpcClient) Register(request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
-	res, err := g.client.Register(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return res, err
+
+	return g.client.Register(ctx, request)
 }
