@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"octavius/internal/controller/command"
 	"octavius/internal/controller/config"
@@ -8,10 +9,11 @@ import (
 )
 
 func main() {
+	logfilePath := config.Config().LogFilePath
 	logLevel := config.Config().LogLevel
-	//TODO: add log file path if any.
-	if err := octlog.Init(logLevel, ""); err != nil {
-		log.Fatal("fail to initialize octavius log")
+	if err := octlog.Init(logLevel, logfilePath, true); err != nil {
+		log.Fatal(fmt.Sprintf("failed to initialize config %v", err))
 	}
+
 	command.Execute()
 }

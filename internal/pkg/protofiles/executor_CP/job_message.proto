@@ -1,2 +1,2 @@
 syntax = "proto3";
-option go_package = "octavius/internal/pkg/protofiles/executor_CP";
+option go_package = "octavius/internal/pkg/protofiles/executor_cp";

@@ -20,3 +20,5 @@ job_data_example/config/
 .DS_Store
 logs.txt
 auditLogs.txt
+cliLogs.txt
+controllerLogs.txt

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/command"
@@ -10,11 +11,15 @@ import (
 )
 
 func main() {
+	logfilePath := config.Config().LogFilePath
 	logLevel := config.Config().LogLevel
-	//TODO: add log file path if any.
-	if err := octlog.Init(logLevel, ""); err != nil {
-		log.Fatal("fail to initialize octavius log")
+	if err := octlog.Init(logLevel, logfilePath, true); err != nil {
+		log.Fatal(fmt.Sprintf("failed to initialize config %v", err))
 	}
+
 	executorDaemon := daemon.NewExecutorClient(&client.GrpcClient{})
-	command.Execute(executorDaemon)
+	err := command.Execute(executorDaemon)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to execution config %v", err))
+	}
 }

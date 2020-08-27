@@ -1,10 +1,11 @@
 package daemon
 
 import (
-	"fmt"
+	"errors"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
+	"octavius/internal/pkg/log"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
 )
 
@@ -34,6 +35,7 @@ func (e *executorClient) StartClient() error {
 	e.cpHost = config.Config().CPHost
 	e.accessToken = config.Config().AccessToken
 	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
+	e.pingInterval = config.Config().PingInterval
 	err := e.grpcClient.ConnectClient(e.cpHost)
 	if err != nil {
 		return err
@@ -60,9 +62,13 @@ func (e *executorClient) StartPing() {
 	for {
 		res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: "stale"})
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err, "error in ping")
+			return
 		}
-		fmt.Printf("%v \n", res)
-		time.Sleep(config.Config().PingInterval)
+		if !res.Recieved {
+			log.Error(errors.New("ping not acknowledeged by control plane"), "")
+			return
+		}
+		time.Sleep(e.pingInterval)
 	}
 }

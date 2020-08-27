@@ -5,7 +5,7 @@ import (
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/file"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"strings"
 	"testing"
 

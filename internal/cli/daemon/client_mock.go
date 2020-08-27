@@ -3,7 +3,7 @@ package daemon
 import (
 	"io"
 	"octavius/internal/cli/client"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_cp"
 
 	"github.com/stretchr/testify/mock"
 )

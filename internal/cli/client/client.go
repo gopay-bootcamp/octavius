@@ -3,9 +3,11 @@ package client
 import (
 	"context"
 	"io"
-	octerr "octavius/internal/pkg/errors"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"google.golang.org/grpc"
 )
@@ -13,7 +15,6 @@ import (
 type Client interface {
 	GetStreamLog(*protobuf.RequestForStreamLog) (*[]protobuf.Log, error)
 	ExecuteJob(*protobuf.RequestForExecute) (*protobuf.Response, error)
-
 	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
 	ConnectClient(cpHost string) error
 }
@@ -26,7 +27,7 @@ type GrpcClient struct {
 func (g *GrpcClient) ConnectClient(cpHost string) error {
 	conn, err := grpc.Dial(cpHost, grpc.WithInsecure())
 	if err != nil {
-		return octerr.New(2, err)
+		return status.Error(codes.Unavailable, err.Error())
 	}
 	grpcClient := protobuf.NewClientCPServicesClient(conn)
 	g.client = grpcClient
@@ -37,6 +38,7 @@ func (g *GrpcClient) ConnectClient(cpHost string) error {
 func (g *GrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
+
 	res, err := g.client.PostMetadata(ctx, metadataPostRequest)
 	if err != nil {
 		return nil, err
@@ -49,6 +51,7 @@ func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 	if err != nil {
 		return nil, err
 	}
+
 	var logResponse []protobuf.Log
 	for {
 		log, err := responseStream.Recv()

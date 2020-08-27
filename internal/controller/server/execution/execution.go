@@ -8,10 +8,9 @@ import (
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/pkg/constant"
-	octerr "octavius/internal/pkg/errors"
 	"octavius/internal/pkg/log"
-	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"sync"
 	"time"
 )
@@ -65,7 +64,7 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 	log.Info(fmt.Sprintf("opening connection with executor: %s", id))
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
 	if err != nil {
-		log.Error(octerr.New(2, err), "")
+		log.Error(err, "")
 		cleanUpChan <- struct{}{}
 	}
 	for {
@@ -73,7 +72,7 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 		case health := <-healthChan:
 			err := e.executorRepo.UpdateStatus(ctx, id, health)
 			if err != nil {
-				log.Error(octerr.New(2, err), "")
+				log.Error(err, "")
 				cleanUpChan <- struct{}{}
 			}
 			timer.Stop()
@@ -81,7 +80,7 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 		case <-timer.C:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
-				log.Error(octerr.New(2, err), "ping not recieved")
+				log.Error(err, "")
 				cleanUpChan <- struct{}{}
 			}
 			log.Info(fmt.Sprintf("deadline exceeded for executor with %s id, reallocating jobs", id))
@@ -98,6 +97,8 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
+
+	// construct to load channel if executor present in memory map
 	if channel, ok := e.activeExecutorMap.Load(executorID); ok {
 		channel.(chan string) <- request.State
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
@@ -106,11 +107,12 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return &executorCPproto.HealthResponse{Recieved: true}, errors.New("executor not registered")
+			return nil, errors.New("executor not registered")
 		}
 		return nil, err
 	}
 
+	// construct to make a new channel and add the executor to the in memory map
 	healthChan := make(chan string)
 
 	e.activeExecutorMap.Store(executorID, healthChan)

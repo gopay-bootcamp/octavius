@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"octavius/internal/pkg/util"
 
 	"google.golang.org/protobuf/proto"
@@ -36,30 +36,38 @@ func NewExecutorRepository(client etcd.Client) Repository {
 
 func (e *executorRepository) Save(ctx context.Context, key string, executorInfo *executorCPproto.ExecutorInfo) (*executorCPproto.RegisterResponse, error) {
 	dbKey := registerPrefix + key
+
 	val, err := proto.Marshal(executorInfo)
 	if err != nil {
 		return &executorCPproto.RegisterResponse{}, err
 	}
+
 	err = e.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
 		return &executorCPproto.RegisterResponse{}, err
 	}
+
 	log.Info(fmt.Sprintf("request id:%v, saved executor %s info to etcd", util.ContextKeyUUID, key))
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
 }
 
 func (e *executorRepository) UpdateStatus(ctx context.Context, key string, health string) error {
 	dbKey := statusPrefix + key
+	log.Info(fmt.Sprintf("request id: %v, updating status of executor: %s with value: %s", util.ContextKeyUUID, key, health))
 	return e.etcdClient.PutValue(ctx, dbKey, health)
 }
 
 func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPproto.ExecutorInfo, error) {
 	dbKey := registerPrefix + key
+
 	infoString, err := e.etcdClient.GetValue(ctx, dbKey)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Info(fmt.Sprintf("request id:%v, recieved executor id:%s info and info value is %s", util.ContextKeyUUID, key, infoString))
 	executor := &executorCPproto.ExecutorInfo{}
+
 	err = proto.Unmarshal([]byte(infoString), executor)
 	if err != nil {
 		return nil, err

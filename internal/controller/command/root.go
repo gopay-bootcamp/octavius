@@ -19,6 +19,6 @@ func Execute() {
 	rootCmd.AddCommand(start.NewCmd())
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Error(err, "root  command execution")
+		log.Error(err, "root command execution")
 	}
 }

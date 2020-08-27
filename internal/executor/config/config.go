@@ -30,6 +30,7 @@ type OctaviusExecutorConfig struct {
 	ConnTimeOutSec time.Duration
 	LogLevel       string
 	PingInterval   time.Duration
+	LogFilePath    string
 }
 
 func load() OctaviusExecutorConfig {
@@ -56,6 +57,7 @@ func load() OctaviusExecutorConfig {
 		AccessToken:    fang.GetString("access_token"),
 		ConnTimeOutSec: time.Duration(GetIntDefault(fang, "conn_time_out", 10)) * time.Second,
 		PingInterval:   time.Duration(GetIntDefault(fang, "ping_interval", 30)) * time.Second,
+		LogFilePath:    GetStringDefault(fang, "log_file_path", "./executorLogs.txt"),
 	}
 	return octaviusConfig
 }

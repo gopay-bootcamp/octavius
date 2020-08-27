@@ -20,7 +20,6 @@ func NewCmd(executorDaemon daemon.Client) *cobra.Command {
 			if err != nil {
 				log.Error(fmt.Errorf("executor configuration failed, error details: %v", err.Error()), "")
 			}
-			log.Info("executor configured successfully")
 			registered, err := executorDaemon.RegisterClient()
 			if err != nil {
 				log.Error(fmt.Errorf("registration failed, error details: %v", err.Error()), "")

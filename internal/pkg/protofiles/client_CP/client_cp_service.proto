@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "octavius/internal/pkg/protofiles/client_CP";
+option go_package = "octavius/internal/pkg/protofiles/client_cp";
 
 import "internal/pkg/protofiles/client_CP/metadata_messages.proto";
 import "internal/pkg/protofiles/client_CP/job_messages.proto";

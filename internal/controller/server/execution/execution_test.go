@@ -4,7 +4,7 @@ import (
 	"context"
 	"octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"reflect"
 	"testing"
 )

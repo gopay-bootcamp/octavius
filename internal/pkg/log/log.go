@@ -16,8 +16,7 @@ type engine struct {
 var logEngine engine // contain cli configarution
 
 // Init intializes the logger object
-// TODO: cater logger requirement for cli and control plane
-func Init(configLogLevel string, logFile string) error {
+func Init(configLogLevel string, logFile string, logInConsole bool) error {
 
 	var (
 		f     *os.File
@@ -30,18 +29,18 @@ func Init(configLogLevel string, logFile string) error {
 		return err
 	}
 
-	consoleWriter := zerolog.ConsoleWriter{
-		Out: os.Stdout,
+	f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
 	}
 
-	if logFile != "" {
-		f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			return err
+	if logInConsole {
+		consoleWriter := zerolog.ConsoleWriter{
+			Out: os.Stdout,
 		}
 		multi = zerolog.MultiLevelWriter(f, consoleWriter)
 	} else {
-		multi = zerolog.MultiLevelWriter(consoleWriter)
+		multi = zerolog.MultiLevelWriter(f)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850

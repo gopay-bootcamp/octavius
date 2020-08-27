@@ -3,7 +3,7 @@ package execution
 import (
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

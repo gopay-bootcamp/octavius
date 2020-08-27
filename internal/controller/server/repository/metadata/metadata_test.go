@@ -3,7 +3,7 @@ package metadata
 import (
 	"context"
 	"octavius/internal/pkg/db/etcd"
-	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"reflect"
 	"testing"
 

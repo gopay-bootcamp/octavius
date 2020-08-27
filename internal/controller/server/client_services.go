@@ -7,14 +7,16 @@ import (
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
+	"octavius/internal/pkg/util"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	octerr "octavius/internal/pkg/errors"
-	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 )
 
 type customCTXKey string
-
-var uidKey customCTXKey = "uid"
 
 type clientCPServicesServer struct {
 	procExec execution.Execution
@@ -28,40 +30,48 @@ func NewProcServiceServer(exec execution.Execution) clientCPproto.ClientCPServic
 }
 
 func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clientCPproto.RequestToPostMetadata) (*clientCPproto.MetadataName, error) {
-	uid, err := idgen.NextID()
+	uuid, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 	}
-	ctx = context.WithValue(ctx, uidKey, uid)
-	log.Info(fmt.Sprintf("request ID: %v, PostMetadata request received", uid))
+
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	log.Info(fmt.Sprintf("request ID: %v, PostMetadata request received", uuid))
+
 	name, err := s.procExec.SaveMetadata(ctx, request.Metadata)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("request ID: %v, error in saving to etcd", uid))
+		log.Error(err, fmt.Sprintf("request ID: %v, error in saving to etcd", uuid))
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return name, err
+	return name, nil
 }
 
 func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *clientCPproto.RequestToGetAllMetadata) (*clientCPproto.MetadataArray, error) {
-	uid, err := idgen.NextID()
+	uuid, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 	}
-	ctx = context.WithValue(ctx, uidKey, uid)
-	log.Info(fmt.Sprintf("request ID: %v, GetAllMetadata request received", uid))
+
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	log.Info(fmt.Sprintf("request ID: %v, GetAllMetadata request received", uuid))
+
 	dataList, err := s.procExec.ReadAllMetadata(ctx)
-	return dataList, err
+	if err != nil {
+		log.Error(err, fmt.Sprintf("request ID: %v, error in getting all metadata from etcd", uuid))
+	}
+	return dataList, status.Error(codes.Internal, err.Error())
 }
 
 func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestForStreamLog, stream clientCPproto.ClientCPServices_GetStreamLogsServer) error {
-	uid, err := idgen.NextID()
+	uuid, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "Error while assigning is to the request")
 	}
 
 	// TODO: relay stream logs from executor
-	logString := &clientCPproto.Log{RequestId: uid, Log: "lorem ipsum logger logger logger dumb"}
+	logString := &clientCPproto.Log{RequestId: uuid, Log: "lorem ipsum logger logger logger dumb"}
 	err = stream.Send(logString)
-	log.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uid))
+	log.Error(err, fmt.Sprintf("%v GetStream Request Received - Sending stream to client", uuid))
 	errMsg := octerr.New(2, err)
 	if err != nil {
 		return errMsg

@@ -2,7 +2,7 @@ package metadata
 
 import (
 	"context"
-	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 
 	"github.com/stretchr/testify/mock"
 )

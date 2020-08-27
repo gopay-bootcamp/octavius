@@ -6,7 +6,8 @@ import (
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"octavius/internal/pkg/util"
 )
 
 type executorCPServicesServer struct {
@@ -23,13 +24,15 @@ func NewExecutorServiceServer(exec execution.Execution) executorCPproto.Executor
 func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	uuid, err := idgen.NextID()
 	if err != nil {
-		log.Error(err, "Error while assigning id to the request")
+		log.Error(err, "error while assigning id to the request")
 	}
-	ctx = context.WithValue(ctx, uidKey, uuid)
-	log.Info(fmt.Sprintf("request id: %v, Recieve Health Check from executor with id %s", uuid, ping.ID))
+
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	log.Info(fmt.Sprintf("request id: %v, recieve health check from executor with id %s", uuid, ping.ID))
+
 	res, err := e.procExec.UpdateExecutorStatus(ctx, ping)
 	if err != nil {
-		log.Error(err, "error in health check")
+		log.Error(err, fmt.Sprintf("request id: %v, error in health check for executor with id %s", uuid, ping.ID))
 	}
 	return res, err
 }
@@ -37,10 +40,12 @@ func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *execut
 func (e *executorCPServicesServer) Register(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
 	uuid, err := idgen.NextID()
 	if err != nil {
-		log.Error(err, "Error while assigning id to the request")
+		log.Error(err, "error while assigning id to the request")
 	}
-	ctx = context.WithValue(ctx, uidKey, uuid)
+
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	log.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, request.ID))
+
 	res, err := e.procExec.RegisterExecutor(ctx, request)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, error in registering executor with id %s", uuid, request.ID))

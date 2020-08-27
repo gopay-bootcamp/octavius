@@ -4,12 +4,10 @@ import (
 	"octavius/internal/executor/command/register"
 	"octavius/internal/executor/command/start"
 	"octavius/internal/executor/daemon"
-	"octavius/internal/pkg/log"
 
 	"github.com/spf13/cobra"
 )
 
-var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "octavius_executor",
 	Short: "kubernetes executor of octavius",
@@ -17,7 +15,7 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute executes the root command of octavius control plane
-func Execute(executorDaemon daemon.Client) {
+func Execute(executorDaemon daemon.Client) error {
 
 	registerCmd := register.NewCmd(executorDaemon)
 	rootCmd.AddCommand(registerCmd)
@@ -27,6 +25,7 @@ func Execute(executorDaemon daemon.Client) {
 
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Error(err, "root command execution")
+		return err
 	}
+	return nil
 }

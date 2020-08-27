@@ -27,7 +27,10 @@ type OctaviusConfig struct {
 	LogLevel             string
 	AppPort              string
 	EtcdPort             string
+	EtcdHost             string
+	EtcdDialTimeout      time.Duration
 	ExecutorPingDeadline time.Duration
+	LogFilePath          string
 }
 
 func load() OctaviusConfig {
@@ -46,8 +49,11 @@ func load() OctaviusConfig {
 		viper:                fang,
 		LogLevel:             GetStringDefault(fang, "log_level", "info"),
 		EtcdPort:             fang.GetString("etcd_port"),
+		EtcdHost:             fang.GetString("etcd_host"),
+		EtcdDialTimeout:      time.Duration(GetIntDefault(fang, "etcd_dial_timeout", 30)) * time.Second,
 		AppPort:              fang.GetString("app_port"),
 		ExecutorPingDeadline: time.Duration(GetIntDefault(fang, "executor_ping_deadline", 30)) * time.Second,
+		LogFilePath:          GetStringDefault(fang, "log_file_path", "./controllerLogs.txt"),
 	}
 	return octaviusConfig
 }

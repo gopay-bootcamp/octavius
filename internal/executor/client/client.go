@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	octerr "octavius/internal/pkg/errors"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_CP"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
 
 	"google.golang.org/grpc"

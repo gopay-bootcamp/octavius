@@ -7,13 +7,10 @@ import (
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/util"
 
-	"google.golang.org/grpc/status"
-
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
-	octerr "octavius/internal/pkg/errors"
 
-	clientCPproto "octavius/internal/pkg/protofiles/client_CP"
+	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 
 	"github.com/gogo/protobuf/proto"
 )
@@ -43,18 +40,17 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 	val, err := proto.Marshal(metadata)
 
 	if err != nil {
-		errMsg := status.Error(2, "error in marshalling")
-		return nil, errMsg
+		return nil, err
 	}
 	dbKey := prefix + key
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
-		errMsg := status.Error(2, constant.KeyAlreadyPresent)
-		return nil, errMsg
+		return nil, errors.New(constant.KeyAlreadyPresent)
 	}
 
 	if err != nil {
+		fmt.Println(err.Error())
 		if err.Error() != constant.NoValueFound {
 			return nil, err
 		}
@@ -74,16 +70,18 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error) {
 	res, err := c.etcdClient.GetAllValues(ctx, prefix)
 	if err != nil {
-		errMsg := octerr.New(3, errors.New(constant.EtcdSaveError))
 		var arr []*clientCPproto.Metadata
 		res := &clientCPproto.MetadataArray{Values: arr}
-		return res, errMsg
+		return res, err
 	}
 
 	var resArr []*clientCPproto.Metadata
 	for _, val := range res {
 		metadata := &clientCPproto.Metadata{}
-		proto.Unmarshal([]byte(val), metadata)
+		err := proto.Unmarshal([]byte(val), metadata)
+		if err != nil {
+			return nil, err
+		}
 		resArr = append(resArr, metadata)
 	}
 	resp := &clientCPproto.MetadataArray{Values: resArr}
