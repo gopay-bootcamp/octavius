@@ -9,9 +9,9 @@ import (
 
 var cfgFile string
 var rootCmd = &cobra.Command{
-	Use:   "control_plane",
-	Short: "Control plane of octavius",
-	Long:  `Control plane of octavius takes request from cli`,
+	Use:   "controller",
+	Short: "Controller of octavius",
+	Long:  `Controller of octavius takes request from cli`,
 }
 
 // Execute executes the root command of octavius control plane
