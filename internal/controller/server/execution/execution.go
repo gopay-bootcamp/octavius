@@ -128,7 +128,6 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	healthChan := make(chan string)
 	sessionID, err := idgen.NextID()
 	if err != nil {
-		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	newActiveExecutor := activeExecutor{
