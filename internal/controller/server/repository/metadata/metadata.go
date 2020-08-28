@@ -56,7 +56,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 		}
 	}
 
-	log.Info(fmt.Sprintf("Request ID: %v, saving metadata to etcd", ctx.Value(util.ContextKeyUUID)))
+	log.Info(fmt.Sprintf("Request ID: %v, saving metadata to etcd with value %s", ctx.Value(util.ContextKeyUUID, metadata.String())))
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
 		return nil, err

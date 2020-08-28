@@ -36,7 +36,7 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request ID: %v, PostMetadata request received", uuid))
+	log.Info(fmt.Sprintf("request ID: %v, PostMetadata request received with metadata %v", uuid, request.Metadata))
 
 	name, err := s.procExec.SaveMetadata(ctx, request.Metadata)
 	if err != nil {

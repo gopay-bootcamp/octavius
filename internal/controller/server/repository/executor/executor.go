@@ -47,7 +47,7 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 		return &executorCPproto.RegisterResponse{}, err
 	}
 
-	log.Info(fmt.Sprintf("request ID: %v, saved executor %s info to etcd", ctx.Value(util.ContextKeyUUID), key))
+	log.Info(fmt.Sprintf("request ID: %v, saved executor %s info to etcd with value %v", ctx.Value(util.ContextKeyUUID), key, executorInfo))
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
 }
 

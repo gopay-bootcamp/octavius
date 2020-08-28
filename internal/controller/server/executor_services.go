@@ -48,7 +48,7 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, request.ID))
+	log.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, request.I))
 
 	res, err := e.procExec.RegisterExecutor(ctx, request)
 	if err != nil {
