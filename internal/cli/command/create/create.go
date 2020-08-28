@@ -23,17 +23,17 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 
 			metadataFileIoReader, err := fileUtil.GetIoReader(metadataFilePath)
 			if err != nil {
-				log.Error(err, "")
+				log.Error(err, "error in reading file")
 				return
 			}
 
 			client := &client.GrpcClient{}
 			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
-				log.Error(err, "")
+				log.Error(err, "error in creating metadata")
 				return
 			}
-			
+
 			log.Info(fmt.Sprintf("%s job created", res.Name))
 		},
 	}

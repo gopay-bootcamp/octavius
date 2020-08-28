@@ -2,11 +2,12 @@ package daemon
 
 import (
 	"errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
-	octerr "octavius/internal/pkg/errors"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"time"
 
 	"github.com/gogo/protobuf/jsonpb"
@@ -57,12 +58,12 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	metadata := protobuf.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
-		return nil, octerr.New(1, err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	err = c.startOctaviusClient(grpcClient)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	postRequestHeader := protobuf.ClientInfo{
@@ -81,7 +82,7 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*[]protobuf.Log, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	postRequestHeader := protobuf.ClientInfo{
@@ -98,7 +99,7 @@ func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) 
 func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) (*protobuf.Response, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	postRequestHeader := protobuf.ClientInfo{
 		ClientEmail: c.emailId,

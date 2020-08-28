@@ -2,9 +2,9 @@ package execution
 
 import (
 	"context"
-	"octavius/internal/controller/server/metadata/repository"
+	"octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_CP"
+	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"reflect"
 	"testing"
 )
@@ -14,7 +14,7 @@ func init() {
 }
 
 func Test_execution_SaveMetadataToDb(t *testing.T) {
-	metadataRepoMock := new(repository.MetadataMock)
+	metadataRepoMock := new(metadata.MetadataMock)
 
 	metadataVal := &protobuf.Metadata{
 		Author:      "littlestar642",
@@ -31,7 +31,7 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 	}
 	metadataRepoMock.On("Save", "test data", metadataVal).Return(metadataResp, nil)
 	type fields struct {
-		metadata repository.MetadataRepository
+		metadata metadata.MetadataMock
 	}
 	type args struct {
 		ctx      context.Context
@@ -46,7 +46,7 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 	}{
 		{
 			fields: fields{
-				metadata: metadataRepoMock,
+				metadata: *metadataRepoMock,
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -64,9 +64,9 @@ func Test_execution_SaveMetadataToDb(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := &execution{
-				metadata: tt.fields.metadata,
+				metadataRepo: tt.fields.metadata,
 			}
-			got, err := e.SaveMetadataToDb(tt.args.ctx, tt.args.metadata)
+			got, err := e.Save(tt.args.ctx, tt.args.metadata)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("execution.SaveMetadataToDb() error = %v, wantErr %v", err, tt.wantErr)
 				return

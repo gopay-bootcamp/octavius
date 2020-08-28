@@ -110,7 +110,7 @@ func TestEtcdClient_GetValue(t *testing.T) {
 func TestEtcdClient_GetValueWithRevision(t *testing.T) {
 	// TODO: this test is fail because we haven't mock the etcd yet.
 	t.Skip()
-	
+
 	client, err := NewClient(dialTimeout, etcdPort)
 	if err != nil {
 		t.Error(err)

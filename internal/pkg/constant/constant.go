@@ -12,7 +12,7 @@ var ErrorCode = map[int]string{
 
 // group the const
 const (
-	
+
 	// error messages
 	ConfigOctaviusHostMissingError = "Config Error\nMandatory config CP_HOST is missing in Octavius Config file."
 	ClientError                    = "malformed request"
@@ -24,7 +24,8 @@ const (
 	JobSucceeded                   = "SUCCEEDED"
 	JobFailed                      = "FAILED"
 	JobWaiting                     = "WAITING"
-	
+	NullRevision                   = -1
+
 	// LoggerSkipFrameCount is for ...
-	LoggerSkipFrameCount           = 3
+	LoggerSkipFrameCount = 3
 )

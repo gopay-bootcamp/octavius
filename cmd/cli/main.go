@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"octavius/internal/cli/command"
 	"octavius/internal/cli/config"
@@ -9,9 +10,9 @@ import (
 )
 
 func main() {
-	// TODO: get log level from config and define log file path if any
-	if err := octlog.Init("info", ""); err != nil {
-		log.Fatal("fail to initialize octavius log")
+	logfilePath := config.LogFilePath
+	if err := octlog.Init("info", logfilePath, true); err != nil {
+		log.Fatal(fmt.Sprintf("failed to initialize config %v", err))
 	}
 
 	clientConfigLoader := config.NewLoader()

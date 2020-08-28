@@ -1,0 +1,10 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles/executor_cp";
+
+import "internal/pkg/protofiles/executor_cp/ping_message.proto";
+import "internal/pkg/protofiles/executor_cp/register_message.proto";
+
+service ExecutorCPServices{
+    rpc HealthCheck(Ping) returns (HealthResponse);
+    rpc Register(RegisterRequest) returns(RegisterResponse);
+}
