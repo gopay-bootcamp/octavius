@@ -11,6 +11,7 @@ import (
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"octavius/internal/pkg/util"
 	"sync"
 	"time"
 )
@@ -21,7 +22,7 @@ type Execution interface {
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
-	StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string)
+	StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string, requestID uint64)
 }
 
 type execution struct {
@@ -57,11 +58,11 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 }
 
 //StartExecutionHealthCheck checks for executor ping at regular interval
-func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string) {
+func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string, requestID uint64) {
 	ctx := context.Background()
 	timer := time.NewTimer(config.Config().ExecutorPingDeadline)
 	cleanUpChan := make(chan struct{})
-	log.Info(fmt.Sprintf("opening connection with executor: %s", id))
+	log.Info(fmt.Sprintf("request ID: %v, opening connection with executor: %s", requestID, id))
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
 	if err != nil {
 		log.Error(err, "")
@@ -83,10 +84,10 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 				log.Error(err, "")
 				cleanUpChan <- struct{}{}
 			}
-			log.Info(fmt.Sprintf("deadline exceeded for executor with %s id, reallocating jobs", id))
+			log.Info(fmt.Sprintf("request ID: %v, deadline exceeded for executor with %s id", requestID, id))
 			cleanUpChan <- struct{}{}
 		case <-cleanUpChan:
-			log.Info(fmt.Sprintf("closing connection with executor: %s", id))
+			log.Info(fmt.Sprintf("request ID: %v, closing connection with executor: %s", requestID, id))
 			activeExecutorMap.Delete(id)
 			close(healthChan)
 			timer.Stop()
@@ -97,7 +98,7 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
-
+	requestID := ctx.Value(util.ContextKeyUUID)
 	// construct to load channel if executor present in memory map
 	if channel, ok := e.activeExecutorMap.Load(executorID); ok {
 		channel.(chan string) <- request.State
@@ -116,6 +117,6 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	healthChan := make(chan string)
 
 	e.activeExecutorMap.Store(executorID, healthChan)
-	go e.StartExecutorHealthCheck(e.activeExecutorMap, executorID, healthChan)
+	go e.StartExecutorHealthCheck(e.activeExecutorMap, executorID, healthChan, uint64(requestID.(uint64)))
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }

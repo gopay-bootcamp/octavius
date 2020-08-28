@@ -47,7 +47,7 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 		return &executorCPproto.RegisterResponse{}, err
 	}
 
-	log.Info(fmt.Sprintf("request id:%v, saved executor %s info to etcd", util.ContextKeyUUID, key))
+	log.Info(fmt.Sprintf("request ID: %v, saved executor %s info to etcd", ctx.Value(util.ContextKeyUUID), key))
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
 }
 
@@ -64,7 +64,7 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 		return nil, err
 	}
 
-	log.Info(fmt.Sprintf("request id:%v, recieved executor id:%s info and info value is %s", util.ContextKeyUUID, key, infoString))
+	log.Info(fmt.Sprintf("request ID: %v, recieved executor id:%s info and info value is %s", ctx.Value(util.ContextKeyUUID), key, infoString))
 	executor := &executorCPproto.ExecutorInfo{}
 
 	err = proto.Unmarshal([]byte(infoString), executor)

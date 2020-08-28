@@ -2,14 +2,14 @@ package util
 
 import "context"
 
-type contextKey string
+type ContextKey string
 
-func (c contextKey) String() string {
+func (c ContextKey) String() string {
 	return string(c)
 }
 
 var (
-	ContextKeyUUID contextKey
+	ContextKeyUUID ContextKey
 )
 
 // GetJobIDFromContext gets the jobID value from the context.
