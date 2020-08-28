@@ -4,13 +4,13 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"octavius/internal/pkg/db/etcd"
-	"octavius/internal/pkg/randomIdGenerator"
+	"octavius/internal/pkg/idgen"
 	"testing"
 )
 
 func TestAddToPendingList(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	mockRandomIdGenerator.On("Generate").Return(uint64(123456789), nil)
@@ -24,7 +24,7 @@ func TestAddToPendingList(t *testing.T) {
 
 func TestAddToPendingListForIdGeneratorFailure(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	mockRandomIdGenerator.On("Generate").Return(uint64(0), errors.New("failed to generate randomId"))
@@ -38,7 +38,7 @@ func TestAddToPendingListForIdGeneratorFailure(t *testing.T) {
 
 func TestAddToPendingListForEtcdClientFailure(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	mockRandomIdGenerator.On("Generate").Return(uint64(123456789), nil)
@@ -52,7 +52,7 @@ func TestAddToPendingListForEtcdClientFailure(t *testing.T) {
 
 func TestRemoveFromPendingList(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	mockEtcdClient.On("DeleteKey").Return(true, nil)
@@ -64,7 +64,7 @@ func TestRemoveFromPendingList(t *testing.T) {
 
 func TestRemoveFromPendingListForEtcdClientFailure(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	mockEtcdClient.On("DeleteKey").Return(false, errors.New("failed to delete key from etcd"))
@@ -76,7 +76,7 @@ func TestRemoveFromPendingListForEtcdClientFailure(t *testing.T) {
 
 func TestFetchJob(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	var keys, values []string
@@ -96,7 +96,7 @@ func TestFetchJob(t *testing.T) {
 
 func TestFetchJobForEtcdClientFailure(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	var keys, values []string
@@ -113,7 +113,7 @@ func TestFetchJobForEtcdClientFailure(t *testing.T) {
 
 func TestFetchJobForNoPendingJob(t *testing.T) {
 	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := randomIdGenerator.IdGeneratorMock{}
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
 	var keys, values []string

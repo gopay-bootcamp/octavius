@@ -19,17 +19,19 @@ type customCTXKey string
 
 type clientCPServicesServer struct {
 	procExec execution.Execution
+	idgen    idgen.RandomIdGenerator
 }
 
 // NewProcServiceServer used to create a new execution context
-func NewProcServiceServer(exec execution.Execution) clientCPproto.ClientCPServicesServer {
+func NewProcServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) clientCPproto.ClientCPServicesServer {
 	return &clientCPServicesServer{
 		procExec: exec,
+		idgen: idgen,
 	}
 }
 
 func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clientCPproto.RequestToPostMetadata) (*clientCPproto.MetadataName, error) {
-	uuid, err := idgen.NextID()
+	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
@@ -47,7 +49,7 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 }
 
 func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *clientCPproto.RequestToGetAllMetadata) (*clientCPproto.MetadataArray, error) {
-	uuid, err := idgen.NextID()
+	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
@@ -64,7 +66,7 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 }
 
 func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestForStreamLog, stream clientCPproto.ClientCPServices_GetStreamLogsServer) error {
-	uuid, err := idgen.NextID()
+	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning is to the request")
 		return status.Error(codes.Internal, err.Error())

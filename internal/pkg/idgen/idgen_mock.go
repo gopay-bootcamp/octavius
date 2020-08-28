@@ -1,4 +1,4 @@
-package randomIdGenerator
+package idgen
 
 import "github.com/stretchr/testify/mock"
 

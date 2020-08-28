@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"octavius/internal/pkg/db/etcd"
-	"octavius/internal/pkg/randomIdGenerator"
+	"octavius/internal/pkg/idgen"
 	"strconv"
 )
 
@@ -13,12 +13,13 @@ type Scheduler interface {
 	FetchJob() (string, error)
 	RemoveFromPendingList(string) error
 }
+
 type scheduler struct {
-	etcdClient etcd.Client
-	idGenerator randomIdGenerator.RandomIdGenerator
+	etcdClient  etcd.Client
+	idGenerator idgen.RandomIdGenerator
 }
 
-func NewScheduler(etcdClient etcd.Client,idGenerator randomIdGenerator.RandomIdGenerator) Scheduler {
+func NewScheduler(etcdClient etcd.Client,idGenerator idgen.RandomIdGenerator) Scheduler {
 	return &scheduler{
 		etcdClient: etcdClient,
 		idGenerator:idGenerator,
