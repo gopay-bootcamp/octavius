@@ -2,12 +2,12 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/util"
+	"strconv"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -82,8 +82,13 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 	return nil
 }
 
+//ExecuteJob will call Executejob function of execution and get jobId
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
-	//will be utilized after implementation
-	//uid, err := id_generator.NextID()
-	return nil, errors.New("not implemented yet")
+	jobId, err:= s.procExec.ExecuteJob(ctx,execute.JobName,execute.JobData)
+	if err!= nil {
+		return &clientCPproto.Response{Status: "failure"}, err
+	}
+	fmt.Println(jobId)
+	jobIdString := strconv.FormatUint(jobId, 10)
+	return &clientCPproto.Response{Status: "Job created successfully with JobId "+ jobIdString}, err
 }

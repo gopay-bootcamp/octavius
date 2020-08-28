@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"octavius/internal/controller/config"
 	executorRepo "octavius/internal/controller/server/repository/executor"
+	jobExecutorRepo "octavius/internal/controller/server/repository/jobExecutor"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
@@ -25,12 +26,15 @@ type Execution interface {
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 	StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, executor activeExecutor)
+	ExecuteJob(ctx context.Context, name string, data map[string]string) (uint64, error)
 }
 
 type execution struct {
 	metadataRepo      metadataRepo.Repository
 	executorRepo      executorRepo.Repository
+	jobExecutorRepo   jobExecutorRepo.JobExecutionRepository
 	activeExecutorMap *sync.Map
+
 }
 
 type activeExecutor struct {
@@ -39,9 +43,10 @@ type activeExecutor struct {
 }
 
 // NewExec creates a new instance of metadata respository
-func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository) Execution {
+func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository, jobExecutorRepo jobExecutorRepo.JobExecutionRepository) Execution {
 	return &execution{
 		metadataRepo:      metadataRepo,
+		jobExecutorRepo:  jobExecutorRepo,
 		executorRepo:      executorRepo,
 		activeExecutorMap: new(sync.Map),
 	}
@@ -137,4 +142,10 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	e.activeExecutorMap.Store(executorID, newActiveExecutor)
 	go e.StartExecutorHealthCheck(e.activeExecutorMap, executorID, newActiveExecutor)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
+}
+
+//ExecuteJob function will call jobExecutor repository and get jonId
+func (e *execution) ExecuteJob(ctx context.Context, jobName string, jobData map[string]string) (uint64, error) {
+	jobId, err := e.jobExecutorRepo.ExecuteJob(ctx, jobName, jobData)
+	return jobId, err
 }

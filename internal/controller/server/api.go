@@ -6,11 +6,14 @@ import (
 	"octavius/internal/controller/config"
 	"octavius/internal/controller/server/execution"
 	executorRepo "octavius/internal/controller/server/repository/executor"
+	repository "octavius/internal/controller/server/repository/jobExecutor"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
+	"octavius/internal/controller/server/scheduler"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"octavius/internal/pkg/randomIdGenerator"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -31,7 +34,10 @@ func Start() error {
 
 	executorRepository := executorRepo.NewExecutorRepository(etcdClient)
 
-	exec := execution.NewExec(metadataRepository, executorRepository)
+	randomIdGenerator :=randomIdGenerator.NewRandomIdGenerator()
+	jobExecutionRepository := repository.NewJobExecutionRepository(etcdClient,scheduler.NewScheduler(etcdClient,randomIdGenerator),randomIdGenerator)
+
+	exec := execution.NewExec(metadataRepository, executorRepository,jobExecutionRepository)
 	clientCPGrpcServer := NewProcServiceServer(exec)
 	executorCPGrpcServer := NewExecutorServiceServer(exec)
 

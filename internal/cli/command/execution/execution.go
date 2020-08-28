@@ -31,6 +31,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			if err != nil {
 				log.Error(err, response.Status)
 			}
+			log.Info(fmt.Sprintf(response.Status))
 		},
 	}
 }
