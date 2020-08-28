@@ -2,18 +2,20 @@ package execution
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"octavius/internal/controller/config"
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/pkg/constant"
+	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
-	"octavius/internal/pkg/util"
 	"sync"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Execution interface for methods related to execution
@@ -22,13 +24,18 @@ type Execution interface {
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
-	StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string, requestID uint64)
+	StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, executor activeExecutor)
 }
 
 type execution struct {
 	metadataRepo      metadataRepo.Repository
 	executorRepo      executorRepo.Repository
 	activeExecutorMap *sync.Map
+}
+
+type activeExecutor struct {
+	sessionID  uint64
+	healthChan chan string
 }
 
 // NewExec creates a new instance of metadata respository
@@ -57,39 +64,43 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 	return e.executorRepo.Save(ctx, key, value)
 }
 
+func removeActiveExecutor(activeExecutorMap *sync.Map, id string, executor activeExecutor) {
+	log.Info(fmt.Sprintf("session id: %d, executor id : %s, closing executor session", executor.sessionID, id))
+	close(executor.healthChan)
+	activeExecutorMap.Delete(id)
+}
+
 //StartExecutionHealthCheck checks for executor ping at regular interval
-func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, healthChan chan string, requestID uint64) {
+func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, executor activeExecutor) {
 	ctx := context.Background()
 	timer := time.NewTimer(config.Config().ExecutorPingDeadline)
-	cleanUpChan := make(chan struct{})
-	log.Info(fmt.Sprintf("request ID: %v, opening connection with executor: %s", requestID, id))
+	log.Info(fmt.Sprintf("session ID: %v, opening connection with executor: %s", executor.sessionID, id))
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
 	if err != nil {
-		log.Error(err, "")
-		cleanUpChan <- struct{}{}
+		log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
+		removeActiveExecutor(activeExecutorMap, id, executor)
+		return
 	}
 	for {
 		select {
-		case health := <-healthChan:
+		case health := <-executor.healthChan:
 			err := e.executorRepo.UpdateStatus(ctx, id, health)
 			if err != nil {
-				log.Error(err, "")
-				cleanUpChan <- struct{}{}
+				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
+				removeActiveExecutor(activeExecutorMap, id, executor)
+				return
 			}
 			timer.Stop()
 			timer.Reset(config.Config().ExecutorPingDeadline)
 		case <-timer.C:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
-				log.Error(err, "")
-				cleanUpChan <- struct{}{}
+				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
+				removeActiveExecutor(activeExecutorMap, id, executor)
+				return
 			}
-			log.Info(fmt.Sprintf("request ID: %v, deadline exceeded for executor with %s id", requestID, id))
-			cleanUpChan <- struct{}{}
-		case <-cleanUpChan:
-			log.Info(fmt.Sprintf("request ID: %v, closing connection with executor: %s", requestID, id))
-			activeExecutorMap.Delete(id)
-			close(healthChan)
+			log.Info(fmt.Sprintf("session ID: %v, deadline exceeded for executor with %s id", executor.sessionID, id))
+			removeActiveExecutor(activeExecutorMap, id, executor)
 			timer.Stop()
 			return
 		}
@@ -98,25 +109,33 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
-	requestID := ctx.Value(util.ContextKeyUUID)
+
 	// construct to load channel if executor present in memory map
-	if channel, ok := e.activeExecutorMap.Load(executorID); ok {
-		channel.(chan string) <- request.State
+	if executor, ok := e.activeExecutorMap.Load(executorID); ok {
+		executor.(activeExecutor).healthChan <- request.State
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
 
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return nil, errors.New("executor not registered")
+			return nil, status.Error(codes.PermissionDenied, "executor not registered")
 		}
 		return nil, err
 	}
 
 	// construct to make a new channel and add the executor to the in memory map
 	healthChan := make(chan string)
-
-	e.activeExecutorMap.Store(executorID, healthChan)
-	go e.StartExecutorHealthCheck(e.activeExecutorMap, executorID, healthChan, uint64(requestID.(uint64)))
+	sessionID, err := idgen.NextID()
+	if err != nil {
+		log.Error(err, "error while assigning id to the request")
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	newActiveExecutor := activeExecutor{
+		healthChan: healthChan,
+		sessionID:  sessionID,
+	}
+	e.activeExecutorMap.Store(executorID, newActiveExecutor)
+	go e.StartExecutorHealthCheck(e.activeExecutorMap, executorID, newActiveExecutor)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }

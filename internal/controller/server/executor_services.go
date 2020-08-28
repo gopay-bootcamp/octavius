@@ -25,16 +25,9 @@ func NewExecutorServiceServer(exec execution.Execution) executorCPproto.Executor
 }
 
 func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
-	uuid, err := idgen.NextID()
-	if err != nil {
-		log.Error(err, "error while assigning id to the request")
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	res, err := e.procExec.UpdateExecutorStatus(ctx, ping)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("request id: %v, error in health check for executor with id %s", uuid, ping.ID))
+		log.Error(err, fmt.Sprintf("executor id: %s, error in running health check", ping.ID))
 		return nil, err
 	}
 	return res, err
@@ -43,12 +36,12 @@ func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *execut
 func (e *executorCPServicesServer) Register(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
 	uuid, err := idgen.NextID()
 	if err != nil {
-		log.Error(err, "error while assigning id to the request")
+		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning id to the request", request.ID))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, request.I))
+	log.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, request.ID))
 
 	res, err := e.procExec.RegisterExecutor(ctx, request)
 	if err != nil {

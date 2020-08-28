@@ -63,8 +63,6 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 	if err != nil {
 		return nil, err
 	}
-
-	log.Info(fmt.Sprintf("request ID: %v, recieved executor id:%s info and info value is %s", ctx.Value(util.ContextKeyUUID), key, infoString))
 	executor := &executorCPproto.ExecutorInfo{}
 
 	err = proto.Unmarshal([]byte(infoString), executor)

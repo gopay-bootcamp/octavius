@@ -76,7 +76,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 
 	err = stream.Send(logString)
 	if err != nil {
-		log.Error(errors.New(fmt.Sprintf("request id: %v, error in streaming logs, error details: %v", uuid, err)), "")
+		log.Error(fmt.Errorf("request id: %v, error in streaming logs, error details: %v", uuid, err), "")
 		return status.Error(codes.Internal, err.Error())
 	}
 	return nil
