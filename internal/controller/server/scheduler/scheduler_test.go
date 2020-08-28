@@ -13,26 +13,11 @@ func TestAddToPendingList(t *testing.T) {
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
-	mockRandomIdGenerator.On("Generate").Return(uint64(123456789), nil)
-	mockEtcdClient.On("PutValue", "jobs/pending/123456789", "11").Return(nil)
+	mockEtcdClient.On("PutValue", "jobs/pending/11", "11").Return(nil)
 
 	err := scheduler.AddToPendingList(uint64(11))
 	assert.Nil(t, err)
 	mockEtcdClient.AssertExpectations(t)
-	mockRandomIdGenerator.AssertExpectations(t)
-}
-
-func TestAddToPendingListForIdGeneratorFailure(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
-
-	mockRandomIdGenerator.On("Generate").Return(uint64(0), errors.New("failed to generate randomId"))
-	mockEtcdClient.On("PutValue", "jobs/pending/123456789", "11").Return(nil)
-
-	err := scheduler.AddToPendingList(uint64(11))
-	assert.Equal(t, err.Error(), "failed to generate randomId")
-	mockEtcdClient.AssertNotCalled(t, "PutValue", "jobs/pending/123456789", "11")
 	mockRandomIdGenerator.AssertExpectations(t)
 }
 
@@ -41,8 +26,7 @@ func TestAddToPendingListForEtcdClientFailure(t *testing.T) {
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
 
-	mockRandomIdGenerator.On("Generate").Return(uint64(123456789), nil)
-	mockEtcdClient.On("PutValue", "jobs/pending/123456789", "11").Return(errors.New("failed to put value in etcd"))
+	mockEtcdClient.On("PutValue", "jobs/pending/11", "11").Return(errors.New("failed to put value in etcd"))
 
 	err := scheduler.AddToPendingList(uint64(11))
 	assert.Equal(t, err.Error(), "failed to put value in etcd")
@@ -57,7 +41,7 @@ func TestRemoveFromPendingList(t *testing.T) {
 
 	mockEtcdClient.On("DeleteKey").Return(true, nil)
 
-	err := scheduler.RemoveFromPendingList("jobs/pending/123456789")
+	err := scheduler.RemoveFromPendingList("jobs/pending/11")
 	assert.Nil(t, err)
 	mockEtcdClient.AssertExpectations(t)
 }
@@ -69,7 +53,7 @@ func TestRemoveFromPendingListForEtcdClientFailure(t *testing.T) {
 
 	mockEtcdClient.On("DeleteKey").Return(false, errors.New("failed to delete key from etcd"))
 
-	err := scheduler.RemoveFromPendingList("jobs/pending/123456789")
+	err := scheduler.RemoveFromPendingList("jobs/pending/11")
 	assert.Equal(t, err.Error(), "failed to delete key from etcd")
 	mockEtcdClient.AssertExpectations(t)
 }
