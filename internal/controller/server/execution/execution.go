@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jonboulle/clockwork"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,26 +25,49 @@ type Execution interface {
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
-	StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, executor activeExecutor)
 }
 
 type execution struct {
 	metadataRepo      metadataRepo.Repository
 	executorRepo      executorRepo.Repository
-	activeExecutorMap *sync.Map
+	activeExecutorMap *activeExecutorMap
 }
 
 type activeExecutor struct {
 	sessionID  uint64
 	healthChan chan string
+	timer      <-chan time.Time
+}
+
+type activeExecutorMap struct {
+	execMap *sync.Map
+}
+
+func (m *activeExecutorMap) Get(key string) (*activeExecutor, bool) {
+	exec, ok := m.execMap.Load(key)
+	if ok {
+		return exec.(*activeExecutor), ok
+	}
+	return nil, ok
+}
+
+func (m *activeExecutorMap) Put(key string, executor *activeExecutor) {
+	m.execMap.Store(key, executor)
+}
+
+func (m *activeExecutorMap) Delete(key string) {
+	m.execMap.Delete(key)
 }
 
 // NewExec creates a new instance of metadata respository
 func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository) Execution {
+	newActiveExecutorMap := &activeExecutorMap{
+		execMap: new(sync.Map),
+	}
 	return &execution{
 		metadataRepo:      metadataRepo,
 		executorRepo:      executorRepo,
-		activeExecutorMap: new(sync.Map),
+		activeExecutorMap: newActiveExecutorMap,
 	}
 }
 
@@ -64,16 +88,16 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 	return e.executorRepo.Save(ctx, key, value)
 }
 
-func removeActiveExecutor(activeExecutorMap *sync.Map, id string, executor activeExecutor) {
+func removeActiveExecutor(activeExecutorMap *activeExecutorMap, id string, executor *activeExecutor) {
 	log.Info(fmt.Sprintf("session id: %d, executor id : %s, closing executor session", executor.sessionID, id))
 	close(executor.healthChan)
 	activeExecutorMap.Delete(id)
 }
 
 //StartExecutionHealthCheck checks for executor ping at regular interval
-func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id string, executor activeExecutor) {
+func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap, id string) {
+	executor, _ := activeExecutorMap.Get(id)
 	ctx := context.Background()
-	timer := time.NewTimer(config.Config().ExecutorPingDeadline)
 	log.Info(fmt.Sprintf("session ID: %v, opening connection with executor: %s", executor.sessionID, id))
 	err := e.executorRepo.UpdateStatus(ctx, id, "free")
 	if err != nil {
@@ -90,9 +114,7 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 				removeActiveExecutor(activeExecutorMap, id, executor)
 				return
 			}
-			timer.Stop()
-			timer.Reset(config.Config().ExecutorPingDeadline)
-		case <-timer.C:
+		case <-executor.timer:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
@@ -101,7 +123,7 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 			}
 			log.Info(fmt.Sprintf("session ID: %v, deadline exceeded for executor with %s id", executor.sessionID, id))
 			removeActiveExecutor(activeExecutorMap, id, executor)
-			timer.Stop()
+			executor.timer = nil
 			return
 		}
 	}
@@ -109,13 +131,17 @@ func (e *execution) StartExecutorHealthCheck(activeExecutorMap *sync.Map, id str
 
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
+	clock := clockwork.NewRealClock()
+	pingTimeOut := config.Config().ExecutorPingDeadline
 
-	// construct to load channel if executor present in memory map
-	if executor, ok := e.activeExecutorMap.Load(executorID); ok {
-		executor.(activeExecutor).healthChan <- request.State
+	// if executor is already active
+	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
+		executor.healthChan <- request.State
+		executor.timer = clock.After(pingTimeOut)
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
 
+	//if executor is not registered in database
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
@@ -124,18 +150,25 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		return nil, err
 	}
 
-	// construct to make a new channel and add the executor to the in memory map
+	// if executor is registered and not yet active add it to activeExecutor map
 	healthChan := make(chan string)
 	sessionID, err := idgen.NextID()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	timer := clock.After(pingTimeOut)
 	newActiveExecutor := activeExecutor{
 		healthChan: healthChan,
 		sessionID:  sessionID,
+		timer:      timer,
 	}
-	e.activeExecutorMap.Store(executorID, newActiveExecutor)
-	go e.StartExecutorHealthCheck(e.activeExecutorMap, executorID, newActiveExecutor)
+	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
+
+	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
+}
+
+func getActiveExecutorMap(e *execution) *activeExecutorMap {
+	return e.activeExecutorMap
 }
