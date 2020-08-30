@@ -29,18 +29,21 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 		return err
 	}
 
-	f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		return err
+	consoleWriter := zerolog.ConsoleWriter{
+		Out: os.Stdout,
 	}
-
-	if logInConsole {
-		consoleWriter := zerolog.ConsoleWriter{
-			Out: os.Stdout,
+	if logFile != "" {
+		f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			return err
 		}
-		multi = zerolog.MultiLevelWriter(f, consoleWriter)
+		if logInConsole {
+			multi = zerolog.MultiLevelWriter(f, consoleWriter)
+		} else {
+			multi = zerolog.MultiLevelWriter(f)
+		}
 	} else {
-		multi = zerolog.MultiLevelWriter(f)
+		multi = zerolog.MultiLevelWriter(consoleWriter)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850
