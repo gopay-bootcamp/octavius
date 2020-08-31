@@ -3,12 +3,17 @@ package metadata
 import (
 	"context"
 	"octavius/internal/pkg/db/etcd"
+	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"reflect"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
 )
+
+func init() {
+	log.Init("info", "", false)
+}
 
 func Test_metadataRepository_Save(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
@@ -39,7 +44,6 @@ func Test_metadataRepository_Save(t *testing.T) {
 		want    *clientCPproto.MetadataName
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{
 			fields: fields{
 				etcdClient: mockClient,
@@ -49,13 +53,7 @@ func Test_metadataRepository_Save(t *testing.T) {
 				key:      "test data",
 				metadata: metadataVal,
 			},
-			want: &clientCPproto.MetadataName{
-				Name: "test data",
-				Err: &clientCPproto.Error{
-					ErrorCode:    0,
-					ErrorMessage: "no error",
-				},
-			},
+			want: &clientCPproto.MetadataName{Name: "test data"},
 		},
 	}
 	for _, tt := range tests {

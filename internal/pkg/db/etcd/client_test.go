@@ -14,13 +14,10 @@ var (
 )
 
 func init() {
-	log.Init("info", "")
+	log.Init("info", "", false)
 }
 
 func TestNewClient(t *testing.T) {
-	// TODO: this test is fail because we haven't mock the etcd yet.
-	t.Skip()
-
 	client, err := NewClient(dialTimeout, etcdPort)
 	if err != nil {
 		t.Error(err)
@@ -32,8 +29,6 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestEtcdClient_PutValue(t *testing.T) {
-	// TODO: this test is fail because we haven't mock the etcd yet.
-	t.Skip()
 
 	client, err := NewClient(dialTimeout, etcdPort)
 	if err != nil {
@@ -52,8 +47,6 @@ func TestEtcdClient_PutValue(t *testing.T) {
 }
 
 func TestEtcdClient_DeleteKey(t *testing.T) {
-	// TODO: this test is fail because we haven't mock the etcd yet.
-	t.Skip()
 
 	client, err := NewClient(dialTimeout, etcdPort)
 	if err != nil {
@@ -85,9 +78,6 @@ func TestEtcdClient_DeleteKey(t *testing.T) {
 }
 
 func TestEtcdClient_GetValue(t *testing.T) {
-	// TODO: this test is fail because we haven't mock the etcd yet.
-	t.Skip()
-
 	client, err := NewClient(dialTimeout, etcdPort)
 	if err != nil {
 		t.Error(err)
@@ -108,9 +98,6 @@ func TestEtcdClient_GetValue(t *testing.T) {
 	}
 }
 func TestEtcdClient_GetValueWithRevision(t *testing.T) {
-	// TODO: this test is fail because we haven't mock the etcd yet.
-	t.Skip()
-
 	client, err := NewClient(dialTimeout, etcdPort)
 	if err != nil {
 		t.Error(err)

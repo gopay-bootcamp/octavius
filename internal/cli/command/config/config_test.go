@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	log.Init("info", "")
+	log.Init("info", "",false)
 }
 func TestConfigCmdHelp(t *testing.T) {
 	mockFileUtil := new(file.MockFileUtil)
