@@ -54,4 +54,8 @@ To run the client -:
 
 Contributions are welcomed! Please read the [contributing.md](./docs/contributing.md) before adding one.
 
+## GUIDELINES
+
+1. Refrain from using `github.com/gogo/protobuf` and instead use `github.com/golang/protobuf` as previous one is failing when marshalling proto messages from string.
+
 

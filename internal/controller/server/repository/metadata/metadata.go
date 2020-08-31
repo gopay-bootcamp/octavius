@@ -12,7 +12,7 @@ import (
 
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 const prefix = "metadata/"
@@ -50,7 +50,6 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 	}
 
 	if err != nil {
-		fmt.Println(err.Error())
 		if err.Error() != constant.NoValueFound {
 			return nil, err
 		}
