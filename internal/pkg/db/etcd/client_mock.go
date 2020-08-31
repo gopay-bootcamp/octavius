@@ -32,10 +32,9 @@ func (m *ClientMock) GetValue(ctx context.Context, key string) (string, error) {
 
 // GetAllKeyAndValues mock
 func (m *ClientMock) GetAllKeyAndValues(ctx context.Context, prefix string) ([]string, []string, error) {
-	args:=m.Called(prefix)
-	return args.Get(0).([]string),args.Get(1).([]string), args.Error(2)
+	args := m.Called(prefix)
+	return args.Get(0).([]string), args.Get(1).([]string), args.Error(2)
 }
-
 
 // GetAllValues mock
 func (m *ClientMock) GetAllValues(ctx context.Context, prefix string) ([]string, error) {

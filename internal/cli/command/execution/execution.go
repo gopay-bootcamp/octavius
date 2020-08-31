@@ -29,7 +29,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			client := &client.GrpcClient{}
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
-				log.Error(err,"error in executing job")
+				log.Error(err, "error in executing job")
 				return
 			}
 			log.Info(response.Status)

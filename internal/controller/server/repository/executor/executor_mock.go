@@ -6,7 +6,7 @@ import (
 	executor_cp "octavius/internal/pkg/protofiles/executor_cp"
 )
 
-type ExecutorMock struct{
+type ExecutorMock struct {
 	mock.Mock
 }
 
@@ -21,4 +21,3 @@ func (e ExecutorMock) Get(ctx context.Context, key string) (*executor_cp.Executo
 func (e ExecutorMock) UpdateStatus(ctx context.Context, key string, health string) error {
 	panic("implement me")
 }
-

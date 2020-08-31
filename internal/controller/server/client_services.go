@@ -26,7 +26,7 @@ type clientCPServicesServer struct {
 func NewProcServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) clientCPproto.ClientCPServicesServer {
 	return &clientCPServicesServer{
 		procExec: exec,
-		idgen: idgen,
+		idgen:    idgen,
 	}
 }
 
@@ -86,11 +86,11 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 
 //ExecuteJob will call Executejob function of execution and get jobId
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
-	jobId, err:= s.procExec.ExecuteJob(ctx,execute.JobName,execute.JobData)
-	if err!= nil {
+	jobId, err := s.procExec.ExecuteJob(ctx, execute.JobName, execute.JobData)
+	if err != nil {
 		fmt.Println(err)
 		return &clientCPproto.Response{Status: "failure"}, err
 	}
 	jobIdString := strconv.FormatUint(jobId, 10)
-	return &clientCPproto.Response{Status: "Job created successfully with JobId "+ jobIdString}, err
+	return &clientCPproto.Response{Status: "Job created successfully with JobId " + jobIdString}, err
 }

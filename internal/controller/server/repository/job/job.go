@@ -8,7 +8,7 @@ import (
 
 type JobExecutionRepository interface {
 	ExecuteJob(context.Context, string, string, map[string]string) error
-	CheckJobMetadataIsAvailable(context.Context,string) (bool, error)
+	CheckJobMetadataIsAvailable(context.Context, string) (bool, error)
 }
 
 type jobExecutionRepository struct {

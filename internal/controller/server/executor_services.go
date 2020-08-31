@@ -14,14 +14,14 @@ import (
 
 type executorCPServicesServer struct {
 	procExec execution.Execution
-	idgen idgen.RandomIdGenerator
+	idgen    idgen.RandomIdGenerator
 }
 
 // NewExecutorServiceServer used to create a new execution context
 func NewExecutorServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) executorCPproto.ExecutorCPServicesServer {
 	return &executorCPServicesServer{
 		procExec: exec,
-		idgen: idgen,
+		idgen:    idgen,
 	}
 }
 
@@ -51,4 +51,3 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 	}
 	return res, err
 }
-

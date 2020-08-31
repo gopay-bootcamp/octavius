@@ -19,10 +19,10 @@ type scheduler struct {
 	idGenerator idgen.RandomIdGenerator
 }
 
-func NewScheduler(etcdClient etcd.Client,idGenerator idgen.RandomIdGenerator) Scheduler {
+func NewScheduler(etcdClient etcd.Client, idGenerator idgen.RandomIdGenerator) Scheduler {
 	return &scheduler{
-		etcdClient: etcdClient,
-		idGenerator:idGenerator,
+		etcdClient:  etcdClient,
+		idGenerator: idGenerator,
 	}
 }
 
@@ -39,7 +39,10 @@ func (s *scheduler) AddToPendingList(jobId uint64) error {
 
 func (s *scheduler) RemoveFromPendingList(key string) error {
 	_, err := s.etcdClient.DeleteKey(context.Background(), key)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *scheduler) FetchJob() (string, error) {
@@ -50,7 +53,7 @@ func (s *scheduler) FetchJob() (string, error) {
 		return "", err
 	}
 	if len(values) == 0 {
-		return "",errors.New("no pending job in pending job list")
+		return "", errors.New("no pending job in pending job list")
 	}
 	err = s.RemoveFromPendingList(prefix + keys[0])
 	if err != nil {

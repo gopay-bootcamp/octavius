@@ -81,135 +81,133 @@ func init() {
 	}
 }*/
 
-
 func TestExecuteJob(t *testing.T) {
-	jobExecutorRepoMock:=new(job.JobExecutorMock)
+	jobExecutorRepoMock := new(job.JobExecutorMock)
 	metadataRepoMock := new(metadata.MetadataMock)
 	mockScheduler := new(scheduler.SchedulerMock)
 	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock :=	 new(executor.ExecutorMock)
+	executorRepoMock := new(executor.ExecutorMock)
 
-	execution:=NewExec(metadataRepoMock,executorRepoMock,jobExecutorRepoMock,mockRandomIdGenerator,mockScheduler)
+	execution := NewExec(metadataRepoMock, executorRepoMock, jobExecutorRepoMock, mockRandomIdGenerator, mockScheduler)
 
-	testJobData:= map[string]string {
+	testJobData := map[string]string{
 		"env1": "envValue1",
 		"env2": "envValue2",
 	}
 
 	mockScheduler.On("AddToPendingList", uint64(11)).Return(nil)
-	mockRandomIdGenerator.On("Generate").Return(uint64(11),nil)
-	jobExecutorRepoMock.On("ExecuteJob","11","testJob",testJobData).Return(nil)
-	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable","testJob").Return(true,nil)
+	mockRandomIdGenerator.On("Generate").Return(uint64(11), nil)
+	jobExecutorRepoMock.On("ExecuteJob", "11", "testJob", testJobData).Return(nil)
+	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable", "testJob").Return(true, nil)
 
-	jobId,err:= execution.ExecuteJob(context.Background(),"testJob",testJobData)
-	assert.Nil(t,err)
-	assert.Equal(t,uint64(11),jobId)
+	jobId, err := execution.ExecuteJob(context.Background(), "testJob", testJobData)
+	assert.Nil(t, err)
+	assert.Equal(t, uint64(11), jobId)
 	jobExecutorRepoMock.AssertExpectations(t)
 	mockScheduler.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
 }
 
 func TestExecuteJobForJobExecutorRepoFailure(t *testing.T) {
-	jobExecutorRepoMock:=new(job.JobExecutorMock)
+	jobExecutorRepoMock := new(job.JobExecutorMock)
 	metadataRepoMock := new(metadata.MetadataMock)
 	mockScheduler := new(scheduler.SchedulerMock)
 	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock :=	 new(executor.ExecutorMock)
+	executorRepoMock := new(executor.ExecutorMock)
 
-	execution:=NewExec(metadataRepoMock,executorRepoMock,jobExecutorRepoMock,mockRandomIdGenerator,mockScheduler)
+	execution := NewExec(metadataRepoMock, executorRepoMock, jobExecutorRepoMock, mockRandomIdGenerator, mockScheduler)
 
-	testJobData:= map[string]string {
+	testJobData := map[string]string{
 		"env1": "envValue1",
 		"env2": "envValue2",
 	}
 	mockScheduler.On("AddToPendingList", uint64(11)).Return(nil)
-	mockRandomIdGenerator.On("Generate").Return(uint64(11),nil)
-	jobExecutorRepoMock.On("ExecuteJob","11","testJob",testJobData).Return(errors.New("failed to execute job"))
-	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable","testJob").Return(true,nil)
+	mockRandomIdGenerator.On("Generate").Return(uint64(11), nil)
+	jobExecutorRepoMock.On("ExecuteJob", "11", "testJob", testJobData).Return(errors.New("failed to execute job"))
+	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable", "testJob").Return(true, nil)
 
-	jobId,err:= execution.ExecuteJob(context.Background(),"testJob",testJobData)
-	assert.Equal(t,"failed to execute job",err.Error())
-	assert.Equal(t,uint64(11),jobId)
+	jobId, err := execution.ExecuteJob(context.Background(), "testJob", testJobData)
+	assert.Equal(t, "failed to execute job", err.Error())
+	assert.Equal(t, uint64(11), jobId)
 	jobExecutorRepoMock.AssertExpectations(t)
 	mockScheduler.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
 }
 
 func TestExecuteJobForSchedulerFailure(t *testing.T) {
-	jobExecutorRepoMock:=new(job.JobExecutorMock)
+	jobExecutorRepoMock := new(job.JobExecutorMock)
 	metadataRepoMock := new(metadata.MetadataMock)
 	mockScheduler := new(scheduler.SchedulerMock)
 	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock :=	 new(executor.ExecutorMock)
+	executorRepoMock := new(executor.ExecutorMock)
 
-	execution:=NewExec(metadataRepoMock,executorRepoMock,jobExecutorRepoMock,mockRandomIdGenerator,mockScheduler)
+	execution := NewExec(metadataRepoMock, executorRepoMock, jobExecutorRepoMock, mockRandomIdGenerator, mockScheduler)
 
-	testJobData:= map[string]string {
+	testJobData := map[string]string{
 		"env1": "envValue1",
 		"env2": "envValue2",
 	}
 	mockScheduler.On("AddToPendingList", uint64(11)).Return(errors.New("failed to add job in pending list"))
-	mockRandomIdGenerator.On("Generate").Return(uint64(11),nil)
-	jobExecutorRepoMock.On("ExecuteJob","11","testJob",testJobData).Return(nil)
-	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable","testJob").Return(true,nil)
+	mockRandomIdGenerator.On("Generate").Return(uint64(11), nil)
+	jobExecutorRepoMock.On("ExecuteJob", "11", "testJob", testJobData).Return(nil)
+	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable", "testJob").Return(true, nil)
 
-	jobId,err:= execution.ExecuteJob(context.Background(),"testJob",testJobData)
-	assert.Equal(t,err.Error(),"failed to add job in pending list")
-	assert.Equal(t,uint64(0),jobId)
-	jobExecutorRepoMock.AssertNotCalled(t,"ExecuteJob","11","testJob",testJobData)
+	jobId, err := execution.ExecuteJob(context.Background(), "testJob", testJobData)
+	assert.Equal(t, err.Error(), "failed to add job in pending list")
+	assert.Equal(t, uint64(0), jobId)
+	jobExecutorRepoMock.AssertNotCalled(t, "ExecuteJob", "11", "testJob", testJobData)
 	mockScheduler.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
 }
 
 func TestExecuteJobForRandomIdGeneratorFailure(t *testing.T) {
-	jobExecutorRepoMock:=new(job.JobExecutorMock)
+	jobExecutorRepoMock := new(job.JobExecutorMock)
 	metadataRepoMock := new(metadata.MetadataMock)
 	mockScheduler := new(scheduler.SchedulerMock)
 	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock :=	 new(executor.ExecutorMock)
+	executorRepoMock := new(executor.ExecutorMock)
 
-	execution:=NewExec(metadataRepoMock,executorRepoMock,jobExecutorRepoMock,mockRandomIdGenerator,mockScheduler)
+	execution := NewExec(metadataRepoMock, executorRepoMock, jobExecutorRepoMock, mockRandomIdGenerator, mockScheduler)
 
-	testJobData:= map[string]string {
+	testJobData := map[string]string{
 		"env1": "envValue1",
 		"env2": "envValue2",
 	}
 	mockScheduler.On("AddToPendingList", uint64(11)).Return(nil)
-	mockRandomIdGenerator.On("Generate").Return(uint64(0),errors.New("failed to generate random id"))
-	jobExecutorRepoMock.On("ExecuteJob","11","testJob",testJobData).Return(nil)
-	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable","testJob").Return(true,nil)
+	mockRandomIdGenerator.On("Generate").Return(uint64(0), errors.New("failed to generate random id"))
+	jobExecutorRepoMock.On("ExecuteJob", "11", "testJob", testJobData).Return(nil)
+	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable", "testJob").Return(true, nil)
 
-	jobId,err:= execution.ExecuteJob(context.Background(),"testJob",testJobData)
-	assert.Equal(t,err.Error(),"failed to generate random id")
-	assert.Equal(t,uint64(0),jobId)
-	jobExecutorRepoMock.AssertNotCalled(t,"ExecuteJob","11","testJob",testJobData)
-	mockScheduler.AssertNotCalled(t,"AddToPendingList", uint64(11))
+	jobId, err := execution.ExecuteJob(context.Background(), "testJob", testJobData)
+	assert.Equal(t, err.Error(), "failed to generate random id")
+	assert.Equal(t, uint64(0), jobId)
+	jobExecutorRepoMock.AssertNotCalled(t, "ExecuteJob", "11", "testJob", testJobData)
+	mockScheduler.AssertNotCalled(t, "AddToPendingList", uint64(11))
 	mockRandomIdGenerator.AssertExpectations(t)
 }
 
 func TestExecuteJobForJobNameNotAvailable(t *testing.T) {
-	jobExecutorRepoMock:=new(job.JobExecutorMock)
+	jobExecutorRepoMock := new(job.JobExecutorMock)
 	metadataRepoMock := new(metadata.MetadataMock)
 	mockScheduler := new(scheduler.SchedulerMock)
 	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock :=	 new(executor.ExecutorMock)
+	executorRepoMock := new(executor.ExecutorMock)
 
-	execution:=NewExec(metadataRepoMock,executorRepoMock,jobExecutorRepoMock,mockRandomIdGenerator,mockScheduler)
+	execution := NewExec(metadataRepoMock, executorRepoMock, jobExecutorRepoMock, mockRandomIdGenerator, mockScheduler)
 
-	testJobData:= map[string]string {
+	testJobData := map[string]string{
 		"env1": "envValue1",
 		"env2": "envValue2",
 	}
 	mockScheduler.On("AddToPendingList", uint64(11)).Return(nil)
-	mockRandomIdGenerator.On("Generate").Return(uint64(11),nil)
-	jobExecutorRepoMock.On("ExecuteJob","11","testJob",testJobData).Return(nil)
-	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable","testJob").Return(false,nil)
+	mockRandomIdGenerator.On("Generate").Return(uint64(11), nil)
+	jobExecutorRepoMock.On("ExecuteJob", "11", "testJob", testJobData).Return(nil)
+	jobExecutorRepoMock.On("CheckJobMetadataIsAvailable", "testJob").Return(false, nil)
 
-	jobId,err:= execution.ExecuteJob(context.Background(),"testJob",testJobData)
-	assert.Equal(t,err.Error(),"job with given name not available")
-	assert.Equal(t,uint64(0),jobId)
-	jobExecutorRepoMock.AssertNotCalled(t,"ExecuteJob","11","testJob",testJobData)
-	mockScheduler.AssertNotCalled(t,"AddToPendingList", uint64(11))
-	mockRandomIdGenerator.AssertNotCalled(t,"Generate")
+	jobId, err := execution.ExecuteJob(context.Background(), "testJob", testJobData)
+	assert.Equal(t, err.Error(), "job with given name not available")
+	assert.Equal(t, uint64(0), jobId)
+	jobExecutorRepoMock.AssertNotCalled(t, "ExecuteJob", "11", "testJob", testJobData)
+	mockScheduler.AssertNotCalled(t, "AddToPendingList", uint64(11))
+	mockRandomIdGenerator.AssertNotCalled(t, "Generate")
 }
-

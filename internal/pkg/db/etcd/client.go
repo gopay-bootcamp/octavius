@@ -17,7 +17,7 @@ type Client interface {
 	GetValue(ctx context.Context, key string) (string, error)
 	PutValue(ctx context.Context, key string, value string) error
 	GetAllValues(ctx context.Context, prefix string) ([]string, error)
-	GetAllKeyAndValues(ctx context.Context, prefix string) ([]string, []string,  error)
+	GetAllKeyAndValues(ctx context.Context, prefix string) ([]string, []string, error)
 	GetValueWithRevision(ctx context.Context, key string, header int64) (string, error)
 	Close()
 	SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan
@@ -80,7 +80,7 @@ func (client *etcdClient) GetValue(ctx context.Context, id string) (string, erro
 func (client *etcdClient) GetAllKeyAndValues(ctx context.Context, prefix string) ([]string, []string, error) {
 	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix())
 	if err != nil {
-		return nil,nil , err
+		return nil, nil, err
 	}
 	var keys []string
 	var values []string
@@ -91,7 +91,7 @@ func (client *etcdClient) GetAllKeyAndValues(ctx context.Context, prefix string)
 		value := string(kv.Value)
 		values = append(values, value)
 	}
-	return keys,values,nil
+	return keys, values, nil
 }
 
 //GetProcRevisionById returns revision of the key-value pair of the given key
