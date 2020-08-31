@@ -18,7 +18,4 @@ job_data_example/config/
 .vscode/
 .idea/
 .DS_Store
-cliLogs.log
-controllerLogs.log
-executorLogs.log
-testLogs.log
+ 

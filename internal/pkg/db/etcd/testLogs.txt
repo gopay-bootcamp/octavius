@@ -1,5 +1,0 @@
-{"level":"info","time":"Monday, 31-Aug-20 15:42:11 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/pkg/db/etcd/client.go:129","message":"Closing connections to db"}
-{"level":"info","time":"Monday, 31-Aug-20 15:42:11 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/pkg/db/etcd/client.go:129","message":"Closing connections to db"}
-{"level":"info","time":"Monday, 31-Aug-20 15:42:11 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/pkg/db/etcd/client.go:129","message":"Closing connections to db"}
-{"level":"info","time":"Monday, 31-Aug-20 15:42:11 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/pkg/db/etcd/client.go:129","message":"Closing connections to db"}
-{"level":"info","time":"Monday, 31-Aug-20 15:42:11 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/pkg/db/etcd/client.go:129","message":"Closing connections to db"}

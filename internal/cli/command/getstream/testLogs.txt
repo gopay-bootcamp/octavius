@@ -1,2 +1,0 @@
-{"level":"info","time":"Monday, 31-Aug-20 15:42:12 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/cli/command/getstream/getstream.go:26","message":"Test log 1\n"}
-{"level":"info","time":"Monday, 31-Aug-20 15:42:12 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/cli/command/getstream/getstream.go:26","message":"Test log 2\n"}
