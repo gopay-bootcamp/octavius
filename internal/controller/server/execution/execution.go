@@ -2,6 +2,7 @@ package execution
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"octavius/internal/controller/config"
 	executorRepo "octavius/internal/controller/server/repository/executor"
@@ -151,6 +152,14 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 
 //ExecuteJob function will call jobExecutor repository and get jonId
 func (e *execution) ExecuteJob(ctx context.Context, jobName string, jobData map[string]string) (uint64, error) {
+	jobAvailabilityStatus, err := e.jobExecutorRepo.CheckJobMetadataIsAvailable(ctx, jobName)
+	if err != nil {
+		return uint64(0), err
+	}
+	if jobAvailabilityStatus == false {
+		return uint64(0), errors.New("job with given name not available")
+	}
+
 	jobId, err := e.idGenerator.Generate()
 	if err != nil {
 		return uint64(0), err
@@ -161,7 +170,7 @@ func (e *execution) ExecuteJob(ctx context.Context, jobName string, jobData map[
 		return uint64(0), err
 	}
 	jobIdString := strconv.FormatUint(jobId, 10)
-	 err = e.jobExecutorRepo.ExecuteJob(ctx,jobIdString, jobName, jobData)
+	err = e.jobExecutorRepo.ExecuteJob(ctx, jobIdString, jobName, jobData)
 
 	return jobId, err
 }

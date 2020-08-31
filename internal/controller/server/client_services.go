@@ -88,9 +88,9 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
 	jobId, err:= s.procExec.ExecuteJob(ctx,execute.JobName,execute.JobData)
 	if err!= nil {
+		fmt.Println(err)
 		return &clientCPproto.Response{Status: "failure"}, err
 	}
-	fmt.Println(jobId)
 	jobIdString := strconv.FormatUint(jobId, 10)
 	return &clientCPproto.Response{Status: "Job created successfully with JobId "+ jobIdString}, err
 }

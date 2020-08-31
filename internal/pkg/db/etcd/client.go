@@ -78,7 +78,7 @@ func (client *etcdClient) GetValue(ctx context.Context, id string) (string, erro
 
 //GetAllValues return all values with keys starting with the given prefix
 func (client *etcdClient) GetAllKeyAndValues(ctx context.Context, prefix string) ([]string, []string, error) {
-	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend))
+	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix())
 	if err != nil {
 		return nil,nil , err
 	}
@@ -140,7 +140,6 @@ func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, h
 func (client *etcdClient) SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan {
 	watchChan := client.db.Watch(ctx, prefix, clientv3.WithPrefix())
 	return watchChan
-
 }
 
 //Close closes connection to etcd database
