@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	log.Init("info", "")
+	log.Init("info", "", true)
 }
 
 func TestGetStreamCmdHelp(t *testing.T) {

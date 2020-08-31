@@ -10,7 +10,6 @@ import (
 
 type engine struct {
 	logger *zerolog.Logger
-	// put configurabe field here
 }
 
 var logEngine engine // contain cli configarution
@@ -29,21 +28,20 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 		return err
 	}
 
-	consoleWriter := zerolog.ConsoleWriter{
-		Out: os.Stdout,
+	if logFile == "" {
+		logFile = "./testLogs.txt"
 	}
-	if logFile != "" {
-		f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			return err
-		}
-		if logInConsole {
-			multi = zerolog.MultiLevelWriter(f, consoleWriter)
-		} else {
-			multi = zerolog.MultiLevelWriter(f)
-		}
+
+	f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+
+	if logInConsole {
+		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
+		multi = zerolog.MultiLevelWriter(f, consoleWriter)
 	} else {
-		multi = zerolog.MultiLevelWriter(consoleWriter)
+		multi = zerolog.MultiLevelWriter(f)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850
