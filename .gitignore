@@ -21,3 +21,4 @@ job_data_example/config/
 cliLogs.txt
 controllerLogs.txt
 executorLogs.txt
+testLogs.txt

@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"octavius/internal/pkg/log"
 	"context"
 	"octavius/internal/pkg/db/etcd"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
@@ -9,6 +10,10 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 )
+
+func init(){
+	log.Init("info","",true)
+}
 
 func Test_metadataRepository_Save(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
