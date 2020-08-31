@@ -37,7 +37,7 @@ func Start() error {
 	randomIdGenerator := idgen.NewRandomIdGenerator()
 
 	exec := execution.NewExec(metadataRepository, executorRepository, jobRepository, randomIdGenerator, scheduler.NewScheduler(etcdClient, randomIdGenerator))
-	clientCPGrpcServer := NewProcServiceServer(exec, randomIdGenerator)
+		clientCPGrpcServer := NewClientServiceServer(exec, randomIdGenerator)
 	executorCPGrpcServer := NewExecutorServiceServer(exec, randomIdGenerator)
 
 	server := grpc.NewServer()

@@ -23,7 +23,7 @@ type clientCPServicesServer struct {
 }
 
 // NewProcServiceServer used to create a new execution context
-func NewProcServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) clientCPproto.ClientCPServicesServer {
+func NewClientServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) clientCPproto.ClientCPServicesServer {
 	return &clientCPServicesServer{
 		procExec: exec,
 		idgen:    idgen,
@@ -88,7 +88,6 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
 	jobId, err := s.procExec.ExecuteJob(ctx, execute.JobName, execute.JobData)
 	if err != nil {
-		fmt.Println(err)
 		return &clientCPproto.Response{Status: "failure"}, err
 	}
 	jobIdString := strconv.FormatUint(jobId, 10)
