@@ -5,6 +5,6 @@ message Job {
     string jobName = 1;
 }
 
-message JobLog {
-    string log = 1;
+message Start {
+    string id = 1;
 }

@@ -27,7 +27,6 @@ type executorClient struct {
 	connectionTimeoutSecs time.Duration
 	pingInterval          time.Duration
 	jobChan               chan *executorCPproto.Job
-	jobLogChan            chan *executorCPproto.JobLog
 }
 
 //NewExecutorClient returns new empty executor client
@@ -44,7 +43,6 @@ func (e *executorClient) StartClient() error {
 	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
 	e.pingInterval = config.Config().PingInterval
 	e.jobChan = make(chan *executorCPproto.Job)
-	e.jobLogChan = make(chan *executorCPproto.JobLog)
 	err := e.grpcClient.ConnectClient(e.cpHost)
 	if err != nil {
 		return err
@@ -83,33 +81,21 @@ func (e *executorClient) StartPing() {
 }
 
 func (e *executorClient) StartStream() {
-	clientStream, err := e.grpcClient.Stream()
+	clientStream, err := e.grpcClient.Stream(&executorCPproto.Start{Id: e.id})
 	if err != nil {
 		log.Error(err, "error starting executor job stream")
 		return
 	}
-	go func() {
-		for {
-			jobDetails, err := clientStream.Recv()
-			if err == io.EOF {
-				log.Error(err, "server stream closed")
-				return
-			}
-			if err != nil {
-				log.Error(err, "error in server stream")
-				return
-			}
-			fmt.Println(jobDetails.JobName)
-		}
-	}()
 	for {
-		jobLog := &executorCPproto.JobLog{
-			Log: "log",
-		}
-		if err := clientStream.Send(jobLog); err != nil {
-			log.Error(err, "")
+		jobDetails, err := clientStream.Recv()
+		if err == io.EOF {
+			log.Error(err, "server stream closed")
 			return
 		}
-		time.Sleep(2 * time.Second)
+		if err != nil {
+			log.Error(err, "error in server stream")
+			return
+		}
+		fmt.Println(jobDetails.JobName)
 	}
 }

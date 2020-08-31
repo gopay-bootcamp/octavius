@@ -13,7 +13,7 @@ type Client interface {
 	Ping(ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 	Register(request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	ConnectClient(cpHost string) error
-	Stream() (executorCPproto.ExecutorCPServices_StreamJobsAndLogsClient, error)
+	Stream(in *executorCPproto.Start) (executorCPproto.ExecutorCPServices_StreamJobsClient, error)
 }
 
 type GrpcClient struct {
@@ -46,6 +46,7 @@ func (g *GrpcClient) Register(request *executorCPproto.RegisterRequest) (*execut
 	return g.client.Register(ctx, request)
 }
 
-func (g *GrpcClient) Stream() (executorCPproto.ExecutorCPServices_StreamJobsAndLogsClient, error) {
-	return g.client.StreamJobsAndLogs(context.Background())
+func (g *GrpcClient) Stream(in *executorCPproto.Start) (executorCPproto.ExecutorCPServices_StreamJobsClient, error) {
+	ctx := context.Background()
+	return g.client.StreamJobs(ctx, in)
 }

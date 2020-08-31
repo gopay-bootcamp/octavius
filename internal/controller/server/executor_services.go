@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"io"
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
@@ -53,25 +52,10 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 	return res, err
 }
 
-func (e *executorCPServicesServer) StreamJobsAndLogs(stream executorCPproto.ExecutorCPServices_StreamJobsAndLogsServer) error {
-
-	go func() {
-		for {
-			in, err := stream.Recv()
-			if err == io.EOF {
-				log.Error(err, "")
-				return
-			}
-			if err != nil {
-				log.Error(err, "")
-				return
-			}
-			fmt.Println(in.Log)
-		}
-	}()
+func (e *executorCPServicesServer) StreamJobs(in *executorCPproto.Start, stream executorCPproto.ExecutorCPServices_StreamJobsServer) error {
 	for {
 		job := &executorCPproto.Job{
-			JobName: "job",
+			JobName: fmt.Sprint("job for ", in.Id),
 		}
 		if err := stream.Send(job); err != nil {
 			log.Error(err, "")

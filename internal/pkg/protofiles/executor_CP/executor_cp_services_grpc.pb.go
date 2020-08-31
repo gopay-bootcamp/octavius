@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion6
 type ExecutorCPServicesClient interface {
 	HealthCheck(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*HealthResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
-	StreamJobsAndLogs(ctx context.Context, opts ...grpc.CallOption) (ExecutorCPServices_StreamJobsAndLogsClient, error)
+	StreamJobs(ctx context.Context, in *Start, opts ...grpc.CallOption) (ExecutorCPServices_StreamJobsClient, error)
 }
 
 type executorCPServicesClient struct {
@@ -48,30 +48,31 @@ func (c *executorCPServicesClient) Register(ctx context.Context, in *RegisterReq
 	return out, nil
 }
 
-func (c *executorCPServicesClient) StreamJobsAndLogs(ctx context.Context, opts ...grpc.CallOption) (ExecutorCPServices_StreamJobsAndLogsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_ExecutorCPServices_serviceDesc.Streams[0], "/ExecutorCPServices/StreamJobsAndLogs", opts...)
+func (c *executorCPServicesClient) StreamJobs(ctx context.Context, in *Start, opts ...grpc.CallOption) (ExecutorCPServices_StreamJobsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExecutorCPServices_serviceDesc.Streams[0], "/ExecutorCPServices/StreamJobs", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &executorCPServicesStreamJobsAndLogsClient{stream}
+	x := &executorCPServicesStreamJobsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
 	return x, nil
 }
 
-type ExecutorCPServices_StreamJobsAndLogsClient interface {
-	Send(*JobLog) error
+type ExecutorCPServices_StreamJobsClient interface {
 	Recv() (*Job, error)
 	grpc.ClientStream
 }
 
-type executorCPServicesStreamJobsAndLogsClient struct {
+type executorCPServicesStreamJobsClient struct {
 	grpc.ClientStream
 }
 
-func (x *executorCPServicesStreamJobsAndLogsClient) Send(m *JobLog) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *executorCPServicesStreamJobsAndLogsClient) Recv() (*Job, error) {
+func (x *executorCPServicesStreamJobsClient) Recv() (*Job, error) {
 	m := new(Job)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -85,7 +86,7 @@ func (x *executorCPServicesStreamJobsAndLogsClient) Recv() (*Job, error) {
 type ExecutorCPServicesServer interface {
 	HealthCheck(context.Context, *Ping) (*HealthResponse, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
-	StreamJobsAndLogs(ExecutorCPServices_StreamJobsAndLogsServer) error
+	StreamJobs(*Start, ExecutorCPServices_StreamJobsServer) error
 }
 
 // UnimplementedExecutorCPServicesServer should be embedded to have forward compatible implementations.
@@ -98,8 +99,8 @@ func (*UnimplementedExecutorCPServicesServer) HealthCheck(context.Context, *Ping
 func (*UnimplementedExecutorCPServicesServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (*UnimplementedExecutorCPServicesServer) StreamJobsAndLogs(ExecutorCPServices_StreamJobsAndLogsServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamJobsAndLogs not implemented")
+func (*UnimplementedExecutorCPServicesServer) StreamJobs(*Start, ExecutorCPServices_StreamJobsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamJobs not implemented")
 }
 
 func RegisterExecutorCPServicesServer(s *grpc.Server, srv ExecutorCPServicesServer) {
@@ -142,30 +143,25 @@ func _ExecutorCPServices_Register_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExecutorCPServices_StreamJobsAndLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ExecutorCPServicesServer).StreamJobsAndLogs(&executorCPServicesStreamJobsAndLogsServer{stream})
-}
-
-type ExecutorCPServices_StreamJobsAndLogsServer interface {
-	Send(*Job) error
-	Recv() (*JobLog, error)
-	grpc.ServerStream
-}
-
-type executorCPServicesStreamJobsAndLogsServer struct {
-	grpc.ServerStream
-}
-
-func (x *executorCPServicesStreamJobsAndLogsServer) Send(m *Job) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *executorCPServicesStreamJobsAndLogsServer) Recv() (*JobLog, error) {
-	m := new(JobLog)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
+func _ExecutorCPServices_StreamJobs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Start)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	return m, nil
+	return srv.(ExecutorCPServicesServer).StreamJobs(m, &executorCPServicesStreamJobsServer{stream})
+}
+
+type ExecutorCPServices_StreamJobsServer interface {
+	Send(*Job) error
+	grpc.ServerStream
+}
+
+type executorCPServicesStreamJobsServer struct {
+	grpc.ServerStream
+}
+
+func (x *executorCPServicesStreamJobsServer) Send(m *Job) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 var _ExecutorCPServices_serviceDesc = grpc.ServiceDesc{
@@ -183,10 +179,9 @@ var _ExecutorCPServices_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "StreamJobsAndLogs",
-			Handler:       _ExecutorCPServices_StreamJobsAndLogs_Handler,
+			StreamName:    "StreamJobs",
+			Handler:       _ExecutorCPServices_StreamJobs_Handler,
 			ServerStreams: true,
-			ClientStreams: true,
 		},
 	},
 	Metadata: "internal/pkg/protofiles/executor_cp/executor_cp_services.proto",
