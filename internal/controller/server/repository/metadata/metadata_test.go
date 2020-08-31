@@ -2,18 +2,13 @@ package metadata
 
 import (
 	"context"
-	"errors"
 	"octavius/internal/pkg/db/etcd"
-	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"reflect"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 )
-
-func init() {
-	log.Init("info", "", false)
-}
 
 func Test_metadataRepository_Save(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
@@ -29,124 +24,53 @@ func Test_metadataRepository_Save(t *testing.T) {
 	}
 	mockClient.On("PutValue", "metadata/test data", string(val)).Return(nil)
 	mockClient.On("GetValue", "metadata/test data").Return("", nil)
-
-	testMetadataRepo := NewMetadataRepository(mockClient)
-	ctx := context.Background()
-	sr, err := testMetadataRepo.Save(ctx, "test data", metadataVal)
-
-	if err != nil {
-		t.Error(err, "saving metadata failed")
+	type fields struct {
+		etcdClient etcd.Client
 	}
-	if sr.Name != "test data" {
-		t.Errorf("expected %s, got %s", "test data", sr.Name)
+	type args struct {
+		ctx      context.Context
+		key      string
+		metadata *clientCPproto.Metadata
 	}
-
-	mockClient.AssertExpectations(t)
-}
-
-func Test_metadataRepository_Save_KeyAlreadyPresent(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	metadataVal := &clientCPproto.Metadata{
-		Author:      "littlestar642",
-		ImageName:   "demo image",
-		Name:        "test data",
-		Description: "sample test metadata",
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *clientCPproto.MetadataName
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+		{
+			fields: fields{
+				etcdClient: mockClient,
+			},
+			args: args{
+				ctx:      context.Background(),
+				key:      "test data",
+				metadata: metadataVal,
+			},
+			want: &clientCPproto.MetadataName{
+				Name: "test data",
+				Err: &clientCPproto.Error{
+					ErrorCode:    0,
+					ErrorMessage: "no error",
+				},
+			},
+		},
 	}
-	val, err := proto.Marshal(metadataVal)
-	if err != nil {
-		t.Error("error in marshalling metadata")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &metadataRepository{
+				etcdClient: tt.fields.etcdClient,
+			}
+			got, err := c.Save(tt.args.ctx, tt.args.key, tt.args.metadata)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("metadataRepository.Save() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("metadataRepository.Save() = %v, want %v", got, tt.want)
+			}
+		})
 	}
-	mockClient.On("PutValue", "metadata/test data", string(val)).Return(nil)
-	mockClient.On("GetValue", "metadata/test data").Return("some key", nil)
-
-	testMetadataRepo := NewMetadataRepository(mockClient)
-	ctx := context.Background()
-	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
-
-	if err.Error() != "key already present" {
-		t.Error("key already present error expected")
-	}
-}
-
-func Test_metadataRepository_Save_GetValueError(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	metadataVal := &clientCPproto.Metadata{
-		Author:      "littlestar642",
-		ImageName:   "demo image",
-		Name:        "test data",
-		Description: "sample test metadata",
-	}
-	val, err := proto.Marshal(metadataVal)
-	if err != nil {
-		t.Error("error in marshalling metadata")
-	}
-	mockClient.On("PutValue", "metadata/test data", string(val)).Return(nil)
-	mockClient.On("GetValue", "metadata/test data").Return("", errors.New("some error"))
-
-	testMetadataRepo := NewMetadataRepository(mockClient)
-	ctx := context.Background()
-	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
-
-	if err.Error() != "some error" {
-		t.Error("get value error expected")
-	}
-}
-
-func Test_metadataRepository_Save_PutValueError(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	metadataVal := &clientCPproto.Metadata{
-		Author:      "littlestar642",
-		ImageName:   "demo image",
-		Name:        "test data",
-		Description: "sample test metadata",
-	}
-	val, err := proto.Marshal(metadataVal)
-	if err != nil {
-		t.Error("error in marshalling metadata")
-	}
-	mockClient.On("PutValue", "metadata/test data", string(val)).Return(errors.New("some error"))
-	mockClient.On("GetValue", "metadata/test data").Return("", nil)
-
-	testMetadataRepo := NewMetadataRepository(mockClient)
-	ctx := context.Background()
-	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
-
-	if err.Error() != "some error" {
-		t.Error("put value error expected")
-	}
-}
-
-func Test_metadataRepository_GetAll(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	metadataArr := make([]string, 3)
-
-	metadataVal1 := &clientCPproto.Metadata{
-		Author:      "littlestar642",
-		ImageName:   "demo image",
-		Name:        "test data",
-		Description: "sample test metadata",
-	}
-	val1, err := proto.Marshal(metadataVal1)
-	metadataArr = append(metadataArr, string(val1))
-
-	metadataVal2 := &clientCPproto.Metadata{
-		Author:      "littlestar642",
-		ImageName:   "demo image",
-		Name:        "test data",
-		Description: "sample test metadata",
-	}
-	val2, err := proto.Marshal(metadataVal2)
-	metadataArr = append(metadataArr, string(val2))
-
-	mockClient.On("GetAllValues").Return(metadataArr, nil)
-
-	testMetadataRepo := NewMetadataRepository(mockClient)
-	ctx := context.Background()
-	_, err = testMetadataRepo.GetAll(ctx)
-
-	if err != nil {
-		t.Error(err, "saving metadata failed")
-	}
-
-	mockClient.AssertExpectations(t)
 }

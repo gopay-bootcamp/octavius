@@ -1,8 +1,8 @@
 package executor
 
 import (
-	"github.com/pkg/errors"
 	"context"
+	"github.com/pkg/errors"
 	// "errors"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
@@ -16,10 +16,10 @@ func init() {
 	log.Init("info", "", false)
 }
 
-func Test_ExecutorRepo_Save(t *testing.T){
+func Test_ExecutorRepo_Save(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	executorInfo := &executorCPproto.ExecutorInfo{
-		Info:"values here about info",
+		Info: "values here about info",
 	}
 
 	testExecutorRepo := NewExecutorRepository(mockClient)
@@ -32,22 +32,22 @@ func Test_ExecutorRepo_Save(t *testing.T){
 	mockClient.On("PutValue", "executor/register/random ID", string(val)).Return(nil)
 	ctx := context.Background()
 
-	res,err := testExecutorRepo.Save(ctx,"random ID",executorInfo)
+	res, err := testExecutorRepo.Save(ctx, "random ID", executorInfo)
 
-	if err!=nil{
-		t.Errorf("error in saving executor info, %v",err)
+	if err != nil {
+		t.Errorf("error in saving executor info, %v", err)
 	}
-	if res.Registered!=true{
-		t.Errorf("error in registration : expected %v got %v",true,false)
+	if res.Registered != true {
+		t.Errorf("error in registration : expected %v got %v", true, false)
 	}
 
 	mockClient.AssertExpectations(t)
 }
 
-func Test_ExecutorRepo_Save_PutValueError(t *testing.T){
+func Test_ExecutorRepo_Save_PutValueError(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	executorInfo := &executorCPproto.ExecutorInfo{
-		Info:"values here about info",
+		Info: "values here about info",
 	}
 
 	testExecutorRepo := NewExecutorRepository(mockClient)
@@ -60,17 +60,17 @@ func Test_ExecutorRepo_Save_PutValueError(t *testing.T){
 	mockClient.On("PutValue", "executor/register/random ID", string(val)).Return(errors.New("some error"))
 	ctx := context.Background()
 
-	_,err = testExecutorRepo.Save(ctx,"random ID",executorInfo)
+	_, err = testExecutorRepo.Save(ctx, "random ID", executorInfo)
 
-	if err!=nil{
+	if err != nil {
 		t.Skip()
 	}
 }
 
-func Test_ExecutorRepo_Get(t *testing.T){
+func Test_ExecutorRepo_Get(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	executorInfo := &executorCPproto.ExecutorInfo{
-		Info:"values here about info",
+		Info: "values here about info",
 	}
 
 	val, err := proto.Marshal(executorInfo)
@@ -80,33 +80,33 @@ func Test_ExecutorRepo_Get(t *testing.T){
 
 	testExecutorRepo := NewExecutorRepository(mockClient)
 
-	mockClient.On("GetValue", "executor/register/random ID").Return(string(val),nil)
+	mockClient.On("GetValue", "executor/register/random ID").Return(string(val), nil)
 	ctx := context.Background()
 
-	_,err = testExecutorRepo.Get(ctx,"random ID")
+	_, err = testExecutorRepo.Get(ctx, "random ID")
 
-	if err!=nil{
-		t.Errorf("error in getting executor info, %v",err)
+	if err != nil {
+		t.Errorf("error in getting executor info, %v", err)
 	}
 
 	mockClient.AssertExpectations(t)
 }
 
-func Test_ExecutorRepo_Get_GetValueError(t *testing.T){
+func Test_ExecutorRepo_Get_GetValueError(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	testExecutorRepo := NewExecutorRepository(mockClient)
 
-	mockClient.On("GetValue", "executor/register/random ID").Return("",errors.New("some error"))
+	mockClient.On("GetValue", "executor/register/random ID").Return("", errors.New("some error"))
 	ctx := context.Background()
 
-	_,err := testExecutorRepo.Get(ctx,"random ID")
+	_, err := testExecutorRepo.Get(ctx, "random ID")
 
-	if err!=nil{
+	if err != nil {
 		t.Skip()
 	}
 }
 
-func Test_ExecutorRepo_UpdateStatus(t *testing.T){
+func Test_ExecutorRepo_UpdateStatus(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	testExecutorRepo := NewExecutorRepository(mockClient)
 
@@ -114,10 +114,10 @@ func Test_ExecutorRepo_UpdateStatus(t *testing.T){
 	mockClient.On("PutValue", "executor/status/random ID", status).Return(nil)
 	ctx := context.Background()
 
-	err := testExecutorRepo.UpdateStatus(ctx,"random ID", status)
+	err := testExecutorRepo.UpdateStatus(ctx, "random ID", status)
 
-	if err!=nil{
-		t.Errorf("error in saving executor info, %v",err)
+	if err != nil {
+		t.Errorf("error in saving executor info, %v", err)
 	}
 
 	mockClient.AssertExpectations(t)
