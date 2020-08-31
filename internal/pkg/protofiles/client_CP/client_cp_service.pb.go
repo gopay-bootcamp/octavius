@@ -7,7 +7,11 @@
 package client_cp
 
 import (
+	context "context"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -108,4 +112,220 @@ func file_internal_pkg_protofiles_client_cp_client_cp_service_proto_init() {
 	file_internal_pkg_protofiles_client_cp_client_cp_service_proto_rawDesc = nil
 	file_internal_pkg_protofiles_client_cp_client_cp_service_proto_goTypes = nil
 	file_internal_pkg_protofiles_client_cp_client_cp_service_proto_depIdxs = nil
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConnInterface
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion6
+
+// ClientCPServicesClient is the client API for ClientCPServices service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type ClientCPServicesClient interface {
+	GetStreamLogs(ctx context.Context, in *RequestForStreamLog, opts ...grpc.CallOption) (ClientCPServices_GetStreamLogsClient, error)
+	ExecuteJob(ctx context.Context, in *RequestForExecute, opts ...grpc.CallOption) (*Response, error)
+	PostMetadata(ctx context.Context, in *RequestToPostMetadata, opts ...grpc.CallOption) (*MetadataName, error)
+	GetAllMetadata(ctx context.Context, in *RequestToGetAllMetadata, opts ...grpc.CallOption) (*MetadataArray, error)
+}
+
+type clientCPServicesClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewClientCPServicesClient(cc grpc.ClientConnInterface) ClientCPServicesClient {
+	return &clientCPServicesClient{cc}
+}
+
+func (c *clientCPServicesClient) GetStreamLogs(ctx context.Context, in *RequestForStreamLog, opts ...grpc.CallOption) (ClientCPServices_GetStreamLogsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ClientCPServices_serviceDesc.Streams[0], "/ClientCPServices/GetStreamLogs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &clientCPServicesGetStreamLogsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ClientCPServices_GetStreamLogsClient interface {
+	Recv() (*Log, error)
+	grpc.ClientStream
+}
+
+type clientCPServicesGetStreamLogsClient struct {
+	grpc.ClientStream
+}
+
+func (x *clientCPServicesGetStreamLogsClient) Recv() (*Log, error) {
+	m := new(Log)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *clientCPServicesClient) ExecuteJob(ctx context.Context, in *RequestForExecute, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/ClientCPServices/ExecuteJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientCPServicesClient) PostMetadata(ctx context.Context, in *RequestToPostMetadata, opts ...grpc.CallOption) (*MetadataName, error) {
+	out := new(MetadataName)
+	err := c.cc.Invoke(ctx, "/ClientCPServices/PostMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientCPServicesClient) GetAllMetadata(ctx context.Context, in *RequestToGetAllMetadata, opts ...grpc.CallOption) (*MetadataArray, error) {
+	out := new(MetadataArray)
+	err := c.cc.Invoke(ctx, "/ClientCPServices/GetAllMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ClientCPServicesServer is the server API for ClientCPServices service.
+type ClientCPServicesServer interface {
+	GetStreamLogs(*RequestForStreamLog, ClientCPServices_GetStreamLogsServer) error
+	ExecuteJob(context.Context, *RequestForExecute) (*Response, error)
+	PostMetadata(context.Context, *RequestToPostMetadata) (*MetadataName, error)
+	GetAllMetadata(context.Context, *RequestToGetAllMetadata) (*MetadataArray, error)
+}
+
+// UnimplementedClientCPServicesServer can be embedded to have forward compatible implementations.
+type UnimplementedClientCPServicesServer struct {
+}
+
+func (*UnimplementedClientCPServicesServer) GetStreamLogs(*RequestForStreamLog, ClientCPServices_GetStreamLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetStreamLogs not implemented")
+}
+func (*UnimplementedClientCPServicesServer) ExecuteJob(context.Context, *RequestForExecute) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteJob not implemented")
+}
+func (*UnimplementedClientCPServicesServer) PostMetadata(context.Context, *RequestToPostMetadata) (*MetadataName, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostMetadata not implemented")
+}
+func (*UnimplementedClientCPServicesServer) GetAllMetadata(context.Context, *RequestToGetAllMetadata) (*MetadataArray, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllMetadata not implemented")
+}
+
+func RegisterClientCPServicesServer(s *grpc.Server, srv ClientCPServicesServer) {
+	s.RegisterService(&_ClientCPServices_serviceDesc, srv)
+}
+
+func _ClientCPServices_GetStreamLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(RequestForStreamLog)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ClientCPServicesServer).GetStreamLogs(m, &clientCPServicesGetStreamLogsServer{stream})
+}
+
+type ClientCPServices_GetStreamLogsServer interface {
+	Send(*Log) error
+	grpc.ServerStream
+}
+
+type clientCPServicesGetStreamLogsServer struct {
+	grpc.ServerStream
+}
+
+func (x *clientCPServicesGetStreamLogsServer) Send(m *Log) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _ClientCPServices_ExecuteJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestForExecute)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientCPServicesServer).ExecuteJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ClientCPServices/ExecuteJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientCPServicesServer).ExecuteJob(ctx, req.(*RequestForExecute))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientCPServices_PostMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestToPostMetadata)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientCPServicesServer).PostMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ClientCPServices/PostMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientCPServicesServer).PostMetadata(ctx, req.(*RequestToPostMetadata))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientCPServices_GetAllMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestToGetAllMetadata)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientCPServicesServer).GetAllMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ClientCPServices/GetAllMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientCPServicesServer).GetAllMetadata(ctx, req.(*RequestToGetAllMetadata))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _ClientCPServices_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "ClientCPServices",
+	HandlerType: (*ClientCPServicesServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ExecuteJob",
+			Handler:    _ClientCPServices_ExecuteJob_Handler,
+		},
+		{
+			MethodName: "PostMetadata",
+			Handler:    _ClientCPServices_PostMetadata_Handler,
+		},
+		{
+			MethodName: "GetAllMetadata",
+			Handler:    _ClientCPServices_GetAllMetadata_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetStreamLogs",
+			Handler:       _ClientCPServices_GetStreamLogs_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "internal/pkg/protofiles/client_cp/client_cp_service.proto",
 }
