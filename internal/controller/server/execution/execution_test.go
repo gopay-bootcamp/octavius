@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	log.Init("info", "",false)
+	log.Init("info", "", false)
 }
 
 /*func Test_execution_SaveMetadataToDb(t *testing.T) {

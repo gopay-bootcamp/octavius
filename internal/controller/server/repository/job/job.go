@@ -6,18 +6,18 @@ import (
 	"strings"
 )
 
-type JobExecutionRepository interface {
+type JobRepository interface {
 	ExecuteJob(context.Context, string, string, map[string]string) error
 	CheckJobMetadataIsAvailable(context.Context, string) (bool, error)
 }
 
-type jobExecutionRepository struct {
+type jobRepository struct {
 	etcdClient etcd.Client
 }
 
 //NewJobExecutionRepository initializes jobExecutionRepository with the given etcdClient and scheduler
-func NewJobExecutionRepository(client etcd.Client) JobExecutionRepository {
-	return &jobExecutionRepository{
+func NewJobRepository(client etcd.Client) JobRepository {
+	return &jobRepository{
 		etcdClient: client,
 	}
 }
@@ -34,7 +34,7 @@ func storeEnvVariablesInDatabase(ctx context.Context, etcdClient etcd.Client, jo
 	return nil
 }
 
-func (j jobExecutionRepository) ExecuteJob(ctx context.Context, jobIdString string, jobName string, jobData map[string]string) error {
+func (j jobRepository) ExecuteJob(ctx context.Context, jobIdString string, jobName string, jobData map[string]string) error {
 	key := "jobs/" + jobIdString + "/metadataKeyName"
 	value := "metadata/" + jobName
 	err := j.etcdClient.PutValue(ctx, key, value)
@@ -50,7 +50,7 @@ func (j jobExecutionRepository) ExecuteJob(ctx context.Context, jobIdString stri
 	return nil
 }
 
-func (j jobExecutionRepository) CheckJobMetadataIsAvailable(ctx context.Context, jobName string) (bool, error) {
+func (j jobRepository) CheckJobMetadataIsAvailable(ctx context.Context, jobName string) (bool, error) {
 	jobNameListWithPrefix, _, err := j.etcdClient.GetAllKeyAndValues(ctx, "metadata/")
 
 	if err != nil {

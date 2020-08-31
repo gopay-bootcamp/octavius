@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"octavius/internal/controller/config"
 	executorRepo "octavius/internal/controller/server/repository/executor"
-	jobExecutorRepo "octavius/internal/controller/server/repository/job"
+	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/controller/server/scheduler"
 	"octavius/internal/pkg/constant"
@@ -35,7 +35,7 @@ type Execution interface {
 type execution struct {
 	metadataRepo      metadataRepo.Repository
 	executorRepo      executorRepo.Repository
-	jobExecutorRepo   jobExecutorRepo.JobExecutionRepository
+	jobRepo           jobRepo.JobRepository
 	idGenerator       idgen.RandomIdGenerator
 	scheduler         scheduler.Scheduler
 	activeExecutorMap *sync.Map
@@ -47,10 +47,10 @@ type activeExecutor struct {
 }
 
 // NewExec creates a new instance of metadata respository
-func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository, jobExecutorRepo jobExecutorRepo.JobExecutionRepository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) Execution {
+func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository, jobRepo jobRepo.JobRepository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) Execution {
 	return &execution{
 		metadataRepo:      metadataRepo,
-		jobExecutorRepo:   jobExecutorRepo,
+		jobRepo:           jobRepo,
 		executorRepo:      executorRepo,
 		idGenerator:       idGenerator,
 		activeExecutorMap: new(sync.Map),
@@ -150,9 +150,9 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
 
-//ExecuteJob function will call jobExecutor repository and get jonId
+//ExecuteJob function will call job repository and get jobId
 func (e *execution) ExecuteJob(ctx context.Context, jobName string, jobData map[string]string) (uint64, error) {
-	jobAvailabilityStatus, err := e.jobExecutorRepo.CheckJobMetadataIsAvailable(ctx, jobName)
+	jobAvailabilityStatus, err := e.jobRepo.CheckJobMetadataIsAvailable(ctx, jobName)
 	if err != nil {
 		return uint64(0), err
 	}
@@ -170,7 +170,7 @@ func (e *execution) ExecuteJob(ctx context.Context, jobName string, jobData map[
 		return uint64(0), err
 	}
 	jobIdString := strconv.FormatUint(jobId, 10)
-	err = e.jobExecutorRepo.ExecuteJob(ctx, jobIdString, jobName, jobData)
+	err = e.jobRepo.ExecuteJob(ctx, jobIdString, jobName, jobData)
 
 	return jobId, err
 }

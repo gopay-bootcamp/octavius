@@ -31,11 +31,10 @@ func Start() error {
 	defer etcdClient.Close()
 
 	metadataRepository := metadataRepo.NewMetadataRepository(etcdClient)
-
 	executorRepository := executorRepo.NewExecutorRepository(etcdClient)
+	jobRepository := jobRepo.NewJobRepository(etcdClient)
 
 	randomIdGenerator := idgen.NewRandomIdGenerator()
-	jobRepository := jobRepo.NewJobExecutionRepository(etcdClient)
 
 	exec := execution.NewExec(metadataRepository, executorRepository, jobRepository, randomIdGenerator, scheduler.NewScheduler(etcdClient, randomIdGenerator))
 	clientCPGrpcServer := NewProcServiceServer(exec, randomIdGenerator)

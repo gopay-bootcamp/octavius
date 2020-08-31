@@ -30,11 +30,8 @@ func (s *scheduler) AddToPendingList(jobId uint64) error {
 	jobIdString := strconv.FormatUint(jobId, 10)
 	key := "jobs/pending/" + jobIdString
 
-	err := s.etcdClient.PutValue(context.Background(), key, jobIdString)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.etcdClient.PutValue(context.Background(), key, jobIdString)
+
 }
 
 func (s *scheduler) RemoveFromPendingList(key string) error {
