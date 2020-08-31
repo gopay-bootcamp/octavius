@@ -22,7 +22,7 @@ type clientCPServicesServer struct {
 	idgen    idgen.RandomIdGenerator
 }
 
-// NewProcServiceServer used to create a new execution context
+// NewClientServiceServer used to create a new execution context
 func NewClientServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) clientCPproto.ClientCPServicesServer {
 	return &clientCPServicesServer{
 		procExec: exec,
