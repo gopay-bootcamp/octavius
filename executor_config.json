@@ -5,5 +5,5 @@
     "access_token": "something",
     "id": "random-ID-1",
     "conn_time_out": 10,
-    "log_file_path": "executorLogs.log"
+    "log_file_path": "executor.log"
 }

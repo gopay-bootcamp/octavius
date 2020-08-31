@@ -1,13 +1,13 @@
 package log
 
 import (
+	"github.com/rs/zerolog"
+	"io/ioutil"
 	"octavius/internal/pkg/constant"
 	"os"
 	"os/user"
 	"path/filepath"
 	"time"
-
-	"github.com/rs/zerolog"
 )
 
 type engine struct {
@@ -40,7 +40,7 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 	}
 
 	if logFile == "" {
-		logPath = filepath.Join(dirName, "testLogs.log")
+		logPath = filepath.Join(dirName, "test.log")
 	} else {
 		logPath = filepath.Join(dirName, logFile)
 	}
@@ -73,26 +73,29 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 }
 
 func createFile(path string) error {
-	// check if file exists
-	var _, err = os.Stat(path)
-
-	// create file if not exists
-	if os.IsNotExist(err) {
-		var file, err = os.Create(path)
-		if err != nil {
+	_, err := os.Stat(path)
+	if err != nil {
+		// if it's error other than IsNotExist return it
+		if !os.IsNotExist(err) {
 			return err
 		}
-		defer file.Close()
+		// if err is file is not exist then we create the file
+		if err = ioutil.WriteFile(path, []byte(""), 0644); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func createDir(path string) error {
 	var err = os.Mkdir(path, 0755)
-	if os.IsExist(err) {
-		return nil
+	if err != nil {
+		if os.IsExist(err) {
+			return nil
+		}
+		return err
 	}
-	return err
+	return nil
 }
 
 //Debug logs the message at debug level
