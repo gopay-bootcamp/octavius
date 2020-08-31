@@ -2,6 +2,8 @@ package daemon
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
 	"octavius/internal/pkg/log"
@@ -9,10 +11,12 @@ import (
 	"time"
 )
 
+// Client executor client interface
 type Client interface {
 	RegisterClient() (bool, error)
 	StartClient() error
 	StartPing()
+	StartStream()
 }
 
 type executorClient struct {
@@ -22,8 +26,11 @@ type executorClient struct {
 	accessToken           string
 	connectionTimeoutSecs time.Duration
 	pingInterval          time.Duration
+	jobChan               chan *executorCPproto.Job
+	jobLogChan            chan *executorCPproto.JobLog
 }
 
+//NewExecutorClient returns new empty executor client
 func NewExecutorClient(grpcClient client.Client) Client {
 	return &executorClient{
 		grpcClient: grpcClient,
@@ -36,6 +43,8 @@ func (e *executorClient) StartClient() error {
 	e.accessToken = config.Config().AccessToken
 	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
 	e.pingInterval = config.Config().PingInterval
+	e.jobChan = make(chan *executorCPproto.Job)
+	e.jobLogChan = make(chan *executorCPproto.JobLog)
 	err := e.grpcClient.ConnectClient(e.cpHost)
 	if err != nil {
 		return err
@@ -70,5 +79,37 @@ func (e *executorClient) StartPing() {
 			return
 		}
 		time.Sleep(e.pingInterval)
+	}
+}
+
+func (e *executorClient) StartStream() {
+	clientStream, err := e.grpcClient.Stream()
+	if err != nil {
+		log.Error(err, "error starting executor job stream")
+		return
+	}
+	go func() {
+		for {
+			jobDetails, err := clientStream.Recv()
+			if err == io.EOF {
+				log.Error(err, "server stream closed")
+				return
+			}
+			if err != nil {
+				log.Error(err, "error in server stream")
+				return
+			}
+			fmt.Println(jobDetails.JobName)
+		}
+	}()
+	for {
+		jobLog := &executorCPproto.JobLog{
+			Log: "log",
+		}
+		if err := clientStream.Send(jobLog); err != nil {
+			log.Error(err, "")
+			return
+		}
+		time.Sleep(2 * time.Second)
 	}
 }

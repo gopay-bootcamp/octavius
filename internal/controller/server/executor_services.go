@@ -3,11 +3,13 @@ package server
 import (
 	"context"
 	"fmt"
+	"io"
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"octavius/internal/pkg/util"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,4 +51,32 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 		return nil, err
 	}
 	return res, err
+}
+
+func (e *executorCPServicesServer) StreamJobsAndLogs(stream executorCPproto.ExecutorCPServices_StreamJobsAndLogsServer) error {
+
+	go func() {
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				log.Error(err, "")
+				return
+			}
+			if err != nil {
+				log.Error(err, "")
+				return
+			}
+			fmt.Println(in.Log)
+		}
+	}()
+	for {
+		job := &executorCPproto.Job{
+			JobName: "job",
+		}
+		if err := stream.Send(job); err != nil {
+			log.Error(err, "")
+			return err
+		}
+		time.Sleep(2 * time.Second)
+	}
 }

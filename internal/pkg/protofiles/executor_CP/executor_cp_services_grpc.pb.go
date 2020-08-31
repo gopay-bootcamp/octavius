@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion6
 type ExecutorCPServicesClient interface {
 	HealthCheck(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*HealthResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	StreamJobsAndLogs(ctx context.Context, opts ...grpc.CallOption) (ExecutorCPServices_StreamJobsAndLogsClient, error)
 }
 
 type executorCPServicesClient struct {
@@ -47,12 +48,44 @@ func (c *executorCPServicesClient) Register(ctx context.Context, in *RegisterReq
 	return out, nil
 }
 
+func (c *executorCPServicesClient) StreamJobsAndLogs(ctx context.Context, opts ...grpc.CallOption) (ExecutorCPServices_StreamJobsAndLogsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExecutorCPServices_serviceDesc.Streams[0], "/ExecutorCPServices/StreamJobsAndLogs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &executorCPServicesStreamJobsAndLogsClient{stream}
+	return x, nil
+}
+
+type ExecutorCPServices_StreamJobsAndLogsClient interface {
+	Send(*JobLog) error
+	Recv() (*Job, error)
+	grpc.ClientStream
+}
+
+type executorCPServicesStreamJobsAndLogsClient struct {
+	grpc.ClientStream
+}
+
+func (x *executorCPServicesStreamJobsAndLogsClient) Send(m *JobLog) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *executorCPServicesStreamJobsAndLogsClient) Recv() (*Job, error) {
+	m := new(Job)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ExecutorCPServicesServer is the server API for ExecutorCPServices service.
 // All implementations should embed UnimplementedExecutorCPServicesServer
 // for forward compatibility
 type ExecutorCPServicesServer interface {
 	HealthCheck(context.Context, *Ping) (*HealthResponse, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	StreamJobsAndLogs(ExecutorCPServices_StreamJobsAndLogsServer) error
 }
 
 // UnimplementedExecutorCPServicesServer should be embedded to have forward compatible implementations.
@@ -64,6 +97,9 @@ func (*UnimplementedExecutorCPServicesServer) HealthCheck(context.Context, *Ping
 }
 func (*UnimplementedExecutorCPServicesServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (*UnimplementedExecutorCPServicesServer) StreamJobsAndLogs(ExecutorCPServices_StreamJobsAndLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamJobsAndLogs not implemented")
 }
 
 func RegisterExecutorCPServicesServer(s *grpc.Server, srv ExecutorCPServicesServer) {
@@ -106,6 +142,32 @@ func _ExecutorCPServices_Register_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutorCPServices_StreamJobsAndLogs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExecutorCPServicesServer).StreamJobsAndLogs(&executorCPServicesStreamJobsAndLogsServer{stream})
+}
+
+type ExecutorCPServices_StreamJobsAndLogsServer interface {
+	Send(*Job) error
+	Recv() (*JobLog, error)
+	grpc.ServerStream
+}
+
+type executorCPServicesStreamJobsAndLogsServer struct {
+	grpc.ServerStream
+}
+
+func (x *executorCPServicesStreamJobsAndLogsServer) Send(m *Job) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *executorCPServicesStreamJobsAndLogsServer) Recv() (*JobLog, error) {
+	m := new(JobLog)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 var _ExecutorCPServices_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ExecutorCPServices",
 	HandlerType: (*ExecutorCPServicesServer)(nil),
@@ -119,6 +181,13 @@ var _ExecutorCPServices_serviceDesc = grpc.ServiceDesc{
 			Handler:    _ExecutorCPServices_Register_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamJobsAndLogs",
+			Handler:       _ExecutorCPServices_StreamJobsAndLogs_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "internal/pkg/protofiles/executor_cp/executor_cp_services.proto",
 }

@@ -1,2 +1,10 @@
 syntax = "proto3";
 option go_package = "octavius/internal/pkg/protofiles/executor_cp";
+
+message Job {
+    string jobName = 1;
+}
+
+message JobLog {
+    string log = 1;
+}
