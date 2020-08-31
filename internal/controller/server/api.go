@@ -6,7 +6,7 @@ import (
 	"octavius/internal/controller/config"
 	"octavius/internal/controller/server/execution"
 	executorRepo "octavius/internal/controller/server/repository/executor"
-	repository "octavius/internal/controller/server/repository/job"
+	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/controller/server/scheduler"
 	"octavius/internal/pkg/db/etcd"
@@ -35,7 +35,7 @@ func Start() error {
 	executorRepository := executorRepo.NewExecutorRepository(etcdClient)
 
 	randomIdGenerator := idgen.NewRandomIdGenerator()
-	jobExecutionRepository := repository.NewJobExecutionRepository(etcdClient)
+	jobExecutionRepository := jobRepo.NewJobExecutionRepository(etcdClient)
 
 	exec := execution.NewExec(metadataRepository, executorRepository, jobExecutionRepository, randomIdGenerator, scheduler.NewScheduler(etcdClient, randomIdGenerator))
 	clientCPGrpcServer := NewProcServiceServer(exec, randomIdGenerator)

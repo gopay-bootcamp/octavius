@@ -9,11 +9,12 @@ import (
 	"octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/controller/server/scheduler"
 	"octavius/internal/pkg/idgen"
+	"octavius/internal/pkg/log"
 	"testing"
 )
 
 func init() {
-	//log.Init("info", "")
+	log.Init("info", "",false)
 }
 
 /*func Test_execution_SaveMetadataToDb(t *testing.T) {
