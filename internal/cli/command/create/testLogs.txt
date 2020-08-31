@@ -1,0 +1,2 @@
+{"level":"info","time":"Monday, 31-Aug-20 15:42:10 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/cli/command/create/create.go:37","message":"name job created"}
+{"level":"error","error":"test io error","time":"Monday, 31-Aug-20 15:42:10 IST","caller":"/Users/avinashjaiswal/Desktop/hackto_pro_1/octavius/internal/cli/command/create/create.go:26","message":"error in reading file"}

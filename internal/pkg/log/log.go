@@ -3,6 +3,8 @@ package log
 import (
 	"octavius/internal/pkg/constant"
 	"os"
+	"os/user"
+	"path/filepath"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -16,23 +18,39 @@ var logEngine engine // contain cli configarution
 
 // Init intializes the logger object
 func Init(configLogLevel string, logFile string, logInConsole bool) error {
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
 	var (
-		f     *os.File
-		err   error
-		multi zerolog.LevelWriter
+		f       *os.File
+		multi   zerolog.LevelWriter
+		logPath string
 	)
-
+	dirName := filepath.Join(usr.HomeDir, ".octavius")
 	logLevel, err := zerolog.ParseLevel(configLogLevel)
 	if err != nil {
 		return err
 	}
 
-	if logFile == "" {
-		logFile = "./testLogs.txt"
+	err = createDir(dirName)
+	if err != nil {
+		return err
 	}
 
-	f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if logFile == "" {
+		logPath = filepath.Join(dirName, "testLogs.log")
+	} else {
+		logPath = filepath.Join(dirName, logFile)
+	}
+
+	err = createFile(logPath)
+	if err != nil {
+		return err
+	}
+
+	f, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0777)
 	if err != nil {
 		return err
 	}
@@ -52,6 +70,29 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 	}
 
 	return nil
+}
+
+func createFile(path string) error {
+	// check if file exists
+	var _, err = os.Stat(path)
+
+	// create file if not exists
+	if os.IsNotExist(err) {
+		var file, err = os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+	}
+	return nil
+}
+
+func createDir(path string) error {
+	var err = os.Mkdir(path, 0755)
+	if os.IsExist(err) {
+		return nil
+	}
+	return err
 }
 
 //Debug logs the message at debug level
