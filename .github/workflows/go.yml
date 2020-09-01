@@ -29,6 +29,8 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+    - name: Get etcd
+      run: brew install etcd
     - name: Get Protobuf
       run: brew install protobuf
     - name: Get proto-gen-go
