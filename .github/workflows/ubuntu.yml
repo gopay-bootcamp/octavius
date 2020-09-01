@@ -27,14 +27,14 @@ jobs:
     - name: Get etcd
       run: sudo apt update && sudo apt install snapd && sudo snap install etcd
     - name: Get protobuf
-      run : sudo apt install autoconf automake libtool curl make g++ unzip -y
-            git clone https://github.com/google/protobuf.git
-            cd protobuf
-            git submodule update --init --recursive
-            ./autogen.sh
-            make
-            make check
-            sudo make install
+      run : sudo apt install autoconf automake libtool curl make g++ unzip -y &&
+            git clone https://github.com/google/protobuf.git && 
+            cd protobuf &&
+            git submodule update --init --recursive &&
+            ./autogen.sh &&
+            make &&
+            make check &&
+            sudo make install &&
             sudo ldconfig
     - name: Get proto-gen-go
       run: go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
