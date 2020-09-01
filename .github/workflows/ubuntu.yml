@@ -32,6 +32,7 @@ jobs:
             cd protobuf &&
             git submodule update --init --recursive &&
             ./autogen.sh &&
+            ./configure &&
             make &&
             make check &&
             sudo make install &&
