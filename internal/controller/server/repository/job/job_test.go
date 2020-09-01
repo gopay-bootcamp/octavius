@@ -3,9 +3,10 @@ package job
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"octavius/internal/pkg/db/etcd"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExecuteJob(t *testing.T) {

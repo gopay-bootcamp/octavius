@@ -2,10 +2,11 @@ package scheduler
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/idgen"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddToPendingList(t *testing.T) {
