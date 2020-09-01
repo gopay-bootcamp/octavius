@@ -53,7 +53,7 @@ func load() OctaviusConfig {
 		EtcdDialTimeout:      time.Duration(GetIntDefault(fang, "etcd_dial_timeout", 30)) * time.Second,
 		AppPort:              fang.GetString("app_port"),
 		ExecutorPingDeadline: time.Duration(GetIntDefault(fang, "executor_ping_deadline", 30)) * time.Second,
-		LogFilePath:          GetStringDefault(fang, "log_file_path", "./controllerLogs.txt"),
+		LogFilePath:          GetStringDefault(fang, "log_file_path", "controller.log"),
 	}
 	return octaviusConfig
 }

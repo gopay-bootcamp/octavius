@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"errors"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
 	protobuf "octavius/internal/pkg/protofiles/client_cp"
@@ -100,6 +101,40 @@ func TestExecuteJob(t *testing.T) {
 	mockGrpcClient.AssertExpectations(t)
 	mockConfigLoader.AssertExpectations(t)
 
+}
+
+func TestExecuteJob_ExecuteJobError(t *testing.T) {
+	mockGrpcClient := client.MockGrpcClient{}
+	mockConfigLoader := config.MockLoader{}
+	testClient := NewClient(&mockConfigLoader)
+
+	testConfig := config.OctaviusConfig{
+		Host:                  "localhost:5050",
+		Email:                 "akshay.busa@go-jek.com",
+		AccessToken:           "AllowMe",
+		ConnectionTimeoutSecs: time.Second,
+	}
+	testRequestHeader := protobuf.ClientInfo{
+		ClientEmail: "akshay.busa@go-jek.com",
+		AccessToken: "AllowMe",
+	}
+	var jobData = map[string]string{
+		"Namespace": "default",
+	}
+	testExecuteRequest := protobuf.RequestForExecute{
+		ClientInfo: &testRequestHeader,
+		JobName:    "DemoJob",
+		JobData:    jobData,
+	}
+	executedResponse := &protobuf.Response{
+		Status: "success",
+	}
+	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
+	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(errors.New("some error")).Once()
+	mockGrpcClient.On("ExecuteJob", &testExecuteRequest).Return(executedResponse, nil).Once()
+	_, err := testClient.ExecuteJob("DemoJob", jobData, &mockGrpcClient)
+
+	assert.Error(t, err)
 }
 
 func TestGetStream(t *testing.T) {

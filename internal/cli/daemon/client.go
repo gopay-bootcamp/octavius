@@ -10,7 +10,7 @@ import (
 	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"time"
 
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 type Client interface {
