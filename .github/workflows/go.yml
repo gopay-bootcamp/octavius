@@ -30,7 +30,7 @@ jobs:
             dep ensure
         fi
     - name: Get etcd
-      run: brew install etcd
+      run: brew install etcd && brew services start etcd
     - name: Get Protobuf
       run: brew install protobuf
     - name: Get proto-gen-go
