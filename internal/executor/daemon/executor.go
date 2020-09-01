@@ -47,11 +47,11 @@ func (e *executorClient) RegisterClient() (bool, error) {
 	executorInfo := &executorCPproto.ExecutorInfo{
 		Info: e.accessToken,
 	}
-	regsiterRequest := &executorCPproto.RegisterRequest{
+	registerRequest := &executorCPproto.RegisterRequest{
 		ID:           e.id,
 		ExecutorInfo: executorInfo,
 	}
-	res, err := e.grpcClient.Register(regsiterRequest)
+	res, err := e.grpcClient.Register(registerRequest)
 	if err != nil {
 		return false, err
 	}

@@ -1,43 +1,62 @@
 package log
 
 import (
+	"github.com/rs/zerolog"
+	"io/ioutil"
 	"octavius/internal/pkg/constant"
 	"os"
+	"os/user"
+	"path/filepath"
 	"time"
-
-	"github.com/rs/zerolog"
 )
 
 type engine struct {
 	logger *zerolog.Logger
-	// put configurabe field here
 }
 
 var logEngine engine // contain cli configarution
 
 // Init intializes the logger object
 func Init(configLogLevel string, logFile string, logInConsole bool) error {
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 
 	var (
-		f     *os.File
-		err   error
-		multi zerolog.LevelWriter
+		f       *os.File
+		multi   zerolog.LevelWriter
+		logPath string
 	)
-
+	dirName := filepath.Join(usr.HomeDir, ".octavius")
 	logLevel, err := zerolog.ParseLevel(configLogLevel)
 	if err != nil {
 		return err
 	}
 
-	f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	err = createDir(dirName)
+	if err != nil {
+		return err
+	}
+
+	if logFile == "" {
+		logPath = filepath.Join(dirName, "test.log")
+	} else {
+		logPath = filepath.Join(dirName, logFile)
+	}
+
+	err = createFile(logPath)
+	if err != nil {
+		return err
+	}
+
+	f, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0777)
 	if err != nil {
 		return err
 	}
 
 	if logInConsole {
-		consoleWriter := zerolog.ConsoleWriter{
-			Out: os.Stdout,
-		}
+		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
 		multi = zerolog.MultiLevelWriter(f, consoleWriter)
 	} else {
 		multi = zerolog.MultiLevelWriter(f)
@@ -50,6 +69,32 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 		logger: &zerologInstance,
 	}
 
+	return nil
+}
+
+func createFile(path string) error {
+	_, err := os.Stat(path)
+	if err != nil {
+		// if it's error other than IsNotExist return it
+		if !os.IsNotExist(err) {
+			return err
+		}
+		// if err is file is not exist then we create the file
+		if err = ioutil.WriteFile(path, []byte(""), 0644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createDir(path string) error {
+	var err = os.Mkdir(path, 0755)
+	if err != nil {
+		if os.IsExist(err) {
+			return nil
+		}
+		return err
+	}
 	return nil
 }
 

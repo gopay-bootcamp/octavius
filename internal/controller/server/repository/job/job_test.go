@@ -10,7 +10,7 @@ import (
 
 func TestExecuteJob(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	jobExecutionRepository := NewJobExecutionRepository(mockClient)
+	jobExecutionRepository := NewJobRepository(mockClient)
 
 	testJobData := map[string]string{
 		"env1": "envValue1",
@@ -28,7 +28,7 @@ func TestExecuteJob(t *testing.T) {
 
 func TestExecuteJobForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	jobExecutionRepository := NewJobExecutionRepository(mockClient)
+	jobExecutionRepository := NewJobRepository(mockClient)
 
 	testJobData := map[string]string{
 		"env1": "envValue1",
@@ -49,7 +49,7 @@ func TestExecuteJobForEtcdClientFailure(t *testing.T) {
 
 func TestCheckJobMetadataIsAvailable(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	jobExecutionRepository := NewJobExecutionRepository(mockClient)
+	jobExecutionRepository := NewJobRepository(mockClient)
 
 	var testKeys []string
 	testKeys = append(testKeys, "metadata/testJob1")
@@ -74,7 +74,7 @@ func TestCheckJobMetadataIsAvailable(t *testing.T) {
 
 func TestCheckJobMetadataIsAvailableForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	jobExecutionRepository := NewJobExecutionRepository(mockClient)
+	jobExecutionRepository := NewJobRepository(mockClient)
 
 	var testKeys []string
 	var testValues []string

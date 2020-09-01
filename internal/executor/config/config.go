@@ -57,7 +57,7 @@ func load() OctaviusExecutorConfig {
 		AccessToken:    fang.GetString("access_token"),
 		ConnTimeOutSec: time.Duration(GetIntDefault(fang, "conn_time_out", 10)) * time.Second,
 		PingInterval:   time.Duration(GetIntDefault(fang, "ping_interval", 30)) * time.Second,
-		LogFilePath:    GetStringDefault(fang, "log_file_path", "./executorLogs.txt"),
+		LogFilePath:    GetStringDefault(fang, "log_file_path", "executor.log"),
 	}
 	return octaviusConfig
 }

@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	log.Init("info", "", false)
+	log.Init("info", "", true)
 }
 
 func TestCreateCmdHelp(t *testing.T) {

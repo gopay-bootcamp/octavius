@@ -15,12 +15,12 @@
       },
       {
         "name": "TOP_SECRET_2",
-        "description": "[Mandatory] Base64 KUBECONFIG_GOKU_STAGING"
+        "description": "[Mandatory] Base64 KUBECONFIG_GOKU_STAGING",
       }
     ],
     "args": [{
         "name": "ENV",
-        "description": "[Mandatory] Cluster Environment to Migrate [staging,production]"
+        "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
       },
       {
         "name": "RELEASE_NAME",
