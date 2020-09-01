@@ -27,7 +27,7 @@ jobs:
     - name: Get etcd
       run: sudo apt -y install wget && export RELEASE="3.3.13" && wget https://github.com/etcd-io/etcd/releases/download/v${RELEASE}/etcd-v${RELEASE}-linux-amd64.tar.gz
             && sudo tar xvf etcd-v${RELEASE}-linux-amd64.tar.gz && cd etcd-v${RELEASE}-linux-amd64 && sudo mv etcd etcdctl /usr/local/bin && sudo mkdir -p /var/lib/etcd/ && sudo mkdir /etc/etcd 
-            && sudo groupadd --system etcd && sudo useradd -s /sbin/nologin --system -g etcd etcd && sudo chown -R etcd:etcd /var/lib/etcd/ && sudo cat "[Unit]
+             && sudo cat "[Unit]
             Description=etcd key-value store
             Documentation=https://github.com/etcd-io/etcd
             After=network.target
