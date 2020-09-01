@@ -17,17 +17,11 @@ The new version of proctor, primarily used for automating tasks in kubernetes cl
 4. protobuf
 ### installation
     brew install protobuf
+
 5. protoc-gen-go
 ### installation
-    go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+    go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
 
-    go install google.golang.org/protobuf/cmd/protoc-gen-go
-
-6. protoc-gen-go-grpc
-### installation
-    go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
-
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 ## Development
 
@@ -41,9 +35,13 @@ To create the binaries and protobuf files -:
 
 `make build`
 
-To run the server -:
+To run the controller -:
 
-`_output/bin/control_plane start`
+`_output/bin/controller start`
+
+To run the executor -:
+
+`_output/bin/executor start`
 
 To run the client -:
 
