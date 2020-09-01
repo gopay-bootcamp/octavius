@@ -91,5 +91,5 @@ func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *client
 		return &clientCPproto.Response{Status: "failure"}, err
 	}
 	jobIdString := strconv.FormatUint(jobId, 10)
-	return &clientCPproto.Response{Status: "Job created successfully with JobId " + jobIdString}, err
+	return &clientCPproto.Response{Status: "Job created successfully with JobID " + jobIdString}, err
 }
