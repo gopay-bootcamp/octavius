@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"octavius/internal/pkg/log"
-	"octavius/internal/pkg/util"
-
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
-
+	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"octavius/internal/pkg/util"
 
 	"github.com/golang/protobuf/proto"
 )

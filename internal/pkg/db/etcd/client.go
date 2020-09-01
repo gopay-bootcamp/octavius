@@ -17,6 +17,7 @@ type Client interface {
 	GetValue(ctx context.Context, key string) (string, error)
 	PutValue(ctx context.Context, key string, value string) error
 	GetAllValues(ctx context.Context, prefix string) ([]string, error)
+	GetAllKeyAndValues(ctx context.Context, prefix string) ([]string, []string, error)
 	GetValueWithRevision(ctx context.Context, key string, header int64) (string, error)
 	Close()
 	SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan
@@ -75,6 +76,24 @@ func (client *etcdClient) GetValue(ctx context.Context, id string) (string, erro
 	return string(gr.Kvs[0].Value), nil
 }
 
+//GetAllValues return all values with keys starting with the given prefix
+func (client *etcdClient) GetAllKeyAndValues(ctx context.Context, prefix string) ([]string, []string, error) {
+	res, err := client.db.Get(ctx, prefix, clientv3.WithPrefix())
+	if err != nil {
+		return nil, nil, err
+	}
+	var keys []string
+	var values []string
+	gr := res.OpResponse().Get()
+	for _, kv := range gr.Kvs {
+		key := string(kv.Key)
+		keys = append(keys, key)
+		value := string(kv.Value)
+		values = append(values, value)
+	}
+	return keys, values, nil
+}
+
 //GetProcRevisionById returns revision of the key-value pair of the given key
 func (client *etcdClient) GetProcRevisionByID(ctx context.Context, id string) (int64, error) {
 	res, err := client.db.Get(ctx, id)
@@ -121,7 +140,6 @@ func (client *etcdClient) GetValueWithRevision(ctx context.Context, id string, h
 func (client *etcdClient) SetWatchOnPrefix(ctx context.Context, prefix string) clientv3.WatchChan {
 	watchChan := client.db.Watch(ctx, prefix, clientv3.WithPrefix())
 	return watchChan
-
 }
 
 //Close closes connection to etcd database
