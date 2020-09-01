@@ -54,8 +54,10 @@ To run the client -:
 
 Contributions are welcomed! Please read the [contributing.md](./docs/contributing.md) before adding one.
 
-## GUIDELINES
+## TROUBLESHOOT GUIDELINES
 
 1. Refrain from using `github.com/gogo/protobuf` and instead use `github.com/golang/protobuf` as previous one is failing when marshalling proto messages from string.
+
+2. gRPC version `>=1.30.x` has a name conflict with etcd. As a result it is better to stick to grpc `1.27.0` for the foreseeable future unless the upstream resolve their conflicts.
 
 
