@@ -1,0 +1,46 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: go get -v -t -d ./...
+    - name: Get etcd
+      run: sudo apt update && sudo apt install snapd && sudo snap install etcd
+    - name: Get protobuf
+      run : sudo apt install autoconf automake libtool curl make g++ unzip -y
+            git clone https://github.com/google/protobuf.git
+            cd protobuf
+            git submodule update --init --recursive
+            ./autogen.sh
+            make
+            make check
+            sudo make install
+            sudo ldconfig
+    - name: Get proto-gen-go
+      run: go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+
+    - name: Build
+      run: make build
+
+    - name: Test
+      run: go test -v ./...
