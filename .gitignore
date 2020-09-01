@@ -19,7 +19,4 @@ job_data_example/config/
 .idea/
 .DS_Store
 
-# logfiles
-cliLogs.txt
-controllerLogs.txt
  
