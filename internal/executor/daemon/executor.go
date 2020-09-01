@@ -16,7 +16,8 @@ type Client interface {
 	RegisterClient() (bool, error)
 	StartClient() error
 	StartPing()
-	StartStream()
+	GetJob() (*executorCPproto.Job, error)
+	StreamJobLog()
 }
 
 type executorClient struct {
@@ -80,22 +81,35 @@ func (e *executorClient) StartPing() {
 	}
 }
 
-func (e *executorClient) StartStream() {
-	clientStream, err := e.grpcClient.Stream(&executorCPproto.Start{Id: e.id})
-	if err != nil {
-		log.Error(err, "error starting executor job stream")
-		return
+func (e *executorClient) GetJob() (*executorCPproto.Job, error) {
+	start := &executorCPproto.Start{Id: e.id}
+	return e.grpcClient.GetJob(start)
+}
+
+func (e *executorClient) StreamJobLog() {
+
+	logs := []*executorCPproto.JobLog{
+		{Log: "success log"},
+		{Log: "failed log"},
 	}
+
 	for {
-		jobDetails, err := clientStream.Recv()
-		if err == io.EOF {
-			log.Error(err, "server stream closed")
-			return
-		}
+		logStream, err := e.grpcClient.StreamLog()
 		if err != nil {
-			log.Error(err, "error in server stream")
+			log.Error(err, "error setting up job log stream")
 			return
 		}
-		fmt.Println(jobDetails.JobName)
+		for _, jobLog := range logs {
+			if err := logStream.Send(jobLog); err != nil {
+				if err == io.EOF {
+					break
+				}
+				log.Error(err, "error streaming log")
+				return
+			}
+		}
+		logSummary, _ := logStream.CloseAndRecv()
+		fmt.Println(logSummary)
+		time.Sleep(5 * time.Second)
 	}
 }

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"io"
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
@@ -52,15 +53,36 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 	return res, err
 }
 
-func (e *executorCPServicesServer) StreamJobs(in *executorCPproto.Start, stream executorCPproto.ExecutorCPServices_StreamJobsServer) error {
+func (e *executorCPServicesServer) GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error) {
+	res, err := e.procExec.GetJob(ctx, start)
+	//GetJob searches for jobs under executor namespace first and returns from it
+	//if there is none, it then picks jobs from the jobs/pending namespace
+	if err != nil {
+		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning job to executor", start.Id))
+		return nil, err
+	}
+	return res, err
+}
+
+func (e *executorCPServicesServer) StreamLog(stream executorCPproto.ExecutorCPServices_StreamLogServer) error {
+	var logCount int32
+	logs := []*executorCPproto.JobLog{}
+	startTime := time.Now()
+
 	for {
-		job := &executorCPproto.Job{
-			JobName: fmt.Sprint("job for ", in.Id),
+		log, err := stream.Recv()
+		if err == io.EOF {
+			endTime := time.Now()
+			return stream.SendAndClose(&executorCPproto.LogSummary{
+				Recieved:    true,
+				LogCount:    logCount,
+				ElapsedTime: int32(endTime.Sub(startTime).Seconds()),
+			})
 		}
-		if err := stream.Send(job); err != nil {
-			log.Error(err, "")
+		if err != nil {
 			return err
 		}
-		time.Sleep(2 * time.Second)
+		logCount++
+		logs = append(logs, log)
 	}
 }

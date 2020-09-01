@@ -19,7 +19,7 @@ func NewCmd(executorDaemon daemon.Client) *cobra.Command {
 				log.Error(err, "failed to configure client, see config se")
 			}
 			go executorDaemon.StartPing()
-			executorDaemon.StartStream()
+			executorDaemon.StreamJobLog()
 		},
 	}
 }
