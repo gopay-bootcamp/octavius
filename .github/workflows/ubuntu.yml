@@ -25,7 +25,7 @@ jobs:
     - name: Get dependencies
       run: go get -v -t -d ./...
     - name: Get etcd
-      run: sudo apt update && sudo apt install snapd && sudo snap install etcd
+      run: sudo apt update && sudo apt install snapd && sudo snap install etcd && sudo systemctl start etcd
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
       with:
