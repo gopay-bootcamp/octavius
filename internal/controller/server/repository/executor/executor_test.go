@@ -3,7 +3,6 @@ package executor
 import (
 	"context"
 	"github.com/pkg/errors"
-	// "errors"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"

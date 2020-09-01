@@ -6,8 +6,11 @@ import (
 	"octavius/internal/controller/config"
 	"octavius/internal/controller/server/execution"
 	executorRepo "octavius/internal/controller/server/repository/executor"
+	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
+	"octavius/internal/controller/server/scheduler"
 	"octavius/internal/pkg/db/etcd"
+	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
@@ -28,12 +31,14 @@ func Start() error {
 	defer etcdClient.Close()
 
 	metadataRepository := metadataRepo.NewMetadataRepository(etcdClient)
-
 	executorRepository := executorRepo.NewExecutorRepository(etcdClient)
+	jobRepository := jobRepo.NewJobRepository(etcdClient)
 
-	exec := execution.NewExec(metadataRepository, executorRepository)
-	clientCPGrpcServer := NewProcServiceServer(exec)
-	executorCPGrpcServer := NewExecutorServiceServer(exec)
+	randomIdGenerator := idgen.NewRandomIdGenerator()
+
+	exec := execution.NewExec(metadataRepository, executorRepository, jobRepository, randomIdGenerator, scheduler.NewScheduler(etcdClient, randomIdGenerator))
+	clientCPGrpcServer := NewClientServiceServer(exec, randomIdGenerator)
+	executorCPGrpcServer := NewExecutorServiceServer(exec, randomIdGenerator)
 
 	server := grpc.NewServer()
 	clientCPproto.RegisterClientCPServicesServer(server, clientCPGrpcServer)
