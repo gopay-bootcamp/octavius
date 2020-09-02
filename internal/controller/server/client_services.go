@@ -86,7 +86,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 
 //ExecuteJob will call ExecuteJob function of execution and get jobId
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, jobContext *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
-	jobId, err := s.procExec.ExecuteJob(ctx,jobContext)
+	jobId, err := s.procExec.ExecuteJob(ctx, jobContext)
 	if err != nil {
 		return &clientCPproto.Response{Status: "failure"}, err
 	}

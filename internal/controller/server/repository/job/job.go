@@ -1,4 +1,5 @@
 package job
+
 import (
 	"context"
 	"errors"
@@ -8,8 +9,9 @@ import (
 	"strconv"
 	"strings"
 )
+
 type Repository interface {
-	CheckJobMetadataIsAvailable(ctx context.Context,jobName string) (bool, error)
+	CheckJobMetadataIsAvailable(ctx context.Context, jobName string) (bool, error)
 	Save(ctx context.Context, jobID uint64, jobContext *clientCPproto.RequestForExecute) error
 	Delete(ctx context.Context, key string) error
 	FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error)
@@ -20,9 +22,7 @@ type jobRepository struct {
 
 const (
 	pendingPrefix = "jobs/pending/"
-
 )
-
 
 //NewJobExecutionRepository initializes jobExecutionRepository with the given etcdClient and scheduler
 func NewJobRepository(client etcd.Client) Repository {
@@ -49,7 +49,7 @@ func (j jobRepository) Save(ctx context.Context, jobID uint64, jobContext *clien
 	key := "jobs/pending/" + jobIDasString
 	value, err := proto.Marshal(jobContext)
 	if err != nil {
-		return  err
+		return err
 	}
 	valueAsString := string(value)
 	return j.etcdClient.PutValue(ctx, key, valueAsString)
@@ -61,17 +61,17 @@ func (j jobRepository) Delete(ctx context.Context, key string) error {
 func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
 	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, pendingPrefix)
 	if err != nil {
-		return "", nil,  err
+		return "", nil, err
 	}
 	if len(values) == 0 {
-		return "", nil , errors.New("no pending job in pending job list")
+		return "", nil, errors.New("no pending job in pending job list")
 	}
-	nextJobID := strings.Split(keys[0],"/")[2]
+	nextJobID := strings.Split(keys[0], "/")[2]
 
 	var nextJobContext *clientCPproto.RequestForExecute
 	err = proto.Unmarshal([]byte(values[0]), nextJobContext)
 	if err != nil {
-		return "",nil, errors.New("error in unmarshalling job context")
+		return "", nil, errors.New("error in unmarshalling job context")
 	}
 	return nextJobID, nextJobContext, nil
 }
