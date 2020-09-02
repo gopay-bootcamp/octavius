@@ -14,7 +14,6 @@ import (
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
-	"strconv"
 	"sync"
 	"time"
 
@@ -29,13 +28,13 @@ type Execution interface {
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
-	ExecuteJob(ctx context.Context, name string, data map[string]string) (uint64, error)
+	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
 }
 
 type execution struct {
 	metadataRepo      metadataRepo.Repository
 	executorRepo      executorRepo.Repository
-	jobRepo           jobRepo.JobRepository
+	jobRepo           jobRepo.Repository
 	idGenerator       idgen.RandomIdGenerator
 	scheduler         scheduler.Scheduler
 	activeExecutorMap *activeExecutorMap
@@ -68,7 +67,7 @@ func (m *activeExecutorMap) Delete(key string) {
 }
 
 // NewExec creates a new instance of metadata respository
-func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository, jobRepo jobRepo.JobRepository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) Execution {
+func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository, jobRepo jobRepo.Repository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) Execution {
 	newActiveExecutorMap := &activeExecutorMap{
 		execMap: new(sync.Map),
 	}
@@ -184,26 +183,22 @@ func getActiveExecutorMap(e *execution) *activeExecutorMap {
 }
 
 //ExecuteJob function will call job repository and get jobId
-func (e *execution) ExecuteJob(ctx context.Context, jobName string, jobData map[string]string) (uint64, error) {
-	jobAvailabilityStatus, err := e.jobRepo.CheckJobMetadataIsAvailable(ctx, jobName)
+func (e *execution) ExecuteJob(ctx context.Context, jobContext *clientCPproto.RequestForExecute) (uint64, error) {
+	jobAvailabilityStatus, err := e.jobRepo.CheckJobMetadataIsAvailable(ctx, jobContext.JobName)
 	if err != nil {
 		return uint64(0), err
 	}
 	if jobAvailabilityStatus == false {
 		return uint64(0), errors.New("job with given name not available")
 	}
-
 	jobId, err := e.idGenerator.Generate()
 	if err != nil {
 		return uint64(0), err
 	}
 
-	err = e.scheduler.AddToPendingList(jobId)
+	err = e.scheduler.AddToPendingList(ctx, jobId, jobContext)
 	if err != nil {
 		return uint64(0), err
 	}
-	jobIdString := strconv.FormatUint(jobId, 10)
-	err = e.jobRepo.ExecuteJob(ctx, jobIdString, jobName, jobData)
-
 	return jobId, err
 }
