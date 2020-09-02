@@ -3,11 +3,13 @@ package job
 import (
 	"context"
 	"errors"
-	"github.com/gogo/protobuf/proto"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"strconv"
 	"strings"
+
+	"github.com/golang/protobuf/proto"
 )
 
 type Repository interface {
@@ -24,26 +26,28 @@ const (
 	pendingPrefix = "jobs/pending/"
 )
 
-//NewJobExecutionRepository initializes jobExecutionRepository with the given etcdClient and scheduler
+// NewJobRepository initializes jobRepository with the given etcdClient
 func NewJobRepository(client etcd.Client) Repository {
 	return &jobRepository{
 		etcdClient: client,
 	}
 }
+
+// CheckJobMetadataIsAvailable returns true if given job is available otherwise returns false
 func (j jobRepository) CheckJobMetadataIsAvailable(ctx context.Context, jobName string) (bool, error) {
-	jobNameListWithPrefix, _, err := j.etcdClient.GetAllKeyAndValues(ctx, "metadata/")
+	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
 	if err != nil {
-		return false, err
-	}
-	for _, jobNameWithPrefix := range jobNameListWithPrefix {
-		availableJobName := strings.Split(jobNameWithPrefix, "/")[1]
-		if availableJobName == jobName {
-			return true, nil
+		if err.Error() == constant.NoValueFound {
+			return false, errors.New("job with given name not found")
+		} else {
+			return false, err
 		}
 	}
-	return false, nil
+
+	return true, nil
 }
 
+// Save takes jobID and jobContext and save it in database as pendingList
 func (j jobRepository) Save(ctx context.Context, jobID uint64, jobContext *clientCPproto.RequestForExecute) error {
 	jobIDasString := strconv.FormatUint(jobID, 10)
 	key := "jobs/pending/" + jobIDasString
@@ -54,10 +58,14 @@ func (j jobRepository) Save(ctx context.Context, jobID uint64, jobContext *clien
 	valueAsString := string(value)
 	return j.etcdClient.PutValue(ctx, key, valueAsString)
 }
+
+// Delete function delete the job of given key from pendingList in database
 func (j jobRepository) Delete(ctx context.Context, key string) error {
 	_, err := j.etcdClient.DeleteKey(ctx, pendingPrefix+key)
 	return err
 }
+
+// FetchNextJob returns jobID and jobContext from pendingList
 func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
 	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, pendingPrefix)
 	if err != nil {
@@ -69,6 +77,7 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 	nextJobID := strings.Split(keys[0], "/")[2]
 
 	var nextJobContext *clientCPproto.RequestForExecute
+	nextJobContext = &clientCPproto.RequestForExecute{}
 	err = proto.Unmarshal([]byte(values[0]), nextJobContext)
 	if err != nil {
 		return "", nil, errors.New("error in unmarshalling job context")

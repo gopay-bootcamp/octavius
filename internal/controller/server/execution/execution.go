@@ -182,7 +182,7 @@ func getActiveExecutorMap(e *execution) *activeExecutorMap {
 	return e.activeExecutorMap
 }
 
-//ExecuteJob function will call job repository and get jobId
+// ExecuteJob function will call job repository and get jobId
 func (e *execution) ExecuteJob(ctx context.Context, jobContext *clientCPproto.RequestForExecute) (uint64, error) {
 	jobAvailabilityStatus, err := e.jobRepo.CheckJobMetadataIsAvailable(ctx, jobContext.JobName)
 	if err != nil {

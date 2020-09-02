@@ -1,114 +1,86 @@
 package scheduler
 
 import (
+	"context"
 	"errors"
-	"octavius/internal/pkg/db/etcd"
+	"octavius/internal/controller/server/repository/job"
 	"octavius/internal/pkg/idgen"
+	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAddToPendingList(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
+	jobRepoMock := new(job.JobMock)
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
+	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	mockEtcdClient.On("PutValue", "jobs/pending/11", "11").Return(nil)
+	testJobContext := &clientCPproto.RequestForExecute{
+		JobName: "testJobName1",
+		JobData: map[string]string{
+			"env1": "envValue1",
+			"env2": "envValue2",
+		},
+	}
+	testJobID := uint64(12345)
 
-	err := scheduler.AddToPendingList(uint64(11))
+	jobRepoMock.On("Save", testJobID, testJobContext).Return(nil)
+	err := scheduler.AddToPendingList(context.Background(), testJobID, testJobContext)
+
 	assert.Nil(t, err)
-	mockEtcdClient.AssertExpectations(t)
+	jobRepoMock.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
 }
 
-func TestAddToPendingListForEtcdClientFailure(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
+func TestAddToPendingListForJobRepoFailure(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
+	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	mockEtcdClient.On("PutValue", "jobs/pending/11", "11").Return(errors.New("failed to put value in etcd"))
+	testJobContext := &clientCPproto.RequestForExecute{
+		JobName: "testJobName1",
+		JobData: map[string]string{
+			"env1": "envValue1",
+			"env2": "envValue2",
+		},
+	}
+	testJobID := uint64(12345)
 
-	err := scheduler.AddToPendingList(uint64(11))
-	assert.Equal(t, err.Error(), "failed to put value in etcd")
-	mockEtcdClient.AssertExpectations(t)
+	jobRepoMock.On("Save", testJobID, testJobContext).Return(errors.New("failed to save job in jobRepo"))
+	err := scheduler.AddToPendingList(context.Background(), testJobID, testJobContext)
+
+	assert.Equal(t, "failed to save job in jobRepo", err.Error())
+	jobRepoMock.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
 }
 
 func TestRemoveFromPendingList(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
+	jobRepoMock := new(job.JobMock)
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
+	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	mockEtcdClient.On("DeleteKey").Return(true, nil)
+	testJobID := "12345"
 
-	err := scheduler.RemoveFromPendingList("jobs/pending/11")
+	jobRepoMock.On("Delete", testJobID).Return(nil)
+	err := scheduler.RemoveFromPendingList(context.Background(), testJobID)
+
 	assert.Nil(t, err)
-	mockEtcdClient.AssertExpectations(t)
+	jobRepoMock.AssertExpectations(t)
+	mockRandomIdGenerator.AssertExpectations(t)
 }
 
-func TestRemoveFromPendingListForEtcdClientFailure(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
+func TestRemoveFromPendingListForJobRepoFailure(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
+	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	mockEtcdClient.On("DeleteKey").Return(false, errors.New("failed to delete key from etcd"))
+	testJobID := "12345"
 
-	err := scheduler.RemoveFromPendingList("jobs/pending/11")
-	assert.Equal(t, err.Error(), "failed to delete key from etcd")
-	mockEtcdClient.AssertExpectations(t)
-}
+	jobRepoMock.On("Delete", testJobID).Return(errors.New("failed to delete job in jobRepo"))
+	err := scheduler.RemoveFromPendingList(context.Background(), testJobID)
 
-func TestFetchJob(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
-
-	var keys, values []string
-	keys = append(keys, "key1")
-	keys = append(keys, "key2")
-	values = append(values, "value1")
-	values = append(values, "value2")
-
-	mockEtcdClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
-	mockEtcdClient.On("DeleteKey").Return(true, nil)
-
-	value, err := scheduler.FetchJob()
-	assert.Equal(t, value, "value1")
-	assert.Nil(t, err)
-	mockEtcdClient.AssertExpectations(t)
-}
-
-func TestFetchJobForEtcdClientFailure(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
-
-	var keys, values []string
-
-	mockEtcdClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, errors.New("failed to get all keys and values from etcd"))
-	mockEtcdClient.On("DeleteKey").Return(true, nil)
-
-	value, err := scheduler.FetchJob()
-	assert.Equal(t, value, "")
-	assert.Equal(t, err.Error(), "failed to get all keys and values from etcd")
-	mockEtcdClient.AssertNotCalled(t, "DeleteKey")
-	mockEtcdClient.AssertCalled(t, "GetAllKeyAndValues", "jobs/pending/")
-}
-
-func TestFetchJobForNoPendingJob(t *testing.T) {
-	mockEtcdClient := etcd.ClientMock{}
-	mockRandomIdGenerator := idgen.IdGeneratorMock{}
-	scheduler := NewScheduler(&mockEtcdClient, &mockRandomIdGenerator)
-
-	var keys, values []string
-
-	mockEtcdClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
-	mockEtcdClient.On("DeleteKey").Return(true, nil)
-
-	value, err := scheduler.FetchJob()
-	assert.Equal(t, value, "")
-	assert.Equal(t, err.Error(), "no pending job in pending job list")
-	mockEtcdClient.AssertNotCalled(t, "DeleteKey")
-	mockEtcdClient.AssertCalled(t, "GetAllKeyAndValues", "jobs/pending/")
+	assert.Equal(t, "failed to delete job in jobRepo", err.Error())
+	jobRepoMock.AssertExpectations(t)
+	mockRandomIdGenerator.AssertExpectations(t)
 }
