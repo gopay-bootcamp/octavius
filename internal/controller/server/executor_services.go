@@ -17,12 +17,14 @@ import (
 
 type executorCPServicesServer struct {
 	procExec execution.Execution
+	idgen    idgen.RandomIdGenerator
 }
 
 // NewExecutorServiceServer used to create a new execution context
-func NewExecutorServiceServer(exec execution.Execution) executorCPproto.ExecutorCPServicesServer {
+func NewExecutorServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) executorCPproto.ExecutorCPServicesServer {
 	return &executorCPServicesServer{
 		procExec: exec,
+		idgen:    idgen,
 	}
 }
 
@@ -36,7 +38,7 @@ func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *execut
 }
 
 func (e *executorCPServicesServer) Register(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
-	uuid, err := idgen.NextID()
+	uuid, err := e.idgen.Generate()
 	if err != nil {
 		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning id to the request", request.ID))
 		return nil, status.Error(codes.Internal, err.Error())

@@ -16,7 +16,7 @@ const (
 	EmailId               = "EMAIL_ID"
 	AccessToken           = "ACCESS_TOKEN"
 	ConnectionTimeoutSecs = "CONNECTION_TIMEOUT_SECS"
-	LogFilePath           = "./cliLogs.log"
+	LogFilePath           = "./cli.log"
 )
 
 // OctaviusConfig Struct containing Octavius Client details

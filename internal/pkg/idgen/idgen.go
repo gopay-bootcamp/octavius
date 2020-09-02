@@ -1,21 +1,28 @@
 package idgen
 
-// package naming is wrong.
-
 import (
 	"github.com/sony/sonyflake"
 )
 
-var flake *sonyflake.Sonyflake
+type RandomIdGenerator interface {
+	Generate() (uint64, error)
+}
 
-func init() {
-	if flake == nil {
-		flake = sonyflake.NewSonyflake(sonyflake.Settings{})
+type randomIdGenerator struct {
+	sonyFlake *sonyflake.Sonyflake
+}
+
+func NewRandomIdGenerator() RandomIdGenerator {
+	sonyFlake := sonyflake.NewSonyflake(sonyflake.Settings{})
+	return &randomIdGenerator{
+		sonyFlake: sonyFlake,
 	}
 }
 
-// NextID used for generating next random id (for associated with request number)
-func NextID() (uint64, error) {
-	uid, err := flake.NextID()
-	return uid, err
+func (r *randomIdGenerator) Generate() (uint64, error) {
+	randomId, err := r.sonyFlake.NextID()
+	if err != nil {
+		return 0, err
+	}
+	return randomId, nil
 }

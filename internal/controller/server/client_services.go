@@ -2,12 +2,12 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/util"
+	"strconv"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,17 +19,19 @@ type customCTXKey string
 
 type clientCPServicesServer struct {
 	procExec execution.Execution
+	idgen    idgen.RandomIdGenerator
 }
 
-// NewProcServiceServer used to create a new execution context
-func NewProcServiceServer(exec execution.Execution) clientCPproto.ClientCPServicesServer {
+// NewClientServiceServer used to create a new execution context
+func NewClientServiceServer(exec execution.Execution, idgen idgen.RandomIdGenerator) clientCPproto.ClientCPServicesServer {
 	return &clientCPServicesServer{
 		procExec: exec,
+		idgen:    idgen,
 	}
 }
 
 func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clientCPproto.RequestToPostMetadata) (*clientCPproto.MetadataName, error) {
-	uuid, err := idgen.NextID()
+	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
@@ -47,7 +49,7 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 }
 
 func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *clientCPproto.RequestToGetAllMetadata) (*clientCPproto.MetadataArray, error) {
-	uuid, err := idgen.NextID()
+	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
@@ -64,7 +66,7 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 }
 
 func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestForStreamLog, stream clientCPproto.ClientCPServices_GetStreamLogsServer) error {
-	uuid, err := idgen.NextID()
+	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning is to the request")
 		return status.Error(codes.Internal, err.Error())
@@ -82,8 +84,12 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 	return nil
 }
 
+//ExecuteJob will call Executejob function of execution and get jobId
 func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, execute *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
-	//will be utilized after implementation
-	//uid, err := id_generator.NextID()
-	return nil, errors.New("not implemented yet")
+	jobId, err := s.procExec.ExecuteJob(ctx, execute.JobName, execute.JobData)
+	if err != nil {
+		return &clientCPproto.Response{Status: "failure"}, err
+	}
+	jobIdString := strconv.FormatUint(jobId, 10)
+	return &clientCPproto.Response{Status: "Job created successfully with JobID " + jobIdString}, err
 }
