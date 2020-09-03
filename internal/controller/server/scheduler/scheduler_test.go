@@ -16,17 +16,16 @@ func TestAddToPendingList(t *testing.T) {
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	testJobContext := &clientCPproto.RequestForExecute{
+	testExecutionContext := &clientCPproto.RequestForExecute{
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-			"env2": "envValue2",
 		},
 	}
 	testJobID := uint64(12345)
 
-	jobRepoMock.On("Save", testJobID, testJobContext).Return(nil)
-	err := scheduler.AddToPendingList(context.Background(), testJobID, testJobContext)
+	jobRepoMock.On("Save", testJobID, testExecutionContext).Return(nil)
+	err := scheduler.AddToPendingList(context.Background(), testJobID, testExecutionContext)
 
 	assert.Nil(t, err)
 	jobRepoMock.AssertExpectations(t)
@@ -38,17 +37,16 @@ func TestAddToPendingListForJobRepoFailure(t *testing.T) {
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	testJobContext := &clientCPproto.RequestForExecute{
+	testExecutionContext := &clientCPproto.RequestForExecute{
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-			"env2": "envValue2",
 		},
 	}
 	testJobID := uint64(12345)
 
-	jobRepoMock.On("Save", testJobID, testJobContext).Return(errors.New("failed to save job in jobRepo"))
-	err := scheduler.AddToPendingList(context.Background(), testJobID, testJobContext)
+	jobRepoMock.On("Save", testJobID, testExecutionContext).Return(errors.New("failed to save job in jobRepo"))
+	err := scheduler.AddToPendingList(context.Background(), testJobID, testExecutionContext)
 
 	assert.Equal(t, "failed to save job in jobRepo", err.Error())
 	jobRepoMock.AssertExpectations(t)

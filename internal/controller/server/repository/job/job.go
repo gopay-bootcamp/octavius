@@ -13,8 +13,8 @@ import (
 )
 
 type Repository interface {
-	CheckJobMetadataIsAvailable(ctx context.Context, jobName string) (bool, error)
-	Save(ctx context.Context, jobID uint64, jobContext *clientCPproto.RequestForExecute) error
+	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
+	Save(ctx context.Context, jobID uint64, executionContext *clientCPproto.RequestForExecute) error
 	Delete(ctx context.Context, key string) error
 	FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error)
 }
@@ -33,8 +33,8 @@ func NewJobRepository(client etcd.Client) Repository {
 	}
 }
 
-// CheckJobMetadataIsAvailable returns true if given job is available otherwise returns false
-func (j jobRepository) CheckJobMetadataIsAvailable(ctx context.Context, jobName string) (bool, error) {
+// CheckJobIsAvailable returns true if given job is available otherwise returns false
+func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
 	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
@@ -47,11 +47,11 @@ func (j jobRepository) CheckJobMetadataIsAvailable(ctx context.Context, jobName 
 	return true, nil
 }
 
-// Save takes jobID and jobContext and save it in database as pendingList
-func (j jobRepository) Save(ctx context.Context, jobID uint64, jobContext *clientCPproto.RequestForExecute) error {
+// Save takes jobID and executionContext and save it in database as pendingList
+func (j jobRepository) Save(ctx context.Context, jobID uint64, executionContext *clientCPproto.RequestForExecute) error {
 	jobIDasString := strconv.FormatUint(jobID, 10)
-	key := "jobs/pending/" + jobIDasString
-	value, err := proto.Marshal(jobContext)
+	key := pendingPrefix + jobIDasString
+	value, err := proto.Marshal(executionContext)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (j jobRepository) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-// FetchNextJob returns jobID and jobContext from pendingList
+// FetchNextJob returns jobID and executionContext from pendingList
 func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
 	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, pendingPrefix)
 	if err != nil {
@@ -76,11 +76,11 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 	}
 	nextJobID := strings.Split(keys[0], "/")[2]
 
-	var nextJobContext *clientCPproto.RequestForExecute
-	nextJobContext = &clientCPproto.RequestForExecute{}
-	err = proto.Unmarshal([]byte(values[0]), nextJobContext)
+	var nextExecutionContext *clientCPproto.RequestForExecute
+	nextExecutionContext = &clientCPproto.RequestForExecute{}
+	err = proto.Unmarshal([]byte(values[0]), nextExecutionContext)
 	if err != nil {
 		return "", nil, errors.New("error in unmarshalling job context")
 	}
-	return nextJobID, nextJobContext, nil
+	return nextJobID, nextExecutionContext, nil
 }

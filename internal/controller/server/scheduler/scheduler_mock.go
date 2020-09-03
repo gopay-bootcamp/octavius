@@ -11,8 +11,8 @@ type SchedulerMock struct {
 	mock.Mock
 }
 
-func (m *SchedulerMock) AddToPendingList(ctx context.Context, jobID uint64, jobContext *clientCPproto.RequestForExecute) error {
-	args := m.Called(jobID, jobContext)
+func (m *SchedulerMock) AddToPendingList(ctx context.Context, jobID uint64, executionContext *clientCPproto.RequestForExecute) error {
+	args := m.Called(jobID, executionContext)
 	return args.Error(0)
 }
 

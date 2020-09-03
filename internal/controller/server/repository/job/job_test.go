@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"errors"
+	"fmt"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
@@ -16,20 +17,19 @@ func TestSave(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testJobContext = &clientCPproto.RequestForExecute{
+	var testExecutionContext = &clientCPproto.RequestForExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
-			"env2": "envValue2",
 		},
 	}
 
-	testJobContextAsByte, err := proto.Marshal(testJobContext)
-	testJobContextAsString := string(testJobContextAsByte)
+	testExecutionContextAsByte, err := proto.Marshal(testExecutionContext)
+	testExecutionContextAsString := string(testExecutionContextAsByte)
 
-	mockClient.On("PutValue", "jobs/pending/12345678", testJobContextAsString).Return(nil)
+	mockClient.On("PutValue", "jobs/pending/12345678", testExecutionContextAsString).Return(nil)
 
-	err = jobRepository.Save(context.Background(), uint64(12345678), testJobContext)
+	err = jobRepository.Save(context.Background(), uint64(12345678), testExecutionContext)
 	assert.Nil(t, err)
 	mockClient.AssertExpectations(t)
 }
@@ -38,55 +38,54 @@ func TestSaveForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testJobContext = &clientCPproto.RequestForExecute{
+	var testExecutionContext = &clientCPproto.RequestForExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
-			"env2": "envValue2",
 		},
 	}
 
-	testJobContextAsByte, err := proto.Marshal(testJobContext)
-	testJobContextAsString := string(testJobContextAsByte)
+	testExecutionContextAsByte, err := proto.Marshal(testExecutionContext)
+	testExecutionContextAsString := string(testExecutionContextAsByte)
+	fmt.Print()
+	mockClient.On("PutValue", "jobs/pending/12345678", testExecutionContextAsString).Return(errors.New("failed to put value in database"))
 
-	mockClient.On("PutValue", "jobs/pending/12345678", testJobContextAsString).Return(errors.New("failed to put value in database"))
-
-	err = jobRepository.Save(context.Background(), uint64(12345678), testJobContext)
+	err = jobRepository.Save(context.Background(), uint64(12345678), testExecutionContext)
 	assert.Equal(t, "failed to put value in database", err.Error())
 	mockClient.AssertExpectations(t)
 }
 
-func TestCheckJobMetadataIsAvailableForJobAvailable(t *testing.T) {
+func TestCheckJobIsAvailableForJobAvailable(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
 	mockClient.On("GetValue", "metadata/testJobName").Return("metadata of testJobName", nil)
 
-	jobAvailabilityStatus, err := jobRepository.CheckJobMetadataIsAvailable(context.Background(), "testJobName")
+	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
 	assert.Nil(t, err)
 	assert.True(t, jobAvailabilityStatus)
 	mockClient.AssertExpectations(t)
 }
 
-func TestCheckJobMetadataIsAvailableForJobNotAvailable(t *testing.T) {
+func TestCheckJobIsAvailableForJobNotAvailable(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
 	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New(constant.NoValueFound))
 
-	jobAvailabilityStatus, err := jobRepository.CheckJobMetadataIsAvailable(context.Background(), "testJobName")
+	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
 	assert.Equal(t, "job with given name not found", err.Error())
 	assert.False(t, jobAvailabilityStatus)
 	mockClient.AssertExpectations(t)
 }
 
-func TestCheckJobMetadataIsAvailableForEtcdClientFailure(t *testing.T) {
+func TestCheckJobIsAvailableForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
 	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New("failed to get value from database"))
 
-	jobAvailabilityStatus, err := jobRepository.CheckJobMetadataIsAvailable(context.Background(), "testJobName")
+	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
 	assert.Equal(t, "failed to get value from database", err.Error())
 	assert.False(t, jobAvailabilityStatus)
 	mockClient.AssertExpectations(t)
@@ -124,37 +123,37 @@ func TestFetchNextJob(t *testing.T) {
 
 	var values []string
 
-	jobContext1 := &clientCPproto.RequestForExecute{
+	executionContext1 := &clientCPproto.RequestForExecute{
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-			"env2": "envValue2",
+
 		},
 	}
 
-	jobContext2 := &clientCPproto.RequestForExecute{
+	executionContext2 := &clientCPproto.RequestForExecute{
 		JobName: "testJobName2",
 		JobData: map[string]string{
 			"env1": "envValue1",
-			"env2": "envValue2",
+
 		},
 	}
 
-	jobContext1AsByte, err := proto.Marshal(jobContext1)
-	jobContext1AsString := string(jobContext1AsByte)
-	jobContext2AsByte, err := proto.Marshal(jobContext2)
-	jobContext2AsString := string(jobContext2AsByte)
+	executionContext1AsByte, err := proto.Marshal(executionContext1)
+	executionContext1AsString := string(executionContext1AsByte)
+	executionContext2AsByte, err := proto.Marshal(executionContext2)
+	executionContext2AsString := string(executionContext2AsByte)
 
-	values = append(values, jobContext1AsString)
-	values = append(values, jobContext2AsString)
-	var nextJobContext *clientCPproto.RequestForExecute
-	nextJobContext = &clientCPproto.RequestForExecute{}
-	err = proto.Unmarshal([]byte(values[0]), nextJobContext)
+	values = append(values, executionContext1AsString)
+	values = append(values, executionContext2AsString)
+	var nextExecutionContext *clientCPproto.RequestForExecute
+	nextExecutionContext = &clientCPproto.RequestForExecute{}
+	err = proto.Unmarshal([]byte(values[0]), nextExecutionContext)
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
-	nextJobID, nextJobContext, err := jobRepository.FetchNextJob(context.Background())
+	nextJobID, nextExecutionContext, err := jobRepository.FetchNextJob(context.Background())
 	assert.Equal(t, "123", nextJobID)
-	assert.Equal(t, jobContext1.JobName, nextJobContext.JobName)
-	assert.Equal(t, jobContext1.JobData, nextJobContext.JobData)
+	assert.Equal(t, executionContext1.JobName, nextExecutionContext.JobName)
+	assert.Equal(t, executionContext1.JobData, nextExecutionContext.JobData)
 	assert.Nil(t, err)
 	mockClient.AssertExpectations(t)
 
@@ -169,9 +168,9 @@ func TestFetchNextJobForEtcdClientFailure(t *testing.T) {
 	var values []string
 
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, errors.New("failed to get keys and values from database"))
-	nextJobID, nextJobContext, err := jobRepository.FetchNextJob(context.Background())
+	nextJobID, nextExecutionContext, err := jobRepository.FetchNextJob(context.Background())
 
-	assert.Nil(t, nextJobContext)
+	assert.Nil(t, nextExecutionContext)
 	assert.Equal(t, "", nextJobID)
 	assert.Equal(t, err.Error(), "failed to get keys and values from database")
 	mockClient.AssertExpectations(t)
@@ -187,9 +186,9 @@ func TestFetchNextJobForJobNotAvailable(t *testing.T) {
 	var values []string
 
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
-	nextJobID, nextJobContext, err := jobRepository.FetchNextJob(context.Background())
+	nextJobID, nextExecutionContext, err := jobRepository.FetchNextJob(context.Background())
 
-	assert.Nil(t, nextJobContext)
+	assert.Nil(t, nextExecutionContext)
 	assert.Equal(t, "", nextJobID)
 	assert.Equal(t, err.Error(), "no pending job in pending job list")
 	mockClient.AssertExpectations(t)
