@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -19,18 +21,38 @@ func GetIntDefault(viper *viper.Viper, key string, defaultValue int) int {
 	return viper.GetInt(key)
 }
 
+func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
+	var jsonStr = []byte(viper.GetString(key))
+	var annotations map[string]string
+
+	err := json.Unmarshal(jsonStr, &annotations)
+	if err != nil {
+		_ = fmt.Errorf("invalid Value for key %s, errors %v", key, err.Error())
+	}
+
+	return annotations
+}
+
 var once sync.Once
 var config OctaviusExecutorConfig
 
 type OctaviusExecutorConfig struct {
-	viper          *viper.Viper
-	CPHost         string
-	ID             string
-	AccessToken    string
-	ConnTimeOutSec time.Duration
-	LogLevel       string
-	PingInterval   time.Duration
-	LogFilePath    string
+	viper                        *viper.Viper
+	CPHost                       string
+	ID                           string
+	AccessToken                  string
+	ConnTimeOutSec               time.Duration
+	LogLevel                     string
+	PingInterval                 time.Duration
+	LogFilePath                  string
+	KubeConfig                   string
+	KubeContext                  string
+	DefaultNamespace             string
+	KubeServiceAccountName       string
+	JobPodAnnotations            map[string]string
+	KubeJobActiveDeadlineSeconds int
+	KubeJobRetries               int
+	KubeWaitForResourcePollCount int
 }
 
 func load() OctaviusExecutorConfig {
@@ -50,14 +72,22 @@ func load() OctaviusExecutorConfig {
 		return OctaviusExecutorConfig{}
 	}
 	octaviusConfig := OctaviusExecutorConfig{
-		viper:          fang,
-		LogLevel:       GetStringDefault(fang, "log_level", "info"),
-		CPHost:         fang.GetString("cp_host"),
-		ID:             fang.GetString("id"),
-		AccessToken:    fang.GetString("access_token"),
-		ConnTimeOutSec: time.Duration(GetIntDefault(fang, "conn_time_out", 10)) * time.Second,
-		PingInterval:   time.Duration(GetIntDefault(fang, "ping_interval", 30)) * time.Second,
-		LogFilePath:    GetStringDefault(fang, "log_file_path", "executor.log"),
+		viper:                        fang,
+		LogLevel:                     GetStringDefault(fang, "log_level", "info"),
+		CPHost:                       fang.GetString("cp_host"),
+		ID:                           fang.GetString("id"),
+		AccessToken:                  fang.GetString("access_token"),
+		ConnTimeOutSec:               time.Duration(GetIntDefault(fang, "conn_time_out", 10)) * time.Second,
+		PingInterval:                 time.Duration(GetIntDefault(fang, "ping_interval", 30)) * time.Second,
+		LogFilePath:                  GetStringDefault(fang, "log_file_path", "executor.log"),
+		KubeConfig:                   fang.GetString("config"),
+		KubeContext:                  fang.GetString("context"),
+		DefaultNamespace:             fang.GetString("default_namespace"),
+		KubeServiceAccountName:       fang.GetString("service_account_name"),
+		JobPodAnnotations:            GetMapFromJson(fang, "job_pod_annotations"),
+		KubeJobActiveDeadlineSeconds: fang.GetInt("job_active_deadline_seconds"),
+		KubeJobRetries:               fang.GetInt("job_retries"),
+		KubeWaitForResourcePollCount: fang.GetInt("wait_for_resource_poll_count"),
 	}
 	return octaviusConfig
 }

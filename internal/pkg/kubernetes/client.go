@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"octavius/internal/executor/config"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
-	"octavius/internal/pkg/kubernetes/config"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -55,13 +55,13 @@ type kubeClient struct {
 	kubeWaitForResourcePollCount int
 }
 
-func NewClientSet(kubernetesConfig config.KubernetesConfig) (*kubernetes.Clientset, error) {
+func NewClientSet(kubernetesConfig config.OctaviusExecutorConfig) (*kubernetes.Clientset, error) {
 	var kubeConfig *rest.Config
 	if kubernetesConfig.KubeConfig == "out-of-cluster" {
 		fmt.Println("service is running outside kube cluster")
 
 		home := os.Getenv("HOME")
-		kubeConfigPath := filepath.Join(home, ".kube", "config")
+		kubeConfigPath := filepath.Join(home, ".kube", "kubeconfig")
 
 		configOverrides := &clientcmd.ConfigOverrides{}
 		if kubernetesConfig.KubeContext != "default" {
@@ -91,7 +91,7 @@ func NewClientSet(kubernetesConfig config.KubernetesConfig) (*kubernetes.Clients
 	return clientSet, nil
 }
 
-func NewKubernetesClient(kubernetesConfig config.KubernetesConfig) (KubeClient, error) {
+func NewKubernetesClient(kubernetesConfig config.OctaviusExecutorConfig) (KubeClient, error) {
 	newClient := &kubeClient{
 		namespace:                    kubernetesConfig.DefaultNamespace,
 		kubeServiceAccountName:       kubernetesConfig.KubeServiceAccountName,

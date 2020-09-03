@@ -21,10 +21,10 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 		connectionTimeOutSecs int
 	)
 	configCmd := &cobra.Command{
-		Use:     "config",
+		Use:     "kubeconfig",
 		Short:   "Configure octavius client",
 		Long:    "This command helps configure client with control plane host, email id and access token",
-		Example: "octavius config [flags]",
+		Example: "octavius kubeconfig [flags]",
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -32,7 +32,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 			isConfigFileExist := fileUtil.IsFileExist(configFilePath)
 
 			if isConfigFileExist == true {
-				log.Warn(fmt.Sprintln("[Warning] This will overwrite current config:"))
+				log.Warn(fmt.Sprintln("[Warning] This will overwrite current kubeconfig:"))
 				existingOctaviusConfig, err := fileUtil.ReadFile(configFilePath)
 				if err != nil {
 					log.Error(err, fmt.Sprintln(existingOctaviusConfig))
@@ -42,7 +42,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 				printer.Println(fmt.Sprintln("\nDo you want to continue (Y/n)?\t"), color.FgYellow)
 				userPermission, err := fileUtil.GetUserInput()
 				if err != nil {
-					log.Error(err, fmt.Sprintln("error getting user permission for overwriting config"))
+					log.Error(err, fmt.Sprintln("error getting user permission for overwriting kubeconfig"))
 					return
 				}
 
@@ -53,26 +53,26 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 			} else {
 				err := fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
 				if err != nil {
-					log.Error(err, "error in creating config file directory")
+					log.Error(err, "error in creating kubeconfig file directory")
 					return
 				}
 				err = fileUtil.CreateFile(configFilePath)
 				if err != nil {
-					log.Error(err, "error in creating config file")
+					log.Error(err, "error in creating kubeconfig file")
 					return
 				}
 			}
 
 			var configFileContent string
 			configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, cpHost)
-			//TODO: config.EmailId should be config.EmailID
+			//TODO: kubeconfig.EmailId should be kubeconfig.EmailID
 			configFileContent += fmt.Sprintf("%s: %s\n", config.EmailId, emailID)
 			configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, accessToken)
 			configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, connectionTimeOutSecs)
 
 			err := fileUtil.WriteFile(configFilePath, configFileContent)
 			if err != nil {
-				log.Error(err, fmt.Sprintf("error writing content %v to config file %s \n", configFileContent, configFilePath))
+				log.Error(err, fmt.Sprintf("error writing content %v to kubeconfig file %s \n", configFileContent, configFilePath))
 				return
 			}
 

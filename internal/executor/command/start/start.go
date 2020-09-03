@@ -16,7 +16,7 @@ func NewCmd(executorDaemon daemon.Client) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := executorDaemon.StartClient()
 			if err != nil {
-				log.Error(err, "failed to configure client, see config se")
+				log.Error(err, "failed to configure client, see kubeconfig se")
 			}
 			executorDaemon.StartPing()
 		},

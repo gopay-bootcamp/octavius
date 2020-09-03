@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"octavius/internal/pkg/constant"
-	"octavius/internal/pkg/kubernetes/config"
 	"os"
 	"testing"
 	"time"
@@ -77,7 +76,6 @@ func init() {
 func TestJobExecution(t *testing.T) {
 	_ = os.Setenv("job_pod_annotations", "{\"key.one\":\"true\"}")
 	_ = os.Setenv("service_account_name", "default")
-	config.Reset()
 	envVarsForContainer := map[string]string{"SAMPLE_ARG": "sample-value"}
 	sampleImageName := "img1"
 
@@ -240,7 +238,6 @@ func TestWaitForReadyPodWatcherError(t *testing.T) {
 	listOptions := meta.ListOptions{
 		LabelSelector: jobLabelSelector(uniquePodName),
 	}
-	config.Reset()
 	waitTime := 60 * time.Second
 
 	watcher := watch.NewRaceFreeFake()

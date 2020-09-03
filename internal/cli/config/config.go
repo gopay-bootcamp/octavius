@@ -50,7 +50,7 @@ func NewLoader() Loader {
 	return &loader{}
 }
 
-//Load Loads the config by reading from octavius_client.yaml and returning Config and Error
+//Load Loads the kubeconfig by reading from octavius_client.yaml and returning Config and Error
 func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 	viper.SetDefault(ConnectionTimeoutSecs, 10)
 	viper.AutomaticEnv()
@@ -66,7 +66,7 @@ func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 		message := ""
 		if _, err := os.Stat(configFileUsed); os.IsNotExist(err) {
 			message = fmt.Sprintf("Config file not found in %s/octavius_client.yaml\n", ConfigFileDir())
-			message += fmt.Sprintf("Setup config using `octavius config --cp-host some.host ...`\n\n")
+			message += fmt.Sprintf("Setup kubeconfig using `octavius kubeconfig --cp-host some.host ...`\n\n")
 		}
 		return OctaviusConfig{}, ConfigError{error: err, Message: message}
 	}
@@ -86,7 +86,7 @@ func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 }
 
 // ConfigFileDir Returns Config file directory
-// This allows to test on dev environment without conflicting with installed octavius config file
+// This allows to test on dev environment without conflicting with installed octavius kubeconfig file
 func ConfigFileDir() string {
 	// localConfigDir, localConfigAvailable := os.LookupEnv("LOCAL_CONFIG_DIR")
 	// if localConfigAvailable {
@@ -96,5 +96,5 @@ func ConfigFileDir() string {
 	// } else {
 	// 	return fmt.Sprintf("%s/.octavius", os.Getenv("HOME"))
 	// }
-	return "./job_data_example/config"
+	return "./job_data_example/kubeconfig"
 }

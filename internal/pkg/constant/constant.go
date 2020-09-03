@@ -14,7 +14,7 @@ var ErrorCode = map[int]string{
 const (
 
 	// error messages
-	ConfigOctaviusHostMissingError      = "Config Error\nMandatory config CP_HOST is missing in Octavius Config file."
+	ConfigOctaviusHostMissingError      = "Config Error\nMandatory kubeconfig CP_HOST is missing in Octavius Config file."
 	ClientError                         = "malformed request"
 	ServerError                         = "Something went wrong"
 	NoValueFound                        = "no value found"
