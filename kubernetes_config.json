@@ -9,5 +9,5 @@
     "log_level": "debug",
     "app_port": 5000,
     "default_namespace": "default",
-    "job_pod_annotations": "{\"key_one\":\"true\"}"
+    "job_pod_annotations": "{\"key.one\":\"true\"}"
 }

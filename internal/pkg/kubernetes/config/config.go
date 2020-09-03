@@ -5,23 +5,12 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"os"
-	"strings"
 	"sync"
 	"sync/atomic"
 )
 
 var once sync.Once
 var config KubernetesConfig
-
-func GetInt64Ref(viper *viper.Viper, key string) *int64 {
-	value := viper.GetInt64(key)
-	return &value
-}
-
-func GetInt32Ref(viper *viper.Viper, key string) *int32 {
-	value := viper.GetInt32(key)
-	return &value
-}
 
 func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
 	var jsonStr = []byte(viper.GetString(key))
@@ -42,16 +31,13 @@ type KubernetesConfig struct {
 	DefaultNamespace                string
 	KubeServiceAccountName          string
 	JobPodAnnotations				map[string]string
-	KubeJobActiveDeadlineSeconds	*int64
-	KubeJobRetries					*int32
+	KubeJobActiveDeadlineSeconds	int
+	KubeJobRetries					int
 	KubeWaitForResourcePollCount 	int
 }
 
 func load() KubernetesConfig {
 	fang := viper.New()
-	fang.SetEnvPrefix("OCTAVIUS")
-	fang.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	fang.AutomaticEnv()
 
 	fang.SetConfigType("json")
 	fang.SetConfigName("kubernetes_config")
@@ -71,8 +57,8 @@ func load() KubernetesConfig {
 		DefaultNamespace: fang.GetString("default_namespace"),
 		KubeServiceAccountName: fang.GetString("service_account_name"),
 		JobPodAnnotations: GetMapFromJson(fang, "job_pod_annotations"),
-		KubeJobActiveDeadlineSeconds: GetInt64Ref(fang, "job_active_deadline_seconds"),
-		KubeJobRetries: GetInt32Ref(fang, "job_retries"),
+		KubeJobActiveDeadlineSeconds: fang.GetInt("job_active_deadline_seconds"),
+		KubeJobRetries: fang.GetInt( "job_retries"),
 		KubeWaitForResourcePollCount: fang.GetInt("wait_for_resource_poll_count"),
 	}
 

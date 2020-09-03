@@ -24,7 +24,7 @@ const (
 	JobExecutionStatusFetchError  		 = "job execution status fetch error"
 	NoDefinitiveJobExecutionStatusFound	 = "no definitive job execution status found"
 	JobSucceeded                   		 = "succeeded"
-	JobFailed                      		 = "FAILED"
+	JobFailed                      		 = "failed"
 	JobWaiting                     		 = "WAITING"
 	NullRevision                   		 = -1
 

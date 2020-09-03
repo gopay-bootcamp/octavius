@@ -31,14 +31,23 @@ type TestKubeClient struct {
 	testClientStreaming		KubeClient
 }
 
-func setUpTest() {
+func init() {
 	testKubeClient.fakeClientSet = fakeClientSet.NewSimpleClientset()
+	jobPodAnnotation := map[string]string{
+		"key.one" : "true",
+	}
 	testKubeClient.testClient = &kubeClient{
 		clientSet: testKubeClient.fakeClientSet,
+		namespace    				 : "default",
+		kubeServiceAccountName 		 : "default",
+		jobPodAnnotations 			 : jobPodAnnotation,
+		kubeJobActiveDeadlineSeconds : 60,
+		kubeJobRetries				 : 0,
+		kubeWaitForResourcePollCount : 5,
 	}
 	testKubeClient.jobName = "job1"
 	testKubeClient.podName = "pod1"
-	namespace = "default"
+	namespace := "default"
 	testKubeClient.fakeClientSetStreaming = fakeClientSet.NewSimpleClientset(&v1.Pod{
 		TypeMeta: meta.TypeMeta{
 			Kind:       "Pod",
@@ -64,7 +73,6 @@ func setUpTest() {
 }
 
 func TestJobExecution(t *testing.T) {
-	setUpTest()
 	_ = os.Setenv("job_pod_annotations", "{\"key.one\":\"true\"}")
 	_ = os.Setenv("service_account_name", "default")
 	config.Reset()
@@ -83,7 +91,7 @@ func TestJobExecution(t *testing.T) {
 		TypeMeta:      typeMeta,
 		LabelSelector: jobLabelSelector(executedJobName),
 	}
-	namespace = "default"
+	namespace := "default"
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
 
@@ -102,8 +110,10 @@ func TestJobExecution(t *testing.T) {
 	assert.Equal(t, map[string]string{"key.one": "true"}, executedJob.Spec.Template.Annotations)
 	assert.Equal(t, "default", executedJob.Spec.Template.Spec.ServiceAccountName)
 
-	assert.Equal(t, 60, executedJob.Spec.ActiveDeadlineSeconds)
-	assert.Equal(t, 0, executedJob.Spec.BackoffLimit)
+	expectedActiveDeadline := int64(60)
+	expectedBackoffLimit := int32(0)
+	assert.Equal(t, &expectedActiveDeadline, executedJob.Spec.ActiveDeadlineSeconds)
+	assert.Equal(t, &expectedBackoffLimit, executedJob.Spec.BackoffLimit)
 
 	assert.Equal(t, v1.RestartPolicyNever, executedJob.Spec.Template.Spec.RestartPolicy)
 
@@ -118,8 +128,6 @@ func TestJobExecution(t *testing.T) {
 }
 
 func TestWaitForReadyJob(t *testing.T) {
-	setUpTest()
-
 	var testJob batchV1.Job
 	uniqueJobName := "octavius-job-1"
 	label := jobLabel(uniqueJobName)
@@ -140,13 +148,37 @@ func TestWaitForReadyJob(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
+	job, err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
 	assert.NoError(t, err)
+	assert.NotNil(t, job)
+}
+
+func TestWaitForReadyPod(t *testing.T) {
+	var testPod v1.Pod
+	uniquePodName := "octavius-pod-1"
+	label := jobLabel(uniquePodName)
+	objectMeta := meta.ObjectMeta{
+		Name:   uniquePodName,
+		Labels: label,
+	}
+	testPod.ObjectMeta = objectMeta
+	waitTime := 60 * time.Second
+	watcher := watch.NewFake()
+	testKubeClient.fakeClientSet.PrependWatchReactor("pods", testingKubernetes.DefaultWatchReactor(watcher, nil))
+
+	go func() {
+		testPod.Status.Phase = v1.PodSucceeded
+		watcher.Modify(&testPod)
+
+		watcher.Stop()
+	}()
+
+	pod, err := testKubeClient.testClient.WaitForReadyPod(uniquePodName, waitTime)
+	assert.NoError(t, err)
+	assert.NotNil(t, pod)
 }
 
 func TestShouldReturnSuccessJobExecutionStatus(t *testing.T) {
-	setUpTest()
-
 	watcher := watch.NewFake()
 	testKubeClient.fakeClientSet.PrependWatchReactor("jobs", testingKubernetes.DefaultWatchReactor(watcher, nil))
 
@@ -176,12 +208,10 @@ func TestShouldReturnSuccessJobExecutionStatus(t *testing.T) {
 	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
 	assert.NoError(t, err)
 
-	assert.Equal(t, constant.JobSucceeded, jobExecutionStatus, "Should return succeeded")
+	assert.Equal(t, constant.JobSucceeded, jobExecutionStatus, "should return succeeded")
 }
 
 func TestShouldReturnFailedJobExecutionStatus(t *testing.T) {
-	setUpTest()
-
 	watcher := watch.NewFake()
 	testKubeClient.fakeClientSet.PrependWatchReactor("jobs", testingKubernetes.DefaultWatchReactor(watcher, nil))
 
@@ -210,17 +240,15 @@ func TestShouldReturnFailedJobExecutionStatus(t *testing.T) {
 	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
 	assert.NoError(t, err)
 
-	assert.Equal(t, constant.JobFailed, jobExecutionStatus, "Should return FAILED")
+	assert.Equal(t, constant.JobFailed, jobExecutionStatus, "should return failed")
 }
 
 func TestJobExecutionStatusForNonDefinitiveStatus(t *testing.T) {
-	setUpTest()
-
 	watcher := watch.NewFake()
 	testKubeClient.fakeClientSet.PrependWatchReactor("jobs", testingKubernetes.DefaultWatchReactor(watcher, nil))
 
 	var testJob batchV1.Job
-	uniqueJobName := "proctor-job-4"
+	uniqueJobName := "octavius-job-4"
 	label := jobLabel(uniqueJobName)
 	objectMeta := meta.ObjectMeta{
 		Name:   uniqueJobName,
@@ -239,17 +267,15 @@ func TestJobExecutionStatusForNonDefinitiveStatus(t *testing.T) {
 	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
 	assert.NoError(t, err)
 
-	assert.Equal(t, constant.NoDefinitiveJobExecutionStatusFound, jobExecutionStatus, "Should return NO_DEFINITIVE_JOB_EXECUTION_STATUS_FOUND")
+	assert.Equal(t, constant.NoDefinitiveJobExecutionStatusFound, jobExecutionStatus, "should return no definitive job execution status found")
 }
 
 func TestShouldReturnJobExecutionStatusFetchError(t *testing.T) {
-	setUpTest()
-
 	watcher := watch.NewFake()
 	testKubeClient.fakeClientSet.PrependWatchReactor("jobs", testingKubernetes.DefaultWatchReactor(watcher, nil))
 
 	var testJob batchV1.Job
-	uniqueJobName := "proctor-job-5"
+	uniqueJobName := "octavius-job-5"
 	label := jobLabel(uniqueJobName)
 	objectMeta := meta.ObjectMeta{
 		Name:   uniqueJobName,
@@ -267,5 +293,5 @@ func TestShouldReturnJobExecutionStatusFetchError(t *testing.T) {
 	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
 	assert.NoError(t, err)
 
-	assert.Equal(t, constant.JobExecutionStatusFetchError, jobExecutionStatus, "Should return JOB_EXECUTION_STATUS_FETCH_ERROR")
+	assert.Equal(t, constant.JobExecutionStatusFetchError, jobExecutionStatus, "should return job execution status fetch error")
 }
