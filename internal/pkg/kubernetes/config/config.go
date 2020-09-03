@@ -25,15 +25,15 @@ func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
 }
 
 type KubernetesConfig struct {
-	viper 							*viper.Viper
-	KubeConfig 						string
-	KubeContext                     string
-	DefaultNamespace                string
-	KubeServiceAccountName          string
-	JobPodAnnotations				map[string]string
-	KubeJobActiveDeadlineSeconds	int
-	KubeJobRetries					int
-	KubeWaitForResourcePollCount 	int
+	viper                        *viper.Viper
+	KubeConfig                   string
+	KubeContext                  string
+	DefaultNamespace             string
+	KubeServiceAccountName       string
+	JobPodAnnotations            map[string]string
+	KubeJobActiveDeadlineSeconds int
+	KubeJobRetries               int
+	KubeWaitForResourcePollCount int
 }
 
 func load() KubernetesConfig {
@@ -51,14 +51,14 @@ func load() KubernetesConfig {
 	_ = fang.ReadInConfig()
 
 	kubeConfig := KubernetesConfig{
-		viper:	fang,
-		KubeConfig: fang.GetString("config"),
-		KubeContext: fang.GetString("context"),
-		DefaultNamespace: fang.GetString("default_namespace"),
-		KubeServiceAccountName: fang.GetString("service_account_name"),
-		JobPodAnnotations: GetMapFromJson(fang, "job_pod_annotations"),
+		viper:                        fang,
+		KubeConfig:                   fang.GetString("config"),
+		KubeContext:                  fang.GetString("context"),
+		DefaultNamespace:             fang.GetString("default_namespace"),
+		KubeServiceAccountName:       fang.GetString("service_account_name"),
+		JobPodAnnotations:            GetMapFromJson(fang, "job_pod_annotations"),
 		KubeJobActiveDeadlineSeconds: fang.GetInt("job_active_deadline_seconds"),
-		KubeJobRetries: fang.GetInt( "job_retries"),
+		KubeJobRetries:               fang.GetInt("job_retries"),
 		KubeWaitForResourcePollCount: fang.GetInt("wait_for_resource_poll_count"),
 	}
 

@@ -8,14 +8,14 @@ import (
 
 func main() {
 	var kubeConfig = config.KubernetesConfig{
-		KubeConfig:       				config.Config().KubeConfig,
-		KubeContext:      				config.Config().KubeContext,
-		DefaultNamespace: 				config.Config().DefaultNamespace,
-		KubeServiceAccountName:         config.Config().KubeServiceAccountName,
-		JobPodAnnotations:				config.Config().JobPodAnnotations,
-		KubeJobActiveDeadlineSeconds:	config.Config().KubeJobActiveDeadlineSeconds,
-		KubeJobRetries:					config.Config().KubeJobRetries,
-		KubeWaitForResourcePollCount:	config.Config().KubeWaitForResourcePollCount,
+		KubeConfig:                   config.Config().KubeConfig,
+		KubeContext:                  config.Config().KubeContext,
+		DefaultNamespace:             config.Config().DefaultNamespace,
+		KubeServiceAccountName:       config.Config().KubeServiceAccountName,
+		JobPodAnnotations:            config.Config().JobPodAnnotations,
+		KubeJobActiveDeadlineSeconds: config.Config().KubeJobActiveDeadlineSeconds,
+		KubeJobRetries:               config.Config().KubeJobRetries,
+		KubeWaitForResourcePollCount: config.Config().KubeWaitForResourcePollCount,
 	}
 
 	var newClient, err = kubernetes.NewKubernetesClient(kubeConfig)
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	env := map[string]string{
-		"name" : "akshay",
+		"name": "akshay",
 	}
 
 	executionName, _ := newClient.ExecuteJob("jaiminrathod98765/i1", env)

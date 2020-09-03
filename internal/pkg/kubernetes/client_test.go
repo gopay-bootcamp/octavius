@@ -2,6 +2,14 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"octavius/internal/pkg/constant"
+	"octavius/internal/pkg/kubernetes/config"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	batchV1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
@@ -10,40 +18,34 @@ import (
 	fakeClientSet "k8s.io/client-go/kubernetes/fake"
 	batch "k8s.io/client-go/kubernetes/typed/batch/v1"
 	testingKubernetes "k8s.io/client-go/testing"
-	"net/http"
-	"octavius/internal/pkg/constant"
-	"octavius/internal/pkg/kubernetes/config"
-	"os"
-	"testing"
-	"time"
 )
 
 var testKubeClient TestKubeClient
 
 type TestKubeClient struct {
-	testClient				KubeClient
-	testKubernetesJobs  	batch.JobInterface
-	fakeClientSet       	*fakeClientSet.Clientset
-	jobName             	string
-	podName             	string
-	fakeClientSetStreaming  *fakeClientSet.Clientset
-	fakeHTTPClient			*http.Client
-	testClientStreaming		KubeClient
+	testClient             KubeClient
+	testKubernetesJobs     batch.JobInterface
+	fakeClientSet          *fakeClientSet.Clientset
+	jobName                string
+	podName                string
+	fakeClientSetStreaming *fakeClientSet.Clientset
+	fakeHTTPClient         *http.Client
+	testClientStreaming    KubeClient
 }
 
 func init() {
 	testKubeClient.fakeClientSet = fakeClientSet.NewSimpleClientset()
 	jobPodAnnotation := map[string]string{
-		"key.one" : "true",
+		"key.one": "true",
 	}
 	testKubeClient.testClient = &kubeClient{
-		clientSet: testKubeClient.fakeClientSet,
-		namespace    				 : "default",
-		kubeServiceAccountName 		 : "default",
-		jobPodAnnotations 			 : jobPodAnnotation,
-		kubeJobActiveDeadlineSeconds : 60,
-		kubeJobRetries				 : 0,
-		kubeWaitForResourcePollCount : 5,
+		clientSet:                    testKubeClient.fakeClientSet,
+		namespace:                    "default",
+		kubeServiceAccountName:       "default",
+		jobPodAnnotations:            jobPodAnnotation,
+		kubeJobActiveDeadlineSeconds: 60,
+		kubeJobRetries:               0,
+		kubeWaitForResourcePollCount: 5,
 	}
 	testKubeClient.jobName = "job1"
 	testKubeClient.podName = "pod1"
@@ -66,7 +68,7 @@ func init() {
 		},
 	})
 
-	testKubeClient.fakeHTTPClient =&http.Client{}
+	testKubeClient.fakeHTTPClient = &http.Client{}
 	testKubeClient.testClientStreaming = &kubeClient{
 		clientSet: testKubeClient.fakeClientSetStreaming,
 	}
@@ -148,9 +150,56 @@ func TestWaitForReadyJob(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	job, err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
+	err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
 	assert.NoError(t, err)
-	assert.NotNil(t, job)
+}
+
+func TestWaitForReadyJobWatcherError(t *testing.T) {
+	var testJob batchV1.Job
+	uniqueJobName := "octavius-job-2"
+	label := jobLabel(uniqueJobName)
+	objectMeta := meta.ObjectMeta{
+		Name:   uniqueJobName,
+		Labels: label,
+	}
+	testJob.ObjectMeta = objectMeta
+	listOptions := meta.ListOptions{
+		TypeMeta:      typeMeta,
+		LabelSelector: jobLabelSelector(uniqueJobName),
+	}
+	waitTime := 60 * time.Second
+
+	watcher := watch.NewRaceFreeFake()
+	testKubeClient.fakeClientSet.PrependWatchReactor("jobs", testingKubernetes.DefaultWatchReactor(watcher, nil))
+
+	go func() {
+		watcher.Error(&testJob)
+		watcher.Error(&testJob)
+		watcher.Error(&testJob)
+		watcher.Error(&testJob)
+		watcher.Error(&testJob)
+	}()
+
+	err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
+	assert.EqualError(t, err, fmt.Sprintf("watch error when waiting for jobs with list option %v", listOptions))
+}
+
+func TestWaitForReadyJobTimeoutError(t *testing.T) {
+	var testJob batchV1.Job
+	uniqueJobName := "octavius-job-3"
+	label := jobLabel(uniqueJobName)
+	objectMeta := meta.ObjectMeta{
+		Name:   uniqueJobName,
+		Labels: label,
+	}
+	testJob.ObjectMeta = objectMeta
+	waitTime := time.Microsecond
+
+	watcher := watch.NewRaceFreeFake()
+	testKubeClient.fakeClientSet.PrependWatchReactor("jobs", testingKubernetes.DefaultWatchReactor(watcher, nil))
+
+	err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
+	assert.EqualError(t, err, "timeout when waiting job to be available")
 }
 
 func TestWaitForReadyPod(t *testing.T) {
@@ -176,6 +225,56 @@ func TestWaitForReadyPod(t *testing.T) {
 	pod, err := testKubeClient.testClient.WaitForReadyPod(uniquePodName, waitTime)
 	assert.NoError(t, err)
 	assert.NotNil(t, pod)
+	assert.Equal(t, pod.Name, uniquePodName)
+}
+
+func TestWaitForReadyPodWatcherError(t *testing.T) {
+	var testPod v1.Pod
+	uniquePodName := "octavius-pod-2"
+	label := jobLabel(uniquePodName)
+	objectMeta := meta.ObjectMeta{
+		Name:   uniquePodName,
+		Labels: label,
+	}
+	testPod.ObjectMeta = objectMeta
+	listOptions := meta.ListOptions{
+		LabelSelector: jobLabelSelector(uniquePodName),
+	}
+	config.Reset()
+	waitTime := 60 * time.Second
+
+	watcher := watch.NewRaceFreeFake()
+	testKubeClient.fakeClientSet.PrependWatchReactor("pods", testingKubernetes.DefaultWatchReactor(watcher, nil))
+
+	go func() {
+		watcher.Error(&testPod)
+		watcher.Error(&testPod)
+		watcher.Error(&testPod)
+		watcher.Error(&testPod)
+		watcher.Error(&testPod)
+	}()
+
+	_, err := testKubeClient.testClient.WaitForReadyPod(uniquePodName, waitTime)
+	assert.EqualError(t, err, fmt.Sprintf("watch error when waiting for pods with list option %v", listOptions))
+}
+
+func TestWaitForReadyPodTimeoutError(t *testing.T) {
+	var testPod v1.Pod
+	uniquePodName := "octavius-pod-3"
+	label := jobLabel(uniquePodName)
+	objectMeta := meta.ObjectMeta{
+		Name:   uniquePodName,
+		Labels: label,
+	}
+	testPod.ObjectMeta = objectMeta
+	waitTime := time.Microsecond
+
+	watcher := watch.NewFake()
+	testKubeClient.fakeClientSet.PrependWatchReactor("pods", testingKubernetes.DefaultWatchReactor(watcher, nil))
+
+	_, err := testKubeClient.testClient.WaitForReadyPod(uniquePodName, waitTime)
+	assert.EqualError(t, err, "timeout when waiting job to be available")
+
 }
 
 func TestShouldReturnSuccessJobExecutionStatus(t *testing.T) {

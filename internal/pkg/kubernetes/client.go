@@ -23,9 +23,9 @@ import (
 )
 
 var (
-	typeMeta meta.TypeMeta
-	ctx      context.Context
-	cancel   context.CancelFunc
+	typeMeta     meta.TypeMeta
+	ctx          context.Context
+	cancel       context.CancelFunc
 	timeoutError = errors.New("timeout when waiting job to be available")
 )
 
@@ -41,18 +41,18 @@ type KubeClient interface {
 	ExecuteJobWithCommand(imageName string, args map[string]string, commands []string) (string, error)
 	JobExecutionStatus(executionName string) (string, error)
 	GetPodLogs(pod *v1.Pod) (io.ReadCloser, error)
-	WaitForReadyJob(executionName string, waitTime time.Duration) (*batch.Job, error)
+	WaitForReadyJob(executionName string, waitTime time.Duration) error
 	WaitForReadyPod(executionName string, waitTime time.Duration) (*v1.Pod, error)
 }
 
 type kubeClient struct {
-	clientSet kubernetes.Interface
-	namespace    					string
-	kubeServiceAccountName 			string
-	jobPodAnnotations 				map[string]string
-	kubeJobActiveDeadlineSeconds	int
-	kubeJobRetries					int
-	kubeWaitForResourcePollCount 	int
+	clientSet                    kubernetes.Interface
+	namespace                    string
+	kubeServiceAccountName       string
+	jobPodAnnotations            map[string]string
+	kubeJobActiveDeadlineSeconds int
+	kubeJobRetries               int
+	kubeWaitForResourcePollCount int
 }
 
 func NewClientSet(kubernetesConfig config.KubernetesConfig) (*kubernetes.Clientset, error) {
@@ -93,12 +93,12 @@ func NewClientSet(kubernetesConfig config.KubernetesConfig) (*kubernetes.Clients
 
 func NewKubernetesClient(kubernetesConfig config.KubernetesConfig) (KubeClient, error) {
 	newClient := &kubeClient{
-		namespace    				 : kubernetesConfig.DefaultNamespace,
-		kubeServiceAccountName 		 : kubernetesConfig.KubeServiceAccountName,
-		jobPodAnnotations 			 : kubernetesConfig.JobPodAnnotations,
-		kubeJobActiveDeadlineSeconds : kubernetesConfig.KubeJobActiveDeadlineSeconds,
-		kubeJobRetries				 : kubernetesConfig.KubeJobRetries,
-		kubeWaitForResourcePollCount : kubernetesConfig.KubeWaitForResourcePollCount,
+		namespace:                    kubernetesConfig.DefaultNamespace,
+		kubeServiceAccountName:       kubernetesConfig.KubeServiceAccountName,
+		jobPodAnnotations:            kubernetesConfig.JobPodAnnotations,
+		kubeJobActiveDeadlineSeconds: kubernetesConfig.KubeJobActiveDeadlineSeconds,
+		kubeJobRetries:               kubernetesConfig.KubeJobRetries,
+		kubeWaitForResourcePollCount: kubernetesConfig.KubeWaitForResourcePollCount,
 	}
 
 	var err error
@@ -176,7 +176,7 @@ func (client *kubeClient) ExecuteJobWithCommand(imageName string, envMap map[str
 	jobSpec := batch.JobSpec{
 		Template:              template,
 		ActiveDeadlineSeconds: &jobDeadline,
-		BackoffLimit:  &jobRetries,
+		BackoffLimit:          &jobRetries,
 	}
 
 	jobToRun := batch.Job{
@@ -252,7 +252,7 @@ func (client *kubeClient) GetPodLogs(pod *v1.Pod) (io.ReadCloser, error) {
 	return response, nil
 }
 
-func (client *kubeClient) WaitForReadyJob(executionName string, waitTime time.Duration) (*batch.Job, error) {
+func (client *kubeClient) WaitForReadyJob(executionName string, waitTime time.Duration) error {
 	jobs := client.clientSet.BatchV1().Jobs(client.namespace)
 	listOptions := meta.ListOptions{
 		TypeMeta:      typeMeta,
@@ -290,7 +290,7 @@ func (client *kubeClient) WaitForReadyJob(executionName string, waitTime time.Du
 				job = event.Object.(*batch.Job)
 				if job.Status.Active >= 1 || job.Status.Succeeded >= 1 || job.Status.Failed >= 1 {
 					watchJob.Stop()
-					return job, nil
+					return nil
 				}
 			case <-timeoutChan:
 				err = timeoutError
@@ -303,7 +303,7 @@ func (client *kubeClient) WaitForReadyJob(executionName string, waitTime time.Du
 		}
 	}
 
-	return nil, err
+	return err
 }
 
 func watcherError(resource string, listOptions meta.ListOptions) error {
