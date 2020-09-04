@@ -33,8 +33,8 @@ func init() {
 }
 
 type KubeClient interface {
-	ExecuteJob(ctx context.Context, jobId string, imageName string, envMap map[string]string) (string, error)
-	ExecuteJobWithCommands(ctx context.Context, jobId string, imageName string, args map[string]string, commands []string) (string, error)
+	ExecuteJob(ctx context.Context, jobID string, imageName string, envMap map[string]string) (string, error)
+	ExecuteJobWithCommands(ctx context.Context, jobID string, imageName string, args map[string]string, commands []string) (string, error)
 	JobExecutionStatus(ctx context.Context, executionName string) (string, error)
 	GetPodLogs(ctx context.Context, pod *v1.Pod) (io.ReadCloser, error)
 	WaitForReadyJob(ctx context.Context, executionName string, waitTime time.Duration) error
