@@ -207,20 +207,14 @@ func TestValidateJob(t *testing.T) {
 	jobName := testExecutionData.JobName
 	key := "metadata/" + jobName
 	var testArgsArray []*clientCPproto.Arg
-	var testSecretsArray []*clientCPproto.Secret
 	var testArg = &clientCPproto.Arg{
 		Name:        "env1",
 		Description: "test env",
+		Required:    true,
 	}
 	testArgsArray = append(testArgsArray, testArg)
-	var testSecret = &clientCPproto.Secret{
-		Name:        "secret1",
-		Description: "secret",
-	}
-	testSecretsArray = append(testSecretsArray, testSecret)
 	var testEnvVars = &clientCPproto.EnvVars{
-		Secrets: testSecretsArray,
-		Args:    testArgsArray,
+		Args: testArgsArray,
 	}
 	var testMetadata = &clientCPproto.Metadata{
 		Name:        "testJobName",
