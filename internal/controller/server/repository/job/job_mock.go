@@ -30,3 +30,8 @@ func (m *JobMock) CheckJobIsAvailable(ctx context.Context, jobName string) (bool
 	args := m.Called(jobName)
 	return args.Bool(0), args.Error(1)
 }
+
+func (m *JobMock) ValidateJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (bool, error) {
+	args := m.Called(executionData)
+	return args.Bool(0), args.Error(1)
+}
