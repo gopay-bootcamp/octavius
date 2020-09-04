@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"errors"
+	"fmt"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
@@ -189,6 +190,52 @@ func TestFetchNextJobForJobNotAvailable(t *testing.T) {
 	assert.Nil(t, nextExecutionData)
 	assert.Equal(t, "", nextJobID)
 	assert.Equal(t, err.Error(), "no pending job in pending job list")
+	mockClient.AssertExpectations(t)
+
+}
+
+func TestValidateJob(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	jobRepository := NewJobRepository(mockClient)
+
+	var testExecutionData = &clientCPproto.RequestForExecute{
+		JobName: "testJobName",
+		JobData: map[string]string{
+			"env1": "envValue1",
+		},
+	}
+	jobName := testExecutionData.JobName
+	key := "metadata/" + jobName
+	var testArgsArray []*clientCPproto.Arg
+	var testSecretsArray []*clientCPproto.Secret
+	var testArg = &clientCPproto.Arg{
+		Name:        "env1",
+		Description: "test env",
+	}
+	testArgsArray = append(testArgsArray, testArg)
+	var testSecret = &clientCPproto.Secret{
+		Name:        "secret1",
+		Description: "secret",
+	}
+	testSecretsArray = append(testSecretsArray, testSecret)
+	var testEnvVars = &clientCPproto.EnvVars{
+		Secrets: testSecretsArray,
+		Args:    testArgsArray,
+	}
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+	str, marshalErr := proto.Marshal(testMetadata)
+	if marshalErr != nil {
+		fmt.Println(marshalErr)
+	}
+	mockClient.On("GetValue", key).Return(string(str), nil)
+	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
+	assert.Equal(t, flag, true)
+	assert.Nil(t, err)
 	mockClient.AssertExpectations(t)
 
 }
