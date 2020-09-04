@@ -178,6 +178,13 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 	if jobAvailabilityStatus == false {
 		return uint64(0), errors.New("job with given name not available")
 	}
+	valid, err := e.jobRepo.ValidateJob(ctx, executionData)
+	if err != nil {
+		return 0, err
+	}
+	if !valid {
+		return 0, errors.New("job data not as per metadata")
+	}
 	jobId, err := e.idGenerator.Generate()
 	if err != nil {
 		return uint64(0), err

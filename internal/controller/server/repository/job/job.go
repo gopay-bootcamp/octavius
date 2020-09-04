@@ -19,6 +19,7 @@ type Repository interface {
 	Save(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error
 	Delete(ctx context.Context, key string) error
 	FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error)
+	ValidateJob(context.Context, *clientCPproto.RequestForExecute) (bool, error)
 }
 type jobRepository struct {
 	etcdClient etcd.Client
@@ -83,4 +84,46 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 		return "", nil, errors.New("error in unmarshalling job context")
 	}
 	return nextJobID, nextExecutionData, nil
+}
+
+//ValidateJob is used to validate the arguments of job when execution request is received
+func (j jobRepository) ValidateJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (bool, error) {
+	jobName := executionData.JobName
+	jobData := executionData.JobData
+	key := "metadata/" + jobName
+	res, err := j.etcdClient.GetValue(ctx, key)
+	if err != nil {
+		return false, err
+	}
+
+	metadata := &clientCPproto.Metadata{}
+	err = proto.Unmarshal([]byte(res), metadata)
+	if err != nil {
+		return false, err
+	}
+
+	args := metadata.EnvVars.Args
+
+	for _, arg := range args {
+		if arg.Required {
+			if _, ok := jobData[arg.Name]; !ok {
+				return false, nil
+			}
+		}
+	}
+	for jobKey := range jobData {
+		if !isPresentInArgs(jobKey, args) {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func isPresentInArgs(jobKey string, args []*clientCPproto.Arg) bool {
+	for _, arg := range args {
+		if arg.Name == jobKey {
+			return true
+		}
+	}
+	return false
 }
