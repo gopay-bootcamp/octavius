@@ -74,12 +74,12 @@ func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 	if octaviusCPHost == "" {
 		return OctaviusConfig{}, ConfigError{error: errors.New("Mandatory Config Missing"), Message: constant.ConfigOctaviusHostMissingError}
 	}
-	emailId := viper.GetString(EmailID)
+	emailID := viper.GetString(EmailID)
 	accessToken := viper.GetString(AccessToken)
 	connectionTimeout := time.Duration(viper.GetInt(ConnectionTimeoutSecs)) * time.Second
 	return OctaviusConfig{
 		Host:                  octaviusCPHost,
-		Email:                 emailId,
+		Email:                 emailID,
 		AccessToken:           accessToken,
 		ConnectionTimeoutSecs: connectionTimeout,
 	}, ConfigError{}

@@ -19,8 +19,11 @@ import (
 	testingKubernetes "k8s.io/client-go/testing"
 )
 
-var testKubeClient TestKubeClient
-
+var (
+	testKubeClient TestKubeClient
+	ctx context.Context
+	cancel context.CancelFunc
+)
 type TestKubeClient struct {
 	testClient             KubeClient
 	testKubernetesJobs     batch.JobInterface
@@ -71,6 +74,8 @@ func init() {
 	testKubeClient.testClientStreaming = &kubeClient{
 		clientSet: testKubeClient.fakeClientSetStreaming,
 	}
+	ctx, cancel = context.WithCancel(context.Background())
+	defer cancel()
 }
 
 func TestJobExecution(t *testing.T) {
@@ -79,7 +84,7 @@ func TestJobExecution(t *testing.T) {
 	envVarsForContainer := map[string]string{"SAMPLE_ARG": "sample-value"}
 	sampleImageName := "img1"
 
-	executedJobName, err := testKubeClient.testClient.ExecuteJob(testKubeClient.jobName, sampleImageName, envVarsForContainer)
+	executedJobName, err := testKubeClient.testClient.ExecuteJob(ctx, testKubeClient.jobName, sampleImageName, envVarsForContainer)
 	assert.NoError(t, err)
 
 	typeMeta := meta.TypeMeta{
@@ -148,7 +153,7 @@ func TestWaitForReadyJob(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
+	err := testKubeClient.testClient.WaitForReadyJob(ctx, uniqueJobName, waitTime)
 	assert.NoError(t, err)
 }
 
@@ -178,7 +183,7 @@ func TestWaitForReadyJobWatcherError(t *testing.T) {
 		watcher.Error(&testJob)
 	}()
 
-	err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
+	err := testKubeClient.testClient.WaitForReadyJob(ctx, uniqueJobName, waitTime)
 	assert.EqualError(t, err, fmt.Sprintf("watch error when waiting for jobs with list option %v", listOptions))
 }
 
@@ -196,7 +201,7 @@ func TestWaitForReadyJobTimeoutError(t *testing.T) {
 	watcher := watch.NewRaceFreeFake()
 	testKubeClient.fakeClientSet.PrependWatchReactor("jobs", testingKubernetes.DefaultWatchReactor(watcher, nil))
 
-	err := testKubeClient.testClient.WaitForReadyJob(uniqueJobName, waitTime)
+	err := testKubeClient.testClient.WaitForReadyJob(ctx, uniqueJobName, waitTime)
 	assert.EqualError(t, err, "timeout when waiting job to be available")
 }
 
@@ -220,7 +225,7 @@ func TestWaitForReadyPod(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	pod, err := testKubeClient.testClient.WaitForReadyPod(uniquePodName, waitTime)
+	pod, err := testKubeClient.testClient.WaitForReadyPod(ctx, uniquePodName, waitTime)
 	assert.NoError(t, err)
 	assert.NotNil(t, pod)
 	assert.Equal(t, pod.Name, uniquePodName)
@@ -251,7 +256,7 @@ func TestWaitForReadyPodWatcherError(t *testing.T) {
 		watcher.Error(&testPod)
 	}()
 
-	_, err := testKubeClient.testClient.WaitForReadyPod(uniquePodName, waitTime)
+	_, err := testKubeClient.testClient.WaitForReadyPod(ctx, uniquePodName, waitTime)
 	assert.EqualError(t, err, fmt.Sprintf("watch error when waiting for pods with list option %v", listOptions))
 }
 
@@ -269,7 +274,7 @@ func TestWaitForReadyPodTimeoutError(t *testing.T) {
 	watcher := watch.NewFake()
 	testKubeClient.fakeClientSet.PrependWatchReactor("pods", testingKubernetes.DefaultWatchReactor(watcher, nil))
 
-	_, err := testKubeClient.testClient.WaitForReadyPod(uniquePodName, waitTime)
+	_, err := testKubeClient.testClient.WaitForReadyPod(ctx, uniquePodName, waitTime)
 	assert.EqualError(t, err, "timeout when waiting job to be available")
 
 }
@@ -301,7 +306,7 @@ func TestShouldReturnSuccessJobExecutionStatus(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
+	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(ctx, uniqueJobName)
 	assert.NoError(t, err)
 
 	assert.Equal(t, constant.JobSucceeded, jobExecutionStatus, "should return succeeded")
@@ -333,7 +338,7 @@ func TestShouldReturnFailedJobExecutionStatus(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
+	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(ctx, uniqueJobName)
 	assert.NoError(t, err)
 
 	assert.Equal(t, constant.JobFailed, jobExecutionStatus, "should return failed")
@@ -360,7 +365,7 @@ func TestJobExecutionStatusForNonDefinitiveStatus(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
+	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(ctx, uniqueJobName)
 	assert.NoError(t, err)
 
 	assert.Equal(t, constant.NoDefinitiveJobExecutionStatusFound, jobExecutionStatus, "should return no definitive job execution status found")
@@ -386,7 +391,7 @@ func TestShouldReturnJobExecutionStatusFetchError(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(uniqueJobName)
+	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(ctx,uniqueJobName)
 	assert.NoError(t, err)
 
 	assert.Equal(t, constant.JobExecutionStatusFetchError, jobExecutionStatus, "should return job execution status fetch error")

@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -21,16 +20,16 @@ func GetIntDefault(viper *viper.Viper, key string, defaultValue int) int {
 	return viper.GetInt(key)
 }
 
-func GetMapFromJson(viper *viper.Viper, key string) map[string]string {
+func GetMapFromJson(viper *viper.Viper, key string) (map[string]string, error) {
 	var jsonStr = []byte(viper.GetString(key))
 	var annotations map[string]string
 
 	err := json.Unmarshal(jsonStr, &annotations)
 	if err != nil {
-		_ = fmt.Errorf("invalid Value for key %s, errors %v", key, err.Error())
+		return nil, err
 	}
 
-	return annotations
+	return annotations, nil
 }
 
 var once sync.Once
@@ -71,6 +70,10 @@ func load() OctaviusExecutorConfig {
 	if err != nil {
 		return OctaviusExecutorConfig{}
 	}
+	JobPodAnnotation, err := GetMapFromJson(fang, "job_pod_annotations")
+	if err != nil {
+		return OctaviusExecutorConfig{}
+	}
 	octaviusConfig := OctaviusExecutorConfig{
 		viper:                        fang,
 		LogLevel:                     GetStringDefault(fang, "log_level", "info"),
@@ -84,7 +87,7 @@ func load() OctaviusExecutorConfig {
 		KubeContext:                  fang.GetString("kube_context"),
 		DefaultNamespace:             fang.GetString("default_namespace"),
 		KubeServiceAccountName:       fang.GetString("service_account_name"),
-		JobPodAnnotations:            GetMapFromJson(fang, "job_pod_annotations"),
+		JobPodAnnotations:            JobPodAnnotation,
 		KubeJobActiveDeadlineSeconds: fang.GetInt("job_active_deadline_seconds"),
 		KubeJobRetries:               fang.GetInt("job_retries"),
 		KubeWaitForResourcePollCount: fang.GetInt("wait_for_resource_poll_count"),
