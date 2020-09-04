@@ -6,12 +6,17 @@ import (
 	"fmt"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
+	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	log.Init("info", "", false)
+}
 
 func TestSave(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
