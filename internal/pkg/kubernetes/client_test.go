@@ -79,7 +79,7 @@ func TestJobExecution(t *testing.T) {
 	envVarsForContainer := map[string]string{"SAMPLE_ARG": "sample-value"}
 	sampleImageName := "img1"
 
-	executedJobName, err := testKubeClient.testClient.ExecuteJob(sampleImageName, envVarsForContainer)
+	executedJobName, err := testKubeClient.testClient.ExecuteJob(testKubeClient.jobName, sampleImageName, envVarsForContainer)
 	assert.NoError(t, err)
 
 	typeMeta := meta.TypeMeta{

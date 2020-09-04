@@ -7,10 +7,8 @@ import (
 	"io"
 	"octavius/internal/executor/config"
 	"octavius/internal/pkg/constant"
-	"octavius/internal/pkg/idgen"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	batch "k8s.io/api/batch/v1"
@@ -37,8 +35,8 @@ func init() {
 }
 
 type KubeClient interface {
-	ExecuteJob(imageName string, envMap map[string]string) (string, error)
-	ExecuteJobWithCommand(imageName string, args map[string]string, commands []string) (string, error)
+	ExecuteJob(jobId string, imageName string, envMap map[string]string) (string, error)
+	ExecuteJobWithCommand(jobId string, imageName string, args map[string]string, commands []string) (string, error)
 	JobExecutionStatus(executionName string) (string, error)
 	GetPodLogs(pod *v1.Pod) (io.ReadCloser, error)
 	WaitForReadyJob(executionName string, waitTime time.Duration) error
@@ -58,7 +56,6 @@ type kubeClient struct {
 func NewClientSet(kubernetesConfig config.OctaviusExecutorConfig) (*kubernetes.Clientset, error) {
 	var kubeConfig *rest.Config
 	if kubernetesConfig.KubeConfig == "out-of-cluster" {
-		fmt.Println("service is running outside kube cluster")
 
 		home := os.Getenv("HOME")
 		kubeConfigPath := filepath.Join(home, ".kube", "kubeconfig")
@@ -128,16 +125,12 @@ func getEnvVars(envMap map[string]string) []v1.EnvVar {
 	return envVars
 }
 
-func (client *kubeClient) ExecuteJob(imageName string, envMap map[string]string) (string, error) {
-	return client.ExecuteJobWithCommand(imageName, envMap, []string{})
+func (client *kubeClient) ExecuteJob(jobId string, imageName string, envMap map[string]string) (string, error) {
+	return client.ExecuteJobWithCommand(jobId, imageName, envMap, []string{})
 }
 
-func (client *kubeClient) ExecuteJobWithCommand(imageName string, envMap map[string]string, command []string) (string, error) {
-	executionNameInt, err := idgen.NewRandomIdGenerator().Generate()
-	if err != nil {
-		return "", err
-	}
-	executionName := "octavius-" + strconv.FormatUint(executionNameInt, 10)
+func (client *kubeClient) ExecuteJobWithCommand(jobId string, imageName string, envMap map[string]string, command []string) (string, error) {
+	executionName := "octavius-" + jobId
 
 	label := jobLabel(executionName)
 
@@ -186,7 +179,7 @@ func (client *kubeClient) ExecuteJobWithCommand(imageName string, envMap map[str
 	}
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
-	_, err = kubernetesJobs.Create(ctx, &jobToRun, meta.CreateOptions{})
+	_, err := kubernetesJobs.Create(ctx, &jobToRun, meta.CreateOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -363,6 +356,5 @@ func (client *kubeClient) WaitForReadyPod(executionName string, waitTime time.Du
 		}
 	}
 
-	fmt.Println("Wait for ready pod return pod ", nil, " and error ", err)
 	return nil, err
 }

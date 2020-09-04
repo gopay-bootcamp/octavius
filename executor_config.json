@@ -7,8 +7,8 @@
     "conn_time_out": 10,
     "log_file_path": "executor.log",
 
-    "config": "out-of-cluster",
-    "context": "minikube",
+    "kube_config": "out-of-cluster",
+    "kube_context": "minikube",
     "job_active_deadline_seconds" : 60,
     "job_retries": 0,
     "service_account_name": "default",
