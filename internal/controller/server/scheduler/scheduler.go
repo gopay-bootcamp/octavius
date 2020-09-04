@@ -26,9 +26,9 @@ func NewScheduler(idGenerator idgen.RandomIdGenerator, schedulerRepo jobRepo.Rep
 }
 
 // AddToPendingList function add given job to pendingList
-func (s *scheduler) AddToPendingList(ctx context.Context, jobId uint64, executionContext *clientCPproto.RequestForExecute) error {
+func (s *scheduler) AddToPendingList(ctx context.Context, jobId uint64, executionData *clientCPproto.RequestForExecute) error {
 
-	return s.jobRepo.Save(ctx, jobId, executionContext)
+	return s.jobRepo.Save(ctx, jobId, executionData)
 }
 
 // RemoveFromPendigList function removes job with given key from pendingList
@@ -36,10 +36,10 @@ func (s *scheduler) RemoveFromPendingList(ctx context.Context, key string) error
 	return s.jobRepo.Delete(ctx, key)
 }
 
-// FetchJob returns jobID and executionContext from pendingList
+// FetchJob returns jobID and executionData from pendingList
 func (s *scheduler) FetchJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
 
-	nextJobID, nextExecutionContext, err := s.jobRepo.FetchNextJob(ctx)
+	nextJobID, nextExecutionData, err := s.jobRepo.FetchNextJob(ctx)
 	if err != nil {
 		return "", nil, err
 	}
@@ -49,5 +49,5 @@ func (s *scheduler) FetchJob(ctx context.Context) (string, *clientCPproto.Reques
 		return "", nil, err
 	}
 
-	return nextJobID, nextExecutionContext, nil
+	return nextJobID, nextExecutionData, nil
 }

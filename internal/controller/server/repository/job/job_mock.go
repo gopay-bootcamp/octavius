@@ -11,8 +11,8 @@ type JobMock struct {
 	mock.Mock
 }
 
-func (m *JobMock) Save(ctx context.Context, jobID uint64, executionContext *clientCPproto.RequestForExecute) error {
-	args := m.Called(jobID, executionContext)
+func (m *JobMock) Save(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
+	args := m.Called(jobID, executionData)
 	return args.Error(0)
 }
 

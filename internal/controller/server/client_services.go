@@ -85,7 +85,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 }
 
 // ExecuteJob will call ExecuteJob function of execution and get jobId
-func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, executionContext *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
+func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (*clientCPproto.Response, error) {
 	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
@@ -93,9 +93,9 @@ func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, executionContex
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request ID: %v, ExecuteJob request received with executionContext %v", uuid, executionContext))
+	log.Info(fmt.Sprintf("request ID: %v, ExecuteJob request received with executionData %+v", uuid, executionData))
 
-	jobId, err := s.procExec.ExecuteJob(ctx, executionContext)
+	jobId, err := s.procExec.ExecuteJob(ctx, executionData)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request ID: %v, error in job execution", uuid))
 		return &clientCPproto.Response{Status: "failure"}, err

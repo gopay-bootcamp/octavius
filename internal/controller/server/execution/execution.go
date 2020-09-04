@@ -170,8 +170,8 @@ func getActiveExecutorMap(e *execution) *activeExecutorMap {
 }
 
 // ExecuteJob function will call job repository and get jobId
-func (e *execution) ExecuteJob(ctx context.Context, executionContext *clientCPproto.RequestForExecute) (uint64, error) {
-	jobAvailabilityStatus, err := e.jobRepo.CheckJobIsAvailable(ctx, executionContext.JobName)
+func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (uint64, error) {
+	jobAvailabilityStatus, err := e.jobRepo.CheckJobIsAvailable(ctx, executionData.JobName)
 	if err != nil {
 		return uint64(0), err
 	}
@@ -182,7 +182,7 @@ func (e *execution) ExecuteJob(ctx context.Context, executionContext *clientCPpr
 	if err != nil {
 		return uint64(0), err
 	}
-	err = e.scheduler.AddToPendingList(ctx, jobId, executionContext)
+	err = e.scheduler.AddToPendingList(ctx, jobId, executionData)
 	if err != nil {
 		return uint64(0), err
 	}

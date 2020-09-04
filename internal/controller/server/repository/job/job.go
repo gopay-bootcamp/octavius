@@ -16,7 +16,7 @@ import (
 
 type Repository interface {
 	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
-	Save(ctx context.Context, jobID uint64, executionContext *clientCPproto.RequestForExecute) error
+	Save(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error
 	Delete(ctx context.Context, key string) error
 	FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error)
 }
@@ -40,26 +40,24 @@ func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) 
 	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return false, errors.New("job with given name not found")
-		} else {
-			return false, err
+			return false, errors.New(fmt.Sprintf("job with %v name not found", jobName))
 		}
+		return false, err
+
 	}
 	return true, nil
 }
 
-// Save takes jobID and executionContext and save it in database as pendingList
-func (j jobRepository) Save(ctx context.Context, jobID uint64, executionContext *clientCPproto.RequestForExecute) error {
-	jobIDasString := strconv.FormatUint(jobID, 10)
-	key := pendingPrefix + jobIDasString
-	value, err := proto.Marshal(executionContext)
+// Save takes jobID and executionData and save it in database as pendingList
+func (j jobRepository) Save(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
+	key := pendingPrefix + strconv.FormatUint(jobID, 10)
+	value, err := proto.Marshal(executionData)
 	if err != nil {
 		return err
 	}
-	valueAsString := string(value)
 
-	log.Info(fmt.Sprintf("Request ID: %v, saving executionContext to etcd with value %v", ctx.Value(util.ContextKeyUUID), executionContext))
-	return j.etcdClient.PutValue(ctx, key, valueAsString)
+	log.Info(fmt.Sprintf("Request ID: %v, saving executionData to etcd with value %+v", ctx.Value(util.ContextKeyUUID), executionData))
+	return j.etcdClient.PutValue(ctx, key, string(value))
 }
 
 // Delete function delete the job of given key from pendingList in database
@@ -68,7 +66,7 @@ func (j jobRepository) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-// FetchNextJob returns jobID and executionContext from pendingList
+// FetchNextJob returns jobID and executionData from pendingList
 func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
 	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, pendingPrefix)
 	if err != nil {
@@ -78,11 +76,11 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 		return "", nil, errors.New("no pending job in pending job list")
 	}
 	nextJobID := strings.Split(keys[0], "/")[2]
-	var nextExecutionContext *clientCPproto.RequestForExecute
-	nextExecutionContext = &clientCPproto.RequestForExecute{}
-	err = proto.Unmarshal([]byte(values[0]), nextExecutionContext)
+	var nextExecutionData *clientCPproto.RequestForExecute
+	nextExecutionData = &clientCPproto.RequestForExecute{}
+	err = proto.Unmarshal([]byte(values[0]), nextExecutionData)
 	if err != nil {
 		return "", nil, errors.New("error in unmarshalling job context")
 	}
-	return nextJobID, nextExecutionContext, nil
+	return nextJobID, nextExecutionData, nil
 }
