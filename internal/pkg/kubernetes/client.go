@@ -22,7 +22,6 @@ import (
 
 var (
 	typeMeta     meta.TypeMeta
-	timeoutError = errors.New("timeout when waiting job to be available")
 )
 
 func init() {
@@ -31,7 +30,7 @@ func init() {
 		APIVersion: "batch/v1",
 	}
 }
-
+// KubeClient implements methods to interact with kubernetes cluster
 type KubeClient interface {
 	ExecuteJob(ctx context.Context, jobID string, imageName string, envMap map[string]string) (string, error)
 	ExecuteJobWithCommands(ctx context.Context, jobID string, imageName string, args map[string]string, commands []string) (string, error)
@@ -51,7 +50,7 @@ type kubeClient struct {
 	kubeWaitForResourcePollCount int
 }
 
-func NewClientSet(kubernetesConfig config.OctaviusExecutorConfig) (*kubernetes.Clientset, error) {
+func newClientSet(kubernetesConfig config.OctaviusExecutorConfig) (*kubernetes.Clientset, error) {
 	var kubeConfig *rest.Config
 	if kubernetesConfig.KubeConfig == constant.OutOfClustor {
 
@@ -86,6 +85,7 @@ func NewClientSet(kubernetesConfig config.OctaviusExecutorConfig) (*kubernetes.C
 	return clientSet, nil
 }
 
+//NewKubernetesClient creates new kubernetes client with configurations
 func NewKubernetesClient(kubernetesConfig config.OctaviusExecutorConfig) (KubeClient, error) {
 	newClient := &kubeClient{
 		namespace:                    kubernetesConfig.DefaultNamespace,
@@ -97,7 +97,7 @@ func NewKubernetesClient(kubernetesConfig config.OctaviusExecutorConfig) (KubeCl
 	}
 
 	var err error
-	newClient.clientSet, err = NewClientSet(kubernetesConfig)
+	newClient.clientSet, err = newClientSet(kubernetesConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (client *kubeClient) WaitForReadyJob(ctx context.Context, executionName str
 		err error
 		watchJob watch.Interface
 	) 
-	for i := 0; i < client.kubeWaitForResourcePollCount; i += 1 {
+	for i := 0; i < client.kubeWaitForResourcePollCount; i++ {
 		watchJob, err = jobs.Watch(ctx, listOptions)
 		if err != nil {
 			continue
@@ -277,7 +277,7 @@ func (client *kubeClient) WaitForReadyJob(ctx context.Context, executionName str
 					return nil
 				}
 			case <-timeoutChan:
-				err = timeoutError
+				err = errors.New(constant.TimeOutError)
 				watchJob.Stop()
 				break
 			}
@@ -306,7 +306,7 @@ func (client *kubeClient) WaitForReadyPod(ctx context.Context, executionName str
 		watchJob watch.Interface
 	) 
 
-	for i := 0; i < client.kubeWaitForResourcePollCount; i += 1 {
+	for i := 0; i < client.kubeWaitForResourcePollCount; i++ {
 		watchJob, err = kubernetesPods.Watch(ctx, listOptions)
 		if err != nil {
 			continue
@@ -336,7 +336,7 @@ func (client *kubeClient) WaitForReadyPod(ctx context.Context, executionName str
 					return pod, nil
 				}
 			case <-timeoutChan:
-				err = timeoutError
+				err = errors.New(constant.TimeOutError)
 				watchJob.Stop()
 				break
 			}

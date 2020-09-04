@@ -16,6 +16,7 @@ const (
 	// error messages
 	ConfigOctaviusHostMissingError      = "Config Error\nMandatory kubeconfig CP_HOST is missing in Octavius Config file."
 	ClientError                         = "malformed request"
+	TimeOutError						= "timeout when waiting job to be available"
 	ExecutionKey						= "octavius"
 	OutOfClustor						= "out-of-cluster"
 	ServerError                         = "Something went wrong"
