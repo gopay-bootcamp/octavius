@@ -32,7 +32,7 @@ func TestConfigCmdForConfigFileNotExist(t *testing.T) {
 	mockFileUtil.On("CreateFile", "job_data_example/kubeconfig/octavius_client.yaml").Return(nil).Once()
 	var configFileContent string
 	configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, "localhost:5050")
-	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailId, "jaimin.rathod@go-jek.com")
+	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailID, "jaimin.rathod@go-jek.com")
 	configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, "AllowMe")
 	configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, 10)
 	mockFileUtil.On("WriteFile", "job_data_example/kubeconfig/octavius_client.yaml", configFileContent).Return(nil).Once()
@@ -79,7 +79,7 @@ func TestConfigCmdForConfigFileNotExistForConfigFileWritingFailure(t *testing.T)
 	mockFileUtil.On("CreateFile", "job_data_example/kubeconfig/octavius_client.yaml").Return(nil).Once()
 	var configFileContent string
 	configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, "localhost:5050")
-	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailId, "jaimin.rathod@go-jek.com")
+	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailID, "jaimin.rathod@go-jek.com")
 	configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, "AllowMe")
 	configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, 10)
 	mockFileUtil.On("WriteFile", "job_data_example/kubeconfig/octavius_client.yaml", configFileContent).Return(errors.New("failed to write into file")).Once()
@@ -99,7 +99,7 @@ func TestConfigCmdForConfigFileExist(t *testing.T) {
 	mockFileUtil.On("GetUserInput").Return("Y\n", nil).Once()
 	var configFileContent string
 	configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, "localhost:5050")
-	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailId, "jaimin.rathod@go-jek.com")
+	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailID, "jaimin.rathod@go-jek.com")
 	configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, "AllowMe")
 	configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, 10)
 	mockFileUtil.On("WriteFile", "job_data_example/kubeconfig/octavius_client.yaml", configFileContent).Return(nil).Once()
@@ -160,7 +160,7 @@ func TestConfigCmdForConfigFileExistForConfigFileWritingFailure(t *testing.T) {
 	mockFileUtil.On("GetUserInput").Return("Y\n", nil).Once()
 	var configFileContent string
 	configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, "localhost:5050")
-	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailId, "jaimin.rathod@go-jek.com")
+	configFileContent += fmt.Sprintf("%s: %s\n", config.EmailID, "jaimin.rathod@go-jek.com")
 	configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, "AllowMe")
 	configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, 10)
 	mockFileUtil.On("WriteFile", "job_data_example/kubeconfig/octavius_client.yaml", configFileContent).Return(errors.New("failed to write file")).Once()
