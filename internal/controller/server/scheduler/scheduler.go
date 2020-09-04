@@ -2,60 +2,52 @@ package scheduler
 
 import (
 	"context"
-	"errors"
-	"octavius/internal/pkg/db/etcd"
+	jobRepo "octavius/internal/controller/server/repository/job"
 	"octavius/internal/pkg/idgen"
-	"strconv"
+	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 )
 
 type Scheduler interface {
-	AddToPendingList(uint64) error
-	FetchJob() (string, error)
-	RemoveFromPendingList(string) error
+	AddToPendingList(context.Context, uint64, *clientCPproto.RequestForExecute) error
+	FetchJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error)
+	RemoveFromPendingList(context.Context, string) error
 }
-
 type scheduler struct {
-	etcdClient  etcd.Client
 	idGenerator idgen.RandomIdGenerator
+	jobRepo     jobRepo.Repository
 }
 
-func NewScheduler(etcdClient etcd.Client, idGenerator idgen.RandomIdGenerator) Scheduler {
+// NewScheduler initializes new scheduler with randomIdGenerator and jobRepo
+func NewScheduler(idGenerator idgen.RandomIdGenerator, schedulerRepo jobRepo.Repository) Scheduler {
 	return &scheduler{
-		etcdClient:  etcdClient,
 		idGenerator: idGenerator,
+		jobRepo:     schedulerRepo,
 	}
 }
 
-func (s *scheduler) AddToPendingList(jobId uint64) error {
-	jobIdString := strconv.FormatUint(jobId, 10)
-	key := "jobs/pending/" + jobIdString
+// AddToPendingList function add given job to pendingList
+func (s *scheduler) AddToPendingList(ctx context.Context, jobId uint64, executionData *clientCPproto.RequestForExecute) error {
 
-	return s.etcdClient.PutValue(context.Background(), key, jobIdString)
-
+	return s.jobRepo.Save(ctx, jobId, executionData)
 }
 
-func (s *scheduler) RemoveFromPendingList(key string) error {
-	_, err := s.etcdClient.DeleteKey(context.Background(), key)
-	if err != nil {
-		return err
-	}
-	return nil
+// RemoveFromPendigList function removes job with given key from pendingList
+func (s *scheduler) RemoveFromPendingList(ctx context.Context, key string) error {
+	return s.jobRepo.Delete(ctx, key)
 }
 
-func (s *scheduler) FetchJob() (string, error) {
-	prefix := "jobs/pending/"
+// FetchJob returns jobID and executionData from pendingList
+func (s *scheduler) FetchJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
 
-	keys, values, err := s.etcdClient.GetAllKeyAndValues(context.Background(), prefix)
+	nextJobID, nextExecutionData, err := s.jobRepo.FetchNextJob(ctx)
 	if err != nil {
-		return "", err
-	}
-	if len(values) == 0 {
-		return "", errors.New("no pending job in pending job list")
-	}
-	err = s.RemoveFromPendingList(prefix + keys[0])
-	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return values[0], nil
+	err = s.RemoveFromPendingList(ctx, nextJobID)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return nextJobID, nextExecutionData, nil
 }
