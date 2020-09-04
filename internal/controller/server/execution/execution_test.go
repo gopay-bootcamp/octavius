@@ -138,7 +138,6 @@ func TestExecuteJob(t *testing.T) {
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-
 		},
 	}
 	testJobID := uint64(12345)
@@ -168,7 +167,6 @@ func TestExecuteJobForRandomIDGeneratorFailure(t *testing.T) {
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-
 		},
 	}
 	testJobID := uint64(12345)
@@ -198,7 +196,6 @@ func TestExecuteJobForJobRepoMockFailure(t *testing.T) {
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-
 		},
 	}
 	testJobID := uint64(12345)
@@ -228,7 +225,6 @@ func TestExecuteJobForSchedulerFailure(t *testing.T) {
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-
 		},
 	}
 	testJobID := uint64(12345)

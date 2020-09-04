@@ -3,13 +3,15 @@ package job
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/golang/protobuf/proto"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
+	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"octavius/internal/pkg/util"
 	"strconv"
 	"strings"
-
-	"github.com/golang/protobuf/proto"
 )
 
 type Repository interface {
@@ -43,7 +45,6 @@ func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) 
 			return false, err
 		}
 	}
-
 	return true, nil
 }
 
@@ -56,6 +57,8 @@ func (j jobRepository) Save(ctx context.Context, jobID uint64, executionContext 
 		return err
 	}
 	valueAsString := string(value)
+
+	log.Info(fmt.Sprintf("Request ID: %v, saving executionContext to etcd with value %v", ctx.Value(util.ContextKeyUUID), executionContext))
 	return j.etcdClient.PutValue(ctx, key, valueAsString)
 }
 
@@ -75,7 +78,6 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 		return "", nil, errors.New("no pending job in pending job list")
 	}
 	nextJobID := strings.Split(keys[0], "/")[2]
-
 	var nextExecutionContext *clientCPproto.RequestForExecute
 	nextExecutionContext = &clientCPproto.RequestForExecute{}
 	err = proto.Unmarshal([]byte(values[0]), nextExecutionContext)

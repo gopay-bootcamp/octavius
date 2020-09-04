@@ -127,7 +127,6 @@ func TestFetchNextJob(t *testing.T) {
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
-
 		},
 	}
 
@@ -135,7 +134,6 @@ func TestFetchNextJob(t *testing.T) {
 		JobName: "testJobName2",
 		JobData: map[string]string{
 			"env1": "envValue1",
-
 		},
 	}
 

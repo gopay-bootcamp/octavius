@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jonboulle/clockwork"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"octavius/internal/controller/config"
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	jobRepo "octavius/internal/controller/server/repository/job"
@@ -16,10 +19,6 @@ import (
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"sync"
 	"time"
-
-	"github.com/jonboulle/clockwork"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // Execution interface for methods related to execution
@@ -30,7 +29,6 @@ type Execution interface {
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
 }
-
 type execution struct {
 	metadataRepo      metadataRepo.Repository
 	executorRepo      executorRepo.Repository
@@ -39,13 +37,11 @@ type execution struct {
 	scheduler         scheduler.Scheduler
 	activeExecutorMap *activeExecutorMap
 }
-
 type activeExecutor struct {
 	sessionID  uint64
 	healthChan chan string
 	timer      <-chan time.Time
 }
-
 type activeExecutorMap struct {
 	execMap *sync.Map
 }
@@ -57,11 +53,9 @@ func (m *activeExecutorMap) Get(key string) (*activeExecutor, bool) {
 	}
 	return nil, ok
 }
-
 func (m *activeExecutorMap) Put(key string, executor *activeExecutor) {
 	m.execMap.Store(key, executor)
 }
-
 func (m *activeExecutorMap) Delete(key string) {
 	m.execMap.Delete(key)
 }
@@ -97,7 +91,6 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 	value := request.ExecutorInfo
 	return e.executorRepo.Save(ctx, key, value)
 }
-
 func removeActiveExecutor(activeExecutorMap *activeExecutorMap, id string, executor *activeExecutor) {
 	log.Info(fmt.Sprintf("session id: %d, executor id : %s, closing executor session", executor.sessionID, id))
 	close(executor.healthChan)
@@ -138,19 +131,16 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 		}
 	}
 }
-
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
 	clock := clockwork.NewRealClock()
 	pingTimeOut := config.Config().ExecutorPingDeadline
-
 	// if executor is already active
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
 		executor.healthChan <- request.State
 		executor.timer = clock.After(pingTimeOut)
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
-
 	//if executor is not registered in database
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
@@ -159,7 +149,6 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		}
 		return nil, err
 	}
-
 	// if executor is registered and not yet active add it to activeExecutor map
 	healthChan := make(chan string)
 	sessionID, err := idgen.NewRandomIdGenerator().Generate()
@@ -173,11 +162,9 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		timer:      timer,
 	}
 	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
-
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
-
 func getActiveExecutorMap(e *execution) *activeExecutorMap {
 	return e.activeExecutorMap
 }
@@ -195,7 +182,6 @@ func (e *execution) ExecuteJob(ctx context.Context, executionContext *clientCPpr
 	if err != nil {
 		return uint64(0), err
 	}
-
 	err = e.scheduler.AddToPendingList(ctx, jobId, executionContext)
 	if err != nil {
 		return uint64(0), err
