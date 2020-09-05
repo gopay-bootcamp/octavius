@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
@@ -12,8 +13,8 @@ import (
 )
 
 const (
-	registerPrefix = "executor/register/"
-	statusPrefix   = "executor/status/"
+//registerPrefix = "executor/register/"
+//statusPrefix = "executor/status/"
 )
 
 //Repository interface for functions related to metadata repository
@@ -35,7 +36,7 @@ func NewExecutorRepository(client etcd.Client) Repository {
 }
 
 func (e *executorRepository) Save(ctx context.Context, key string, executorInfo *executorCPproto.ExecutorInfo) (*executorCPproto.RegisterResponse, error) {
-	dbKey := registerPrefix + key
+	dbKey := constant.ExecutorRegistrationPrefix + key
 
 	val, err := proto.Marshal(executorInfo)
 	if err != nil {
@@ -52,12 +53,12 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 }
 
 func (e *executorRepository) UpdateStatus(ctx context.Context, key string, health string) error {
-	dbKey := statusPrefix + key
+	dbKey := constant.ExecutorStatusPrefix + key
 	return e.etcdClient.PutValue(ctx, dbKey, health)
 }
 
 func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPproto.ExecutorInfo, error) {
-	dbKey := registerPrefix + key
+	dbKey := constant.ExecutorRegistrationPrefix + key
 
 	infoString, err := e.etcdClient.GetValue(ctx, dbKey)
 	if err != nil {

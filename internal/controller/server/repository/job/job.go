@@ -48,7 +48,7 @@ func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) 
 
 // Save takes jobID and executionData and save it in database as pendingList
 func (j jobRepository) Save(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
-	key := constant.PendingJobPrefix + strconv.FormatUint(jobID, 10)
+	key := constant.JobPendingPrefix + strconv.FormatUint(jobID, 10)
 	value, err := proto.Marshal(executionData)
 	if err != nil {
 		return err
@@ -60,13 +60,13 @@ func (j jobRepository) Save(ctx context.Context, jobID uint64, executionData *cl
 
 // Delete function delete the job of given key from pendingList in database
 func (j jobRepository) Delete(ctx context.Context, key string) error {
-	_, err := j.etcdClient.DeleteKey(ctx, constant.PendingJobPrefix+key)
+	_, err := j.etcdClient.DeleteKey(ctx, constant.JobPendingPrefix+key)
 	return err
 }
 
 // FetchNextJob returns jobID and executionData from pendingList
 func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
-	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, constant.PendingJobPrefix)
+	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, constant.JobPendingPrefix)
 	if err != nil {
 		return "", nil, err
 	}
