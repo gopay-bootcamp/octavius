@@ -28,4 +28,8 @@ const (
 
 	// LoggerSkipFrameCount is for ...
 	LoggerSkipFrameCount = 3
+
+	//etcd namespace prefixes
+	MetadataPrefix   = "metadata/"
+	PendingJobPrefix = "jobs/pending/"
 )

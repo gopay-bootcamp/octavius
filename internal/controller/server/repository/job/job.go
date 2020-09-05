@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
@@ -12,6 +11,8 @@ import (
 	"octavius/internal/pkg/util"
 	"strconv"
 	"strings"
+
+	"github.com/golang/protobuf/proto"
 )
 
 type Repository interface {
@@ -25,10 +26,6 @@ type jobRepository struct {
 	etcdClient etcd.Client
 }
 
-const (
-	pendingPrefix = "jobs/pending/"
-)
-
 // NewJobRepository initializes jobRepository with the given etcdClient
 func NewJobRepository(client etcd.Client) Repository {
 	return &jobRepository{
@@ -41,7 +38,7 @@ func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) 
 	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return false, errors.New(fmt.Sprintf("job with %v name not found", jobName))
+			return false, fmt.Errorf("job with %v name not found", jobName)
 		}
 		return false, err
 
@@ -51,7 +48,7 @@ func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) 
 
 // Save takes jobID and executionData and save it in database as pendingList
 func (j jobRepository) Save(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
-	key := pendingPrefix + strconv.FormatUint(jobID, 10)
+	key := constant.PendingJobPrefix + strconv.FormatUint(jobID, 10)
 	value, err := proto.Marshal(executionData)
 	if err != nil {
 		return err
@@ -63,13 +60,13 @@ func (j jobRepository) Save(ctx context.Context, jobID uint64, executionData *cl
 
 // Delete function delete the job of given key from pendingList in database
 func (j jobRepository) Delete(ctx context.Context, key string) error {
-	_, err := j.etcdClient.DeleteKey(ctx, pendingPrefix+key)
+	_, err := j.etcdClient.DeleteKey(ctx, constant.PendingJobPrefix+key)
 	return err
 }
 
 // FetchNextJob returns jobID and executionData from pendingList
 func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
-	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, pendingPrefix)
+	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, constant.PendingJobPrefix)
 	if err != nil {
 		return "", nil, err
 	}
@@ -90,7 +87,7 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 func (j jobRepository) ValidateJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (bool, error) {
 	jobName := executionData.JobName
 	jobData := executionData.JobData
-	key := "metadata/" + jobName
+	key := constant.MetadataPrefix + jobName
 	res, err := j.etcdClient.GetValue(ctx, key)
 	if err != nil {
 		return false, err
