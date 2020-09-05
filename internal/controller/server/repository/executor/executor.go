@@ -12,11 +12,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const (
-//registerPrefix = "executor/register/"
-//statusPrefix = "executor/status/"
-)
-
 //Repository interface for functions related to metadata repository
 type Repository interface {
 	Save(ctx context.Context, key string, executorInfo *executorCPproto.ExecutorInfo) (*executorCPproto.RegisterResponse, error)
