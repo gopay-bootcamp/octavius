@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,6 +33,7 @@ func GetMapFromJson(viper *viper.Viper, key string) (map[string]string, error) {
 
 var once sync.Once
 var config OctaviusExecutorConfig
+var err error
 
 type OctaviusExecutorConfig struct {
 	viper                        *viper.Viper
@@ -54,25 +54,20 @@ type OctaviusExecutorConfig struct {
 	KubeWaitForResourcePollCount int
 }
 
-func load() OctaviusExecutorConfig {
+func load() (OctaviusExecutorConfig, error) {
 	fang := viper.New()
 
 	fang.SetConfigType("json")
 	fang.SetConfigName("executor_config")
 	fang.AddConfigPath(".")
-
-	value, available := os.LookupEnv("CONFIG_LOCATION")
-	if available {
-		fang.AddConfigPath(value)
-	}
-	//will be nil if file is read properly
 	err := fang.ReadInConfig()
 	if err != nil {
-		return OctaviusExecutorConfig{}
+		return OctaviusExecutorConfig{}, err
 	}
+
 	JobPodAnnotation, err := GetMapFromJson(fang, "job_pod_annotations")
 	if err != nil {
-		return OctaviusExecutorConfig{}
+		return OctaviusExecutorConfig{}, err
 	}
 	octaviusConfig := OctaviusExecutorConfig{
 		viper:                        fang,
@@ -92,7 +87,7 @@ func load() OctaviusExecutorConfig {
 		KubeJobRetries:               fang.GetInt("job_retries"),
 		KubeWaitForResourcePollCount: fang.GetInt("wait_for_resource_poll_count"),
 	}
-	return octaviusConfig
+	return octaviusConfig, nil
 }
 
 type AtomBool struct{ flag int32 }
@@ -119,14 +114,17 @@ func Reset() {
 	reset.Set(true)
 }
 
-func Config() OctaviusExecutorConfig {
+func Loader() (OctaviusExecutorConfig, error) {
 	once.Do(func() {
-		config = load()
+		config, err = load()
 	})
 
 	if reset.Get() {
-		config = load()
+		config, err = load()
 		reset.Set(false)
 	}
-	return config
+	if err != nil {
+		return OctaviusExecutorConfig{}, err
+	}
+	return config, nil
 }

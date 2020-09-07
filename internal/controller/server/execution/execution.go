@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"octavius/internal/controller/config"
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
@@ -27,7 +26,7 @@ type Execution interface {
 	SaveMetadata(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
-	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
+	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
 	GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error)
 }
@@ -137,11 +136,9 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 		}
 	}
 }
-
-func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
+func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
 	clock := clockwork.NewRealClock()
-	pingTimeOut := config.Config().ExecutorPingDeadline
 	// if executor is already active
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
 		executor.healthChan <- request.State

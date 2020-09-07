@@ -23,11 +23,18 @@ import (
 
 // Start the grpc server
 func Start() error {
-	dialTimeout := config.Config().EtcdDialTimeout
-	etcdHost := config.Config().EtcdHost + ":" + config.Config().EtcdPort
-	appPort := config.Config().AppPort
+	controllerConfig, err := config.Loader()
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	dialTimeout := controllerConfig.EtcdDialTimeout
+	etcdHost := controllerConfig.EtcdHost + ":" + controllerConfig.EtcdPort
+	appPort := controllerConfig.AppPort
 
 	etcdClient, err := etcd.NewClient(dialTimeout, etcdHost)
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
 	defer etcdClient.Close()
 
 	metadataRepository := metadataRepo.NewMetadataRepository(etcdClient)

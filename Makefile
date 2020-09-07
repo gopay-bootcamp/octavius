@@ -27,12 +27,10 @@ proto_files:
 
 .PHONY: executor
 executor:
-	PROCTOR_AUTH_PLUGIN_BINARY=$(PLUGIN_DIR)/auth.so \
 	go build -race -o $(BIN_DIR)/executor ./cmd/executor/main.go
 
 .PHONY: server
 server:
-	PROCTOR_AUTH_PLUGIN_BINARY=$(PLUGIN_DIR)/auth.so \
 	go build -race -o $(BIN_DIR)/controller ./cmd/controller/main.go
 
 .PHONY: start-server
