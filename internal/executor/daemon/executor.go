@@ -6,6 +6,7 @@ import (
 	"io"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
+	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
@@ -28,6 +29,7 @@ type executorClient struct {
 	connectionTimeoutSecs time.Duration
 	pingInterval          time.Duration
 	jobChan               chan *executorCPproto.Job
+	kubernetesClient      kubernetes.KubeClient
 }
 
 //NewExecutorClient returns new empty executor client
@@ -45,6 +47,21 @@ func (e *executorClient) StartClient() error {
 	e.pingInterval = config.Config().PingInterval
 	e.jobChan = make(chan *executorCPproto.Job)
 	err := e.grpcClient.ConnectClient(e.cpHost)
+	if err != nil {
+		return err
+	}
+
+	var kubeConfig = config.OctaviusExecutorConfig{
+		KubeConfig:                   config.Config().KubeConfig,
+		KubeContext:                  config.Config().KubeContext,
+		DefaultNamespace:             config.Config().DefaultNamespace,
+		KubeServiceAccountName:       config.Config().KubeServiceAccountName,
+		JobPodAnnotations:            config.Config().JobPodAnnotations,
+		KubeJobActiveDeadlineSeconds: config.Config().KubeJobActiveDeadlineSeconds,
+		KubeJobRetries:               config.Config().KubeJobRetries,
+		KubeWaitForResourcePollCount: config.Config().KubeWaitForResourcePollCount,
+	}
+	e.kubernetesClient, err = kubernetes.NewKubernetesClient(kubeConfig)
 	if err != nil {
 		return err
 	}

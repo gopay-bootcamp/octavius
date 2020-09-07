@@ -14,7 +14,6 @@ import (
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
-	"strconv"
 	"sync"
 	"time"
 
@@ -29,24 +28,21 @@ type Execution interface {
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
-	ExecuteJob(ctx context.Context, name string, data map[string]string) (uint64, error)
+	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
 }
-
 type execution struct {
 	metadataRepo      metadataRepo.Repository
 	executorRepo      executorRepo.Repository
-	jobRepo           jobRepo.JobRepository
+	jobRepo           jobRepo.Repository
 	idGenerator       idgen.RandomIdGenerator
 	scheduler         scheduler.Scheduler
 	activeExecutorMap *activeExecutorMap
 }
-
 type activeExecutor struct {
 	sessionID  uint64
 	healthChan chan string
 	timer      <-chan time.Time
 }
-
 type activeExecutorMap struct {
 	execMap *sync.Map
 }
@@ -58,17 +54,15 @@ func (m *activeExecutorMap) Get(key string) (*activeExecutor, bool) {
 	}
 	return nil, ok
 }
-
 func (m *activeExecutorMap) Put(key string, executor *activeExecutor) {
 	m.execMap.Store(key, executor)
 }
-
 func (m *activeExecutorMap) Delete(key string) {
 	m.execMap.Delete(key)
 }
 
 // NewExec creates a new instance of metadata respository
-func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository, jobRepo jobRepo.JobRepository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) Execution {
+func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Repository, jobRepo jobRepo.Repository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) Execution {
 	newActiveExecutorMap := &activeExecutorMap{
 		execMap: new(sync.Map),
 	}
@@ -98,7 +92,6 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 	value := request.ExecutorInfo
 	return e.executorRepo.Save(ctx, key, value)
 }
-
 func removeActiveExecutor(activeExecutorMap *activeExecutorMap, id string, executor *activeExecutor) {
 	log.Info(fmt.Sprintf("session id: %d, executor id : %s, closing executor session", executor.sessionID, id))
 	close(executor.healthChan)
@@ -139,19 +132,16 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 		}
 	}
 }
-
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
 	clock := clockwork.NewRealClock()
 	pingTimeOut := config.Config().ExecutorPingDeadline
-
 	// if executor is already active
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
 		executor.healthChan <- request.State
 		executor.timer = clock.After(pingTimeOut)
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
-
 	//if executor is not registered in database
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
@@ -160,7 +150,6 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		}
 		return nil, err
 	}
-
 	// if executor is registered and not yet active add it to activeExecutor map
 	healthChan := make(chan string)
 	sessionID, err := idgen.NewRandomIdGenerator().Generate()
@@ -174,36 +163,36 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		timer:      timer,
 	}
 	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
-
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
-
 func getActiveExecutorMap(e *execution) *activeExecutorMap {
 	return e.activeExecutorMap
 }
 
-//ExecuteJob function will call job repository and get jobId
-func (e *execution) ExecuteJob(ctx context.Context, jobName string, jobData map[string]string) (uint64, error) {
-	jobAvailabilityStatus, err := e.jobRepo.CheckJobMetadataIsAvailable(ctx, jobName)
+// ExecuteJob function will call job repository and get jobId
+func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (uint64, error) {
+	jobAvailabilityStatus, err := e.jobRepo.CheckJobIsAvailable(ctx, executionData.JobName)
 	if err != nil {
 		return uint64(0), err
 	}
 	if jobAvailabilityStatus == false {
 		return uint64(0), errors.New("job with given name not available")
 	}
-
-	jobId, err := e.idGenerator.Generate()
+	valid, err := e.jobRepo.ValidateJob(ctx, executionData)
+	if err != nil {
+		return 0, err
+	}
+	if !valid {
+		return 0, errors.New("job data not as per metadata")
+	}
+	jobID, err := e.idGenerator.Generate()
 	if err != nil {
 		return uint64(0), err
 	}
-
-	err = e.scheduler.AddToPendingList(jobId)
+	err = e.scheduler.AddToPendingList(ctx, jobID, executionData)
 	if err != nil {
 		return uint64(0), err
 	}
-	jobIdString := strconv.FormatUint(jobId, 10)
-	err = e.jobRepo.ExecuteJob(ctx, jobIdString, jobName, jobData)
-
-	return jobId, err
+	return jobID, err
 }
