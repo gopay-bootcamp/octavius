@@ -12,7 +12,7 @@ import (
 func main() {
 	logfilePath := config.LogFilePath
 	if err := octlog.Init("info", logfilePath, true); err != nil {
-		log.Fatal(fmt.Sprintf("failed to initialize config %v", err))
+		log.Fatal(fmt.Sprintf("failed to initialize logger %v", err))
 	}
 
 	clientConfigLoader := config.NewLoader()

@@ -3,6 +3,7 @@ package register
 import (
 	"errors"
 	"fmt"
+	"octavius/internal/executor/config"
 	"octavius/internal/executor/daemon"
 	"octavius/internal/pkg/log"
 
@@ -10,13 +11,13 @@ import (
 )
 
 //NewCmd returns start command
-func NewCmd(executorDaemon daemon.Client) *cobra.Command {
+func NewCmd(executorDaemon daemon.Client, executorConfig config.OctaviusExecutorConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "register",
 		Short: "register Executor",
 		Long:  `Registers Executor in Control Plane`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := executorDaemon.StartClient()
+			err := executorDaemon.StartClient(executorConfig)
 			if err != nil {
 				log.Error(fmt.Errorf("executor configuration failed, error details: %v", err.Error()), "")
 			}

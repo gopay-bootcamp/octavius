@@ -1,8 +1,8 @@
 package command
 
 import (
-	"octavius/internal/controller/command/start"
 	"github.com/spf13/cobra"
+	"octavius/internal/controller/command/start"
 )
 
 var cfgFile string
