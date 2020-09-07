@@ -74,8 +74,7 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 		return "", nil, errors.New("no pending job in pending job list")
 	}
 	nextJobID := strings.Split(keys[0], "/")[2]
-	var nextExecutionData *clientCPproto.RequestForExecute
-	nextExecutionData = &clientCPproto.RequestForExecute{}
+	nextExecutionData := &clientCPproto.RequestForExecute{}
 	err = proto.Unmarshal([]byte(values[0]), nextExecutionData)
 	if err != nil {
 		return "", nil, errors.New("error in unmarshalling job context")
