@@ -12,7 +12,7 @@ import (
 
 type Client interface {
 	RegisterClient() (bool, error)
-	StartClient() error
+	StartClient(executorConfig config.OctaviusExecutorConfig) error
 	StartPing()
 }
 
@@ -32,26 +32,26 @@ func NewExecutorClient(grpcClient client.Client) Client {
 	}
 }
 
-func (e *executorClient) StartClient() error {
-	e.id = config.Config().ID
-	e.cpHost = config.Config().CPHost
-	e.accessToken = config.Config().AccessToken
-	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
-	e.pingInterval = config.Config().PingInterval
+func (e *executorClient) StartClient(executorConfig config.OctaviusExecutorConfig) error {
+	e.id = executorConfig.ID
+	e.cpHost = executorConfig.CPHost
+	e.accessToken = executorConfig.AccessToken
+	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
+	e.pingInterval = executorConfig.PingInterval
 	err := e.grpcClient.ConnectClient(e.cpHost)
 	if err != nil {
 		return err
 	}
 
 	var kubeConfig = config.OctaviusExecutorConfig{
-		KubeConfig:                   config.Config().KubeConfig,
-		KubeContext:                  config.Config().KubeContext,
-		DefaultNamespace:             config.Config().DefaultNamespace,
-		KubeServiceAccountName:       config.Config().KubeServiceAccountName,
-		JobPodAnnotations:            config.Config().JobPodAnnotations,
-		KubeJobActiveDeadlineSeconds: config.Config().KubeJobActiveDeadlineSeconds,
-		KubeJobRetries:               config.Config().KubeJobRetries,
-		KubeWaitForResourcePollCount: config.Config().KubeWaitForResourcePollCount,
+		KubeConfig:                   executorConfig.KubeConfig,
+		KubeContext:                  executorConfig.KubeContext,
+		DefaultNamespace:             executorConfig.DefaultNamespace,
+		KubeServiceAccountName:       executorConfig.KubeServiceAccountName,
+		JobPodAnnotations:            executorConfig.JobPodAnnotations,
+		KubeJobActiveDeadlineSeconds: executorConfig.KubeJobActiveDeadlineSeconds,
+		KubeJobRetries:               executorConfig.KubeJobRetries,
+		KubeWaitForResourcePollCount: executorConfig.KubeWaitForResourcePollCount,
 	}
 	e.kubernetesClient, err = kubernetes.NewKubernetesClient(kubeConfig)
 	if err != nil {

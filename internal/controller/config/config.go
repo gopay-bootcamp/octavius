@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -21,6 +20,7 @@ func GetIntDefault(viper *viper.Viper, key string, defaultValue int) int {
 
 var once sync.Once
 var config OctaviusConfig
+var err error
 
 type OctaviusConfig struct {
 	viper                *viper.Viper
@@ -33,7 +33,7 @@ type OctaviusConfig struct {
 	LogFilePath          string
 }
 
-func load() OctaviusConfig {
+func load() (OctaviusConfig, error) {
 	fang := viper.New()
 
 	fang.SetConfigType("json")
@@ -43,7 +43,7 @@ func load() OctaviusConfig {
 	//will be nil if file is read properly
 	err := fang.ReadInConfig()
 	if err != nil {
-		fmt.Println("file not read", err)
+		return OctaviusConfig{}, err
 	}
 	octaviusConfig := OctaviusConfig{
 		viper:                fang,
@@ -55,7 +55,7 @@ func load() OctaviusConfig {
 		ExecutorPingDeadline: time.Duration(GetIntDefault(fang, "executor_ping_deadline", 30)) * time.Second,
 		LogFilePath:          GetStringDefault(fang, "log_file_path", "controller.log"),
 	}
-	return octaviusConfig
+	return octaviusConfig, nil
 }
 
 type AtomBool struct{ flag int32 }
@@ -82,14 +82,17 @@ func Reset() {
 	reset.Set(true)
 }
 
-func Config() OctaviusConfig {
+func Loader() (OctaviusConfig, error) {
 	once.Do(func() {
-		config = load()
+		config, err = load()
 	})
 
 	if reset.Get() {
-		config = load()
+		config, err = load()
 		reset.Set(false)
 	}
-	return config
+	if err != nil {
+		return OctaviusConfig{}, err
+	}
+	return config, nil
 }

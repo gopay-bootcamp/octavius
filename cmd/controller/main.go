@@ -9,11 +9,18 @@ import (
 )
 
 func main() {
-	logfilePath := config.Config().LogFilePath
-	logLevel := config.Config().LogLevel
-	if err := octlog.Init(logLevel, logfilePath, true); err != nil {
-		log.Fatal(fmt.Sprintf("failed to initialize config %v", err))
+	controllerConfig, err := config.Loader()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to init config %v", err))
+	}
+	logfilePath := controllerConfig.LogFilePath
+	logLevel := controllerConfig.LogLevel
+	if err = octlog.Init(logLevel, logfilePath, true); err != nil {
+		log.Fatal(fmt.Sprintf("failed to initialize logger %v", err))
 	}
 
-	command.Execute()
+	err = command.Execute()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to execute command %v", err))
+	}
 }
