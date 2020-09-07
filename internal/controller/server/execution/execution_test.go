@@ -143,6 +143,7 @@ func TestExecuteJob(t *testing.T) {
 	testJobID := uint64(12345)
 
 	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
+	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
 	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
 	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
 
@@ -172,6 +173,7 @@ func TestExecuteJobForRandomIDGeneratorFailure(t *testing.T) {
 	testJobID := uint64(12345)
 
 	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
+	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
 	mockRandomIdGenerator.On("Generate").Return(testJobID, errors.New("failed to generate random ID"))
 	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
 
@@ -230,6 +232,7 @@ func TestExecuteJobForSchedulerFailure(t *testing.T) {
 	testJobID := uint64(12345)
 
 	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
+	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
 	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
 	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(errors.New("failed to add job in pending list in scheduler"))
 

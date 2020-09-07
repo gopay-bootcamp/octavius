@@ -13,8 +13,6 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-const prefix = "metadata/"
-
 //Repository interface for functions related to metadata repository
 type Repository interface {
 	Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
@@ -40,7 +38,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 	if err != nil {
 		return nil, err
 	}
-	dbKey := prefix + key
+	dbKey := constant.MetadataPrefix + key
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
@@ -65,7 +63,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 
 //GetAll returns array of metadata
 func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error) {
-	res, err := c.etcdClient.GetAllValues(ctx, prefix)
+	res, err := c.etcdClient.GetAllValues(ctx, constant.MetadataPrefix)
 	if err != nil {
 		var arr []*clientCPproto.Metadata
 		res := &clientCPproto.MetadataArray{Values: arr}

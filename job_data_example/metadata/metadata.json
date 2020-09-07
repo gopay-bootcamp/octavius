@@ -1,5 +1,5 @@
 {
-  "name": "demo-image-name-naya-2",
+  "name": "demo-image-name-5",
   "description": "This is a cool demo image",
   "image_name": "images/demo-image",
   "author": "Gopay System Automation Team",
@@ -10,21 +10,28 @@
   ],
   "env_vars": {
     "secrets": [{
-        "name": "TOP_SECRET_1",
-        "description": "Secret"
-      },
+      "name": "TOP_SECRET_1",
+      "description": "Secret"
+    },
       {
         "name": "TOP_SECRET_2",
-        "description": "[Mandatory] Base64 KUBECONFIG_GOKU_STAGING",
+        "description": "[Mandatory] Base64 KUBECONFIG_GOKU_STAGING"
       }
     ],
     "args": [{
-        "name": "ENV",
-        "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
-      },
+      "name": "ENV",
+      "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
+      "required": true
+    },
       {
         "name": "RELEASE_NAME",
-        "description": "[Mandatory] Helm release name to be migrated"
+        "description": "[Mandatory] Helm release name to be migrated",
+        "required": true
+      },
+      {
+        "name": "EXECUTOR",
+        "description": "Preference of Executor",
+        "required": false
       }
     ]
   }

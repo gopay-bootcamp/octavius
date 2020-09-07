@@ -2,8 +2,6 @@ package daemon
 
 import (
 	"errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"io"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
@@ -11,6 +9,8 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/jsonpb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Client interface {

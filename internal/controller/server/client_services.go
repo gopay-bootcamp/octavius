@@ -93,12 +93,12 @@ func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, executionData *
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	log.Info(fmt.Sprintf("request ID: %v, ExecuteJob request received with executionData %+v", uuid, executionData))
 
-	jobId, err := s.procExec.ExecuteJob(ctx, executionData)
+	jobID, err := s.procExec.ExecuteJob(ctx, executionData)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request ID: %v, error in job execution", uuid))
 		return &clientCPproto.Response{Status: "failure"}, err
 	}
 
-	jobIdString := strconv.FormatUint(jobId, 10)
-	return &clientCPproto.Response{Status: "Job created successfully with JobID " + jobIdString}, err
+	jobIDString := strconv.FormatUint(jobID, 10)
+	return &clientCPproto.Response{Status: "Job created successfully with JobID " + jobIDString}, err
 }

@@ -8,6 +8,7 @@ message Secret {
 message Arg {
     string name=1 [json_name="name"];
     string description=2 [json_name="description"];
+    bool required=3 [json_name="required"];
 }
 message EnvVars {
     repeated Secret secrets=1 [json_name="secrets"];
