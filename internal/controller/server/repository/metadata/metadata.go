@@ -2,7 +2,6 @@ package metadata
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -44,7 +43,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
-		return nil, status.Error(codes.AlreadyExists, errors.New(constant.Etcd+constant.KeyAlreadyPresent).Error())
+		return nil, status.Error(codes.AlreadyExists, constant.Etcd+constant.KeyAlreadyPresent)
 	}
 
 	if err != nil {

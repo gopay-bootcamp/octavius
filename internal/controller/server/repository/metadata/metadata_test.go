@@ -66,7 +66,7 @@ func Test_metadataRepository_Save_KeyAlreadyPresent(t *testing.T) {
 	ctx := context.Background()
 	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
 
-	if err.Error() != status.Error(codes.AlreadyExists, errors.New(constant.Etcd+constant.KeyAlreadyPresent).Error()).Error() {
+	if err.Error() != status.Error(codes.AlreadyExists, constant.Etcd+constant.KeyAlreadyPresent).Error() {
 		t.Error("key already present error expected")
 	}
 }

@@ -78,7 +78,7 @@ func TestCheckJobIsAvailableForJobNotAvailable(t *testing.T) {
 	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New(constant.NoValueFound))
 
 	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Equal(t, status.Error(codes.NotFound, errors.New(constant.Etcd+"job with testJobName name not found").Error()).Error(), err.Error())
+	assert.Equal(t, status.Error(codes.NotFound, constant.Etcd+"job with testJobName name not found").Error(), err.Error())
 	assert.False(t, jobAvailabilityStatus)
 	mockClient.AssertExpectations(t)
 }
@@ -90,7 +90,7 @@ func TestCheckJobIsAvailableForEtcdClientFailure(t *testing.T) {
 	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New("failed to get value from database"))
 
 	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Equal(t, status.Error(codes.Internal, errors.New("failed to get value from database").Error()).Error(), err.Error())
+	assert.Equal(t, status.Error(codes.Internal, "failed to get value from database").Error(), err.Error())
 	assert.False(t, jobAvailabilityStatus)
 	mockClient.AssertExpectations(t)
 }
@@ -112,7 +112,7 @@ func TestDeleteForEtcdClientFailure(t *testing.T) {
 
 	mockClient.On("DeleteKey").Return(false, errors.New("failed to delete key from database"))
 	err := jobRepository.Delete(context.Background(), "12345")
-	assert.Equal(t, status.Error(codes.Internal, errors.New("failed to delete key from database").Error()).Error(), err.Error())
+	assert.Equal(t, status.Error(codes.Internal, "failed to delete key from database").Error(), err.Error())
 	mockClient.AssertExpectations(t)
 
 }
@@ -172,7 +172,7 @@ func TestFetchNextJobForEtcdClientFailure(t *testing.T) {
 
 	assert.Nil(t, nextExecutionData)
 	assert.Equal(t, "", nextJobID)
-	assert.Equal(t, err.Error(), status.Error(codes.Internal, errors.New("failed to get keys and values from database").Error()).Error())
+	assert.Equal(t, err.Error(), status.Error(codes.Internal, "failed to get keys and values from database").Error())
 	mockClient.AssertExpectations(t)
 
 }
@@ -190,7 +190,7 @@ func TestFetchNextJobForJobNotAvailable(t *testing.T) {
 
 	assert.Nil(t, nextExecutionData)
 	assert.Equal(t, "", nextJobID)
-	assert.Equal(t, err.Error(), status.Error(codes.NotFound, errors.New(constant.Controller+"no pending job in pending job list").Error()).Error())
+	assert.Equal(t, err.Error(), status.Error(codes.NotFound, constant.Controller+"no pending job in pending job list").Error())
 	mockClient.AssertExpectations(t)
 
 }
