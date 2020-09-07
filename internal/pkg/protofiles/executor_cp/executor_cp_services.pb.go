@@ -7,7 +7,11 @@
 package executor_cp
 
 import (
+	context "context"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -114,4 +118,227 @@ func file_internal_pkg_protofiles_executor_cp_executor_cp_services_proto_init() 
 	file_internal_pkg_protofiles_executor_cp_executor_cp_services_proto_rawDesc = nil
 	file_internal_pkg_protofiles_executor_cp_executor_cp_services_proto_goTypes = nil
 	file_internal_pkg_protofiles_executor_cp_executor_cp_services_proto_depIdxs = nil
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConnInterface
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion6
+
+// ExecutorCPServicesClient is the client API for ExecutorCPServices service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type ExecutorCPServicesClient interface {
+	HealthCheck(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*HealthResponse, error)
+	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	GetJob(ctx context.Context, in *Start, opts ...grpc.CallOption) (*Job, error)
+	StreamLog(ctx context.Context, opts ...grpc.CallOption) (ExecutorCPServices_StreamLogClient, error)
+}
+
+type executorCPServicesClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewExecutorCPServicesClient(cc grpc.ClientConnInterface) ExecutorCPServicesClient {
+	return &executorCPServicesClient{cc}
+}
+
+func (c *executorCPServicesClient) HealthCheck(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*HealthResponse, error) {
+	out := new(HealthResponse)
+	err := c.cc.Invoke(ctx, "/ExecutorCPServices/HealthCheck", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executorCPServicesClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	out := new(RegisterResponse)
+	err := c.cc.Invoke(ctx, "/ExecutorCPServices/Register", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executorCPServicesClient) GetJob(ctx context.Context, in *Start, opts ...grpc.CallOption) (*Job, error) {
+	out := new(Job)
+	err := c.cc.Invoke(ctx, "/ExecutorCPServices/GetJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executorCPServicesClient) StreamLog(ctx context.Context, opts ...grpc.CallOption) (ExecutorCPServices_StreamLogClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExecutorCPServices_serviceDesc.Streams[0], "/ExecutorCPServices/StreamLog", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &executorCPServicesStreamLogClient{stream}
+	return x, nil
+}
+
+type ExecutorCPServices_StreamLogClient interface {
+	Send(*JobLog) error
+	CloseAndRecv() (*LogSummary, error)
+	grpc.ClientStream
+}
+
+type executorCPServicesStreamLogClient struct {
+	grpc.ClientStream
+}
+
+func (x *executorCPServicesStreamLogClient) Send(m *JobLog) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *executorCPServicesStreamLogClient) CloseAndRecv() (*LogSummary, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(LogSummary)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// ExecutorCPServicesServer is the server API for ExecutorCPServices service.
+type ExecutorCPServicesServer interface {
+	HealthCheck(context.Context, *Ping) (*HealthResponse, error)
+	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	GetJob(context.Context, *Start) (*Job, error)
+	StreamLog(ExecutorCPServices_StreamLogServer) error
+}
+
+// UnimplementedExecutorCPServicesServer can be embedded to have forward compatible implementations.
+type UnimplementedExecutorCPServicesServer struct {
+}
+
+func (*UnimplementedExecutorCPServicesServer) HealthCheck(context.Context, *Ping) (*HealthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
+}
+func (*UnimplementedExecutorCPServicesServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (*UnimplementedExecutorCPServicesServer) GetJob(context.Context, *Start) (*Job, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetJob not implemented")
+}
+func (*UnimplementedExecutorCPServicesServer) StreamLog(ExecutorCPServices_StreamLogServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamLog not implemented")
+}
+
+func RegisterExecutorCPServicesServer(s *grpc.Server, srv ExecutorCPServicesServer) {
+	s.RegisterService(&_ExecutorCPServices_serviceDesc, srv)
+}
+
+func _ExecutorCPServices_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Ping)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutorCPServicesServer).HealthCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ExecutorCPServices/HealthCheck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutorCPServicesServer).HealthCheck(ctx, req.(*Ping))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutorCPServices_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutorCPServicesServer).Register(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ExecutorCPServices/Register",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutorCPServicesServer).Register(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutorCPServices_GetJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Start)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutorCPServicesServer).GetJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ExecutorCPServices/GetJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutorCPServicesServer).GetJob(ctx, req.(*Start))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutorCPServices_StreamLog_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExecutorCPServicesServer).StreamLog(&executorCPServicesStreamLogServer{stream})
+}
+
+type ExecutorCPServices_StreamLogServer interface {
+	SendAndClose(*LogSummary) error
+	Recv() (*JobLog, error)
+	grpc.ServerStream
+}
+
+type executorCPServicesStreamLogServer struct {
+	grpc.ServerStream
+}
+
+func (x *executorCPServicesStreamLogServer) SendAndClose(m *LogSummary) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *executorCPServicesStreamLogServer) Recv() (*JobLog, error) {
+	m := new(JobLog)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+var _ExecutorCPServices_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "ExecutorCPServices",
+	HandlerType: (*ExecutorCPServicesServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "HealthCheck",
+			Handler:    _ExecutorCPServices_HealthCheck_Handler,
+		},
+		{
+			MethodName: "Register",
+			Handler:    _ExecutorCPServices_Register_Handler,
+		},
+		{
+			MethodName: "GetJob",
+			Handler:    _ExecutorCPServices_GetJob_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamLog",
+			Handler:       _ExecutorCPServices_StreamLog_Handler,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "internal/pkg/protofiles/executor_cp/executor_cp_services.proto",
 }
