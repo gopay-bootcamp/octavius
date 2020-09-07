@@ -4,10 +4,10 @@ package constant
 const (
 
 	//error source
-	Client     = "In Client: "
-	Controller = "In Controller: "
-	Etcd       = "In Etcd Database: "
-	Executor   = "In Executor: "
+	Client     = "in client: "
+	Controller = "in controller: "
+	Etcd       = "in etcd database: "
+	Executor   = "in executor: "
 
 	// error messages
 	ConfigOctaviusHostMissingError      = "config error\nmandatory config CP_HOST is missing in octavius config file."

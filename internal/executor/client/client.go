@@ -2,6 +2,8 @@ package client
 
 import (
 	"context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
 
@@ -22,7 +24,7 @@ type GrpcClient struct {
 func (g *GrpcClient) ConnectClient(cpHost string) error {
 	conn, err := grpc.Dial(cpHost, grpc.WithInsecure())
 	if err != nil {
-		return err
+		return status.Error(codes.Internal, err.Error())
 	}
 	grpcClient := executorCPproto.NewExecutorCPServicesClient(conn)
 	g.client = grpcClient
