@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	typeMeta     meta.TypeMeta
+	typeMeta meta.TypeMeta
 )
 
 func init() {
@@ -30,6 +30,7 @@ func init() {
 		APIVersion: "batch/v1",
 	}
 }
+
 // KubeClient implements methods to interact with kubernetes cluster
 type KubeClient interface {
 	ExecuteJob(ctx context.Context, jobID string, imageName string, envMap map[string]string) (string, error)
@@ -175,7 +176,7 @@ func (client *kubeClient) ExecuteJobWithCommands(ctx context.Context, jobID stri
 		ObjectMeta: objectMeta,
 		Spec:       jobSpec,
 	}
-	
+
 	_, err := kubernetesJobs.Create(ctx, &jobToRun, meta.CreateOptions{})
 	if err != nil {
 		return "", err
@@ -244,10 +245,10 @@ func (client *kubeClient) WaitForReadyJob(ctx context.Context, executionName str
 		LabelSelector: jobLabelSelector(executionName),
 	}
 
-	var(
-		err error
+	var (
+		err      error
 		watchJob watch.Interface
-	) 
+	)
 	for i := 0; i < client.kubeWaitForResourcePollCount; i++ {
 		watchJob, err = jobs.Watch(ctx, listOptions)
 		if err != nil {
@@ -301,10 +302,10 @@ func (client *kubeClient) WaitForReadyPod(ctx context.Context, executionName str
 	listOptions := meta.ListOptions{
 		LabelSelector: jobLabelSelector(executionName),
 	}
-	var(
-		err error
+	var (
+		err      error
 		watchJob watch.Interface
-	) 
+	)
 
 	for i := 0; i < client.kubeWaitForResourcePollCount; i++ {
 		watchJob, err = kubernetesPods.Watch(ctx, listOptions)

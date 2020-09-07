@@ -21,9 +21,10 @@ import (
 
 var (
 	testKubeClient TestKubeClient
-	ctx context.Context
-	cancel context.CancelFunc
+	ctx            context.Context
+	cancel         context.CancelFunc
 )
+
 type TestKubeClient struct {
 	testClient             KubeClient
 	testKubernetesJobs     batch.JobInterface
@@ -391,7 +392,7 @@ func TestShouldReturnJobExecutionStatusFetchError(t *testing.T) {
 		watcher.Stop()
 	}()
 
-	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(ctx,uniqueJobName)
+	jobExecutionStatus, err := testKubeClient.testClient.JobExecutionStatus(ctx, uniqueJobName)
 	assert.NoError(t, err)
 
 	assert.Equal(t, constant.JobExecutionStatusFetchError, jobExecutionStatus, "should return job execution status fetch error")
