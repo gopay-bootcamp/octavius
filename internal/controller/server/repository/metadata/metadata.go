@@ -16,6 +16,7 @@ import (
 //Repository interface for functions related to metadata repository
 type Repository interface {
 	Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
+	GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error)
 	GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error)
 }
 
@@ -81,4 +82,15 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 	}
 	resp := &clientCPproto.MetadataArray{Values: resArr}
 	return resp, nil
+}
+
+func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error) {
+	dbKey := constant.MetadataPrefix + jobName
+	gr, err := c.etcdClient.GetValue(ctx, dbKey)
+	if err != nil {
+		return &clientCPproto.Metadata{}, err
+	}
+	metadata := &clientCPproto.Metadata{}
+	err = proto.Unmarshal([]byte(gr), metadata)
+	return metadata, err
 }

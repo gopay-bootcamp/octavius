@@ -17,6 +17,7 @@ type Client interface {
 	ExecuteJob(*protobuf.RequestForExecute) (*protobuf.Response, error)
 	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
 	ConnectClient(cpHost string) error
+	DescribeJob(*protobuf.RequestForDescribe) (*protobuf.Metadata, error)
 }
 
 type GrpcClient struct {
@@ -69,4 +70,9 @@ func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (
 		return nil, err
 	}
 	return res, nil
+}
+
+func (g *GrpcClient) DescribeJob(requestForDescribe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
+	res, err := g.client.DescribeJob(context.Background(), requestForDescribe)
+	return res, err
 }
