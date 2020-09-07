@@ -39,7 +39,7 @@ func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) 
 	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return false, status.Error(codes.NotFound, constant.Etcd+fmt.Errorf("job with %v name not found", jobName).Error())
+			return false, status.Error(codes.NotFound, constant.Etcd+fmt.Sprintf("job with %v name not found", jobName))
 		}
 		return false, status.Error(codes.Internal, err.Error())
 
