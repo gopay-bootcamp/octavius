@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
 	"octavius/internal/pkg/kubernetes"
@@ -63,7 +65,7 @@ func (e *executorClient) StartClient(executorConfig config.OctaviusExecutorConfi
 	}
 	e.kubernetesClient, err = kubernetes.NewKubernetesClient(kubeConfig)
 	if err != nil {
-		return err
+		return status.Error(codes.Internal, err.Error())
 	}
 	return nil
 }

@@ -3,6 +3,9 @@ package metadata
 import (
 	"context"
 	"errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
@@ -63,7 +66,7 @@ func Test_metadataRepository_Save_KeyAlreadyPresent(t *testing.T) {
 	ctx := context.Background()
 	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
 
-	if err.Error() != "key already present" {
+	if err.Error() != status.Error(codes.AlreadyExists, constant.Etcd+constant.KeyAlreadyPresent).Error() {
 		t.Error("key already present error expected")
 	}
 }
@@ -87,7 +90,7 @@ func Test_metadataRepository_Save_GetValueError(t *testing.T) {
 	ctx := context.Background()
 	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
 
-	if err.Error() != "some error" {
+	if err.Error() != status.Error(codes.Internal, "some error").Error() {
 		t.Error("get value error expected")
 	}
 }
@@ -111,7 +114,7 @@ func Test_metadataRepository_Save_PutValueError(t *testing.T) {
 	ctx := context.Background()
 	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
 
-	if err.Error() != "some error" {
+	if err.Error() != status.Error(codes.Internal, "some error").Error() {
 		t.Error("put value error expected")
 	}
 }

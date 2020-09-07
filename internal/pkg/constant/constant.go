@@ -1,34 +1,30 @@
 package constant
 
-// what is the difference between error code and constant error below?
-
-var ErrorCode = map[int]string{
-	0: "No Error",
-	1: "Client",
-	2: "Control Plane",
-	3: "Etcd Database",
-	4: "Executor",
-}
-
 // group the const
 const (
 
+	//error source
+	Client     = "in client: "
+	Controller = "in controller: "
+	Etcd       = "in etcd database: "
+	Executor   = "in executor: "
+
 	// error messages
-	ConfigOctaviusHostMissingError      = "Config Error\nMandatory kubeconfig CP_HOST is missing in Octavius Config file."
+	ConfigOctaviusHostMissingError      = "config error\nmandatory config CP_HOST is missing in octavius config file."
 	ClientError                         = "malformed request"
 	TimeOutError                        = "timeout when waiting job to be available"
 	ExecutionKey                        = "octavius"
 	OutOfClustor                        = "out-of-cluster"
-	ServerError                         = "Something went wrong"
+	ServerError                         = "something went wrong"
 	NoValueFound                        = "no value found"
 	KeyAlreadyPresent                   = "key already present"
 	EtcdSaveError                       = "error in saving to etcd"
-	JobNotFound                         = "Job not found"
+	JobNotFound                         = "job not found"
 	JobExecutionStatusFetchError        = "job execution status fetch error"
 	NoDefinitiveJobExecutionStatusFound = "no definitive job execution status found"
 	JobSucceeded                        = "succeeded"
 	JobFailed                           = "failed"
-	JobWaiting                          = "WAITING"
+	JobWaiting                          = "waiting"
 	NullRevision                        = -1
 
 	// LoggerSkipFrameCount is for ...
