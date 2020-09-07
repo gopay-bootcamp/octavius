@@ -7,12 +7,9 @@ import (
 	"octavius/internal/cli/command/getstream"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/file"
-	"octavius/internal/pkg/log"
 
 	"github.com/spf13/cobra"
 )
-
-var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "OCTAVIUS",
@@ -21,7 +18,7 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute Executes the root command of Octavius Cli
-func Execute(octaviusDaemon daemon.Client) {
+func Execute(octaviusDaemon daemon.Client) error {
 
 	fileUtil := file.New()
 
@@ -38,6 +35,7 @@ func Execute(octaviusDaemon daemon.Client) {
 	rootCmd.AddCommand(executeCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		log.Error(err, "input command execution: ")
+		return err
 	}
+	return nil
 }

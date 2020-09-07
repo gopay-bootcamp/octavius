@@ -18,5 +18,8 @@ func main() {
 	clientConfigLoader := config.NewLoader()
 	octaviusDaemon := daemon.NewClient(clientConfigLoader)
 
-	command.Execute(octaviusDaemon)
+	err := command.Execute(octaviusDaemon)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to execute command %v", err))
+	}
 }

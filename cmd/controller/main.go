@@ -15,5 +15,8 @@ func main() {
 		log.Fatal(fmt.Sprintf("failed to initialize config %v", err))
 	}
 
-	command.Execute()
+	err := command.Execute()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to execute command %v", err))
+	}
 }

@@ -40,7 +40,7 @@ func (j jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) 
 	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return false, errors.New(fmt.Sprintf("job with %v name not found", jobName))
+			return false, fmt.Errorf("job with %v name not found", jobName)
 		}
 		return false, err
 
@@ -76,8 +76,7 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 		return "", nil, errors.New("no pending job in pending job list")
 	}
 	nextJobID := strings.Split(keys[0], "/")[2]
-	var nextExecutionData *clientCPproto.RequestForExecute
-	nextExecutionData = &clientCPproto.RequestForExecute{}
+	nextExecutionData := &clientCPproto.RequestForExecute{}
 	err = proto.Unmarshal([]byte(values[0]), nextExecutionData)
 	if err != nil {
 		return "", nil, errors.New("error in unmarshalling job context")

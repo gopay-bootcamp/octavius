@@ -2,8 +2,6 @@ package command
 
 import (
 	"octavius/internal/controller/command/start"
-	"octavius/internal/pkg/log"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,10 +13,11 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute executes the root command of octavius control plane
-func Execute() {
+func Execute() error {
 	rootCmd.AddCommand(start.NewCmd())
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Error(err, "root command execution")
+		return err
 	}
+	return nil
 }

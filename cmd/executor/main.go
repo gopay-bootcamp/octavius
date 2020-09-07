@@ -20,6 +20,6 @@ func main() {
 	executorDaemon := daemon.NewExecutorClient(&client.GrpcClient{})
 	err := command.Execute(executorDaemon)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to execution config %v", err))
+		log.Fatal(fmt.Sprintf("failed to execute command %v", err))
 	}
 }

@@ -28,6 +28,9 @@ func Start() error {
 	appPort := config.Config().AppPort
 
 	etcdClient, err := etcd.NewClient(dialTimeout, etcdHost)
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
 	defer etcdClient.Close()
 
 	metadataRepository := metadataRepo.NewMetadataRepository(etcdClient)

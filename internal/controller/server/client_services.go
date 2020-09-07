@@ -15,8 +15,6 @@ import (
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 )
 
-type customCTXKey string
-
 type clientCPServicesServer struct {
 	procExec execution.Execution
 	idgen    idgen.RandomIdGenerator
