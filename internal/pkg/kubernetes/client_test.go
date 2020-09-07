@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"octavius/internal/pkg/constant"
+	"octavius/internal/pkg/log"
 	"os"
 	"testing"
 	"time"
@@ -77,6 +78,7 @@ func init() {
 	}
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
+	log.Init("info", "", false)
 }
 
 func TestJobExecution(t *testing.T) {

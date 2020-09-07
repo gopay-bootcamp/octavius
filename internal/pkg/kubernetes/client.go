@@ -7,6 +7,7 @@ import (
 	"io"
 	"octavius/internal/executor/config"
 	"octavius/internal/pkg/constant"
+	"octavius/internal/pkg/log"
 	"os"
 	"path/filepath"
 	"time"
@@ -252,6 +253,7 @@ func (client *kubeClient) WaitForReadyJob(ctx context.Context, executionName str
 	for i := 0; i < client.kubeWaitForResourcePollCount; i++ {
 		watchJob, err = jobs.Watch(ctx, listOptions)
 		if err != nil {
+			log.Error(err, "error on watching job")
 			continue
 		}
 
@@ -310,6 +312,7 @@ func (client *kubeClient) WaitForReadyPod(ctx context.Context, executionName str
 	for i := 0; i < client.kubeWaitForResourcePollCount; i++ {
 		watchJob, err = kubernetesPods.Watch(ctx, listOptions)
 		if err != nil {
+			log.Error(err, "error on watching pod")
 			continue
 		}
 
