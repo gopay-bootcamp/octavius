@@ -105,7 +105,7 @@ func (e *executorClient) StartKubernetesService() {
 			log.Fatal(fmt.Sprintf("error in getting job from server, error details: %s", err.Error()))
 		}
 
-		if job.JobCount == 0 {
+		if !job.HasJob {
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -129,23 +129,20 @@ func (e *executorClient) StreamJobLog() {
 		{Log: "failed log"},
 	}
 
-	for {
-		logStream, err := e.grpcClient.StreamLog()
-		if err != nil {
-			log.Error(err, "error setting up job log stream")
+	logStream, err := e.grpcClient.StreamLog()
+	if err != nil {
+		log.Error(err, "error setting up job log stream")
+		return
+	}
+	for _, jobLog := range logs {
+		if err := logStream.Send(jobLog); err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Error(err, "error streaming log")
 			return
 		}
-		for _, jobLog := range logs {
-			if err := logStream.Send(jobLog); err != nil {
-				if err == io.EOF {
-					break
-				}
-				log.Error(err, "error streaming log")
-				return
-			}
-		}
-		logSummary, _ := logStream.CloseAndRecv()
-		fmt.Println(logSummary)
-		time.Sleep(5 * time.Second)
 	}
+	logSummary, _ := logStream.CloseAndRecv()
+	fmt.Println(logSummary)
 }
