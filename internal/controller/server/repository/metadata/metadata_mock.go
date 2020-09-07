@@ -22,3 +22,8 @@ func (m *MetadataMock) GetAll(ctx context.Context) (*clientCPproto.MetadataArray
 	args := m.Called()
 	return args.Get(0).(*clientCPproto.MetadataArray), args.Error(1)
 }
+
+func (m *MetadataMock) Get(ctx context.Context, key string) (*clientCPproto.Metadata, error) {
+	args := m.Called()
+	return args.Get(0).(*clientCPproto.Metadata), args.Error(1)
+}

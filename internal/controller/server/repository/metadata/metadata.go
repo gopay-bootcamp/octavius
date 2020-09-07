@@ -85,7 +85,8 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 }
 
 func (c *metadataRepository) Get(ctx context.Context, name string) (*clientCPproto.Metadata, error) {
-	res, err := c.etcdClient.GetValue(ctx, name)
+	dbKey := constant.MetadataPrefix + name
+	res, err := c.etcdClient.GetValue(ctx, dbKey)
 	if err != nil {
 		return nil, err
 	}

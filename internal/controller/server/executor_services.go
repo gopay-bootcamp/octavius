@@ -56,10 +56,14 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 }
 
 func (e *executorCPServicesServer) GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error) {
+	log.Info("request recieved")
 	res, err := e.procExec.GetJob(ctx, start)
 	//GetJob searches for jobs under executor namespace first and returns from it
 	//if there is none, it then picks jobs from the jobs/pending namespace
 	if err != nil {
+		if err.Error() == "no pending job" {
+			return &executorCPproto.Job{JobCount: 0}, nil
+		}
 		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning job to executor", start.Id))
 		return nil, err
 	}

@@ -18,6 +18,7 @@ type Client interface {
 	StartClient() error
 	StartPing()
 	GetJob() (*executorCPproto.Job, error)
+	StartKubernetesService()
 	StreamJobLog()
 }
 
@@ -95,6 +96,25 @@ func (e *executorClient) StartPing() {
 			return
 		}
 		time.Sleep(e.pingInterval)
+	}
+}
+
+func (e *executorClient) StartKubernetesService() {
+	for {
+		job, err := e.GetJob()
+		if err != nil {
+			log.Fatal(fmt.Sprintf("error in getting job from server, error details: %s", err.Error()))
+		}
+
+		if job.JobCount == 0 {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
+		time.Sleep(5 * time.Second)
+		//assign job to kubernetes
+		//get pod logs
+		//send pod logs through StreamJobLog
 	}
 }
 

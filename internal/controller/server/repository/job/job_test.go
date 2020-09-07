@@ -188,7 +188,7 @@ func TestFetchNextJobForJobNotAvailable(t *testing.T) {
 
 	assert.Nil(t, nextExecutionData)
 	assert.Equal(t, "", nextJobID)
-	assert.Equal(t, err.Error(), "no pending job in pending job list")
+	assert.Equal(t, err.Error(), "no pending job")
 	mockClient.AssertExpectations(t)
 
 }

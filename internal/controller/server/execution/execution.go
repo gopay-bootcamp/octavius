@@ -205,23 +205,27 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 }
 
 func (e *execution) GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error) {
+	log.Info("A")
 	jobID, clientJob, err := e.scheduler.FetchJob(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	metadataName := clientJob.JobName
+	log.Info(metadataName)
 	metadata, err := e.metadataRepo.Get(ctx, metadataName)
 	if err != nil {
 		return nil, err
 	}
 	imageName := metadata.ImageName
-
+	log.Info("C")
 	job := &executorCPproto.Job{
+		JobCount:  1,
 		JobID:     jobID,
 		ImageName: imageName,
 		JobData:   clientJob.JobData,
 	}
+	log.Info(fmt.Sprintf("in executor get job imagename: %v, jobID: %v ", imageName, jobID))
 
 	return job, nil
 }

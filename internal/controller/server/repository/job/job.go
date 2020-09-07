@@ -71,7 +71,7 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 		return "", nil, err
 	}
 	if len(values) == 0 {
-		return "", nil, errors.New("no pending job in pending job list")
+		return "", nil, errors.New("no pending job")
 	}
 	nextJobID := strings.Split(keys[0], "/")[2]
 	var nextExecutionData *clientCPproto.RequestForExecute

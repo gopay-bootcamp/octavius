@@ -57,7 +57,7 @@ func newClientSet(kubernetesConfig config.OctaviusExecutorConfig) (*kubernetes.C
 	if kubernetesConfig.KubeConfig == constant.OutOfClustor {
 
 		home := os.Getenv("HOME")
-		kubeConfigPath := filepath.Join(home, ".kube", "kubeconfig")
+		kubeConfigPath := filepath.Join(home, ".kube", "config")
 
 		configOverrides := &clientcmd.ConfigOverrides{}
 		if kubernetesConfig.KubeContext != "default" {
