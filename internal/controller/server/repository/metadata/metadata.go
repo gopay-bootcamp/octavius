@@ -2,8 +2,9 @@ package metadata
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
@@ -36,25 +37,25 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 	val, err := proto.Marshal(metadata)
 
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	dbKey := constant.MetadataPrefix + key
 
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 	if gr != "" {
-		return nil, errors.New(constant.KeyAlreadyPresent)
+		return nil, status.Error(codes.AlreadyExists, constant.Etcd+constant.KeyAlreadyPresent)
 	}
 
 	if err != nil {
 		if err.Error() != constant.NoValueFound {
-			return nil, err
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
 
 	log.Info(fmt.Sprintf("Request ID: %v, saving metadata to etcd with value %s", ctx.Value(util.ContextKeyUUID), metadata.String()))
 	err = c.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	res := &clientCPproto.MetadataName{Name: key}
@@ -67,7 +68,7 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 	if err != nil {
 		var arr []*clientCPproto.Metadata
 		res := &clientCPproto.MetadataArray{Values: arr}
-		return res, err
+		return res, status.Error(codes.Internal, err.Error())
 	}
 
 	var resArr []*clientCPproto.Metadata
@@ -75,7 +76,7 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 		metadata := &clientCPproto.Metadata{}
 		err := proto.Unmarshal([]byte(val), metadata)
 		if err != nil {
-			return nil, err
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 		resArr = append(resArr, metadata)
 	}
