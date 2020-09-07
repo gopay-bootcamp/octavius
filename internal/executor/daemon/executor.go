@@ -46,7 +46,7 @@ func (e *executorClient) StartClient() error {
 	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
 	e.pingInterval = config.Config().PingInterval
 	e.jobChan = make(chan *executorCPproto.Job)
-	err := e.grpcClient.ConnectClient(e.cpHost)
+	err := e.grpcClient.ConnectClient(e.cpHost, e.connectionTimeoutSecs)
 	if err != nil {
 		return err
 	}

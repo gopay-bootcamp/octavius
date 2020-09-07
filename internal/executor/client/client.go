@@ -12,7 +12,7 @@ import (
 type Client interface {
 	Ping(ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 	Register(request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
-	ConnectClient(cpHost string) error
+	ConnectClient(cpHost string, connectionTimeOut time.Duration) error
 	GetJob(start *executorCPproto.Start) (*executorCPproto.Job, error)
 	StreamLog() (executorCPproto.ExecutorCPServices_StreamLogClient, error)
 }
@@ -22,14 +22,14 @@ type GrpcClient struct {
 	connectionTimeoutSecs time.Duration
 }
 
-func (g *GrpcClient) ConnectClient(cpHost string) error {
+func (g *GrpcClient) ConnectClient(cpHost string, connectionTimeOut time.Duration) error {
 	conn, err := grpc.Dial(cpHost, grpc.WithInsecure())
 	if err != nil {
 		return octerr.New(2, err)
 	}
 	grpcClient := executorCPproto.NewExecutorCPServicesClient(conn)
 	g.client = grpcClient
-	g.connectionTimeoutSecs = time.Second
+	g.connectionTimeoutSecs = connectionTimeOut
 	return nil
 }
 

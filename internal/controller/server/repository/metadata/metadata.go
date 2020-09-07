@@ -17,6 +17,7 @@ import (
 type Repository interface {
 	Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
 	GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error)
+	Get(ctx context.Context, name string) (*clientCPproto.Metadata, error)
 }
 
 type metadataRepository struct {
@@ -81,4 +82,15 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 	}
 	resp := &clientCPproto.MetadataArray{Values: resArr}
 	return resp, nil
+}
+
+func (c *metadataRepository) Get(ctx context.Context, name string) (*clientCPproto.Metadata, error) {
+	res, err := c.etcdClient.GetValue(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	metadata := &clientCPproto.Metadata{}
+	err = proto.Unmarshal([]byte(res), metadata)
+	return metadata, err
 }

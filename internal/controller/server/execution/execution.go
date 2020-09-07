@@ -29,6 +29,7 @@ type Execution interface {
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
+	GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error)
 }
 type execution struct {
 	metadataRepo      metadataRepo.Repository
@@ -86,6 +87,10 @@ func (e *execution) ReadAllMetadata(ctx context.Context) (*clientCPproto.Metadat
 	return e.metadataRepo.GetAll(ctx)
 }
 
+func (e *execution) GetMetadata(ctx context.Context, metadataName string) (*clientCPproto.Metadata, error) {
+	return e.metadataRepo.Get(ctx, metadataName)
+}
+
 //RegisterExecutor saves executor information in DB
 func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error) {
 	key := request.ID
@@ -132,6 +137,7 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 		}
 	}
 }
+
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
 	clock := clockwork.NewRealClock()
@@ -166,6 +172,7 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
+
 func getActiveExecutorMap(e *execution) *activeExecutorMap {
 	return e.activeExecutorMap
 }
@@ -195,4 +202,26 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 		return uint64(0), err
 	}
 	return jobID, err
+}
+
+func (e *execution) GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error) {
+	jobID, clientJob, err := e.scheduler.FetchJob(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	metadataName := clientJob.JobName
+	metadata, err := e.metadataRepo.Get(ctx, metadataName)
+	if err != nil {
+		return nil, err
+	}
+	imageName := metadata.ImageName
+
+	job := &executorCPproto.Job{
+		JobID:     jobID,
+		ImageName: imageName,
+		JobData:   clientJob.JobData,
+	}
+
+	return job, nil
 }
