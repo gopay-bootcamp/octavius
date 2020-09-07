@@ -13,7 +13,7 @@ import (
 const (
 	Environment           = "ENVIRONMENT"
 	OctaviusCPHost        = "CP_HOST"
-	EmailId               = "EMAIL_ID"
+	EmailID               = "EMAIL_ID"
 	AccessToken           = "ACCESS_TOKEN"
 	ConnectionTimeoutSecs = "CONNECTION_TIMEOUT_SECS"
 	LogFilePath           = "./cli.log"
@@ -74,12 +74,12 @@ func (loader *loader) Load() (OctaviusConfig, ConfigError) {
 	if octaviusCPHost == "" {
 		return OctaviusConfig{}, ConfigError{error: errors.New("Mandatory Config Missing"), Message: constant.ConfigOctaviusHostMissingError}
 	}
-	emailId := viper.GetString(EmailId)
+	emailID := viper.GetString(EmailID)
 	accessToken := viper.GetString(AccessToken)
 	connectionTimeout := time.Duration(viper.GetInt(ConnectionTimeoutSecs)) * time.Second
 	return OctaviusConfig{
 		Host:                  octaviusCPHost,
-		Email:                 emailId,
+		Email:                 emailID,
 		AccessToken:           accessToken,
 		ConnectionTimeoutSecs: connectionTimeout,
 	}, ConfigError{}

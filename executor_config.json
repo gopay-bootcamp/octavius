@@ -5,5 +5,15 @@
     "access_token": "something",
     "id": "random-ID-1",
     "conn_time_out": 10,
-    "log_file_path": "executor.log"
+    "log_file_path": "executor.log",
+
+    "kube_config": "out-of-cluster",
+    "kube_context": "minikube",
+    "job_active_deadline_seconds" : 60,
+    "job_retries": 0,
+    "service_account_name": "default",
+    "wait_for_resource_poll_count": 5,
+    "log_process_wait_time": 60,
+    "default_namespace": "default",
+    "job_pod_annotations": "{\"key.one\":\"true\"}"
 }
