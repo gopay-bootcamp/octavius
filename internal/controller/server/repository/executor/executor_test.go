@@ -2,13 +2,13 @@ package executor
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 func init() {

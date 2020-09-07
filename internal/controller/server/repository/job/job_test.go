@@ -192,3 +192,184 @@ func TestFetchNextJobForJobNotAvailable(t *testing.T) {
 	mockClient.AssertExpectations(t)
 
 }
+
+func TestValidateJobForSuccess(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	jobRepository := NewJobRepository(mockClient)
+
+	var testExecutionData = &clientCPproto.RequestForExecute{
+		JobName: "testJobName",
+		JobData: map[string]string{
+			"env1": "envValue1",
+		},
+	}
+	jobName := testExecutionData.JobName
+	key := "metadata/" + jobName
+	var testArgsArray []*clientCPproto.Arg
+	var testArg = &clientCPproto.Arg{
+		Name:        "env1",
+		Description: "test env",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg)
+	var testEnvVars = &clientCPproto.EnvVars{
+		Args: testArgsArray,
+	}
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+	str, err := proto.Marshal(testMetadata)
+	if err != nil {
+		log.Error(err, "error in test data marshalling")
+	}
+	mockClient.On("GetValue", key).Return(string(str), nil)
+	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
+	assert.Equal(t, flag, true)
+	assert.Nil(t, err)
+	mockClient.AssertExpectations(t)
+}
+
+func TestValidateJobForOptionalArgSuccess(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	jobRepository := NewJobRepository(mockClient)
+
+	var testExecutionData = &clientCPproto.RequestForExecute{
+		JobName: "testJobName",
+		JobData: map[string]string{
+			"env1": "envValue1",
+			"env2": "envValue2",
+		},
+	}
+	jobName := testExecutionData.JobName
+	key := "metadata/" + jobName
+	var testArgsArray []*clientCPproto.Arg
+	var testArg1 = &clientCPproto.Arg{
+		Name:        "env1",
+		Description: "test env1",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg1)
+	var testArg2 = &clientCPproto.Arg{
+		Name:        "env2",
+		Description: "test env2",
+		Required:    false,
+	}
+	testArgsArray = append(testArgsArray, testArg2)
+	var testArg3 = &clientCPproto.Arg{
+		Name:        "env3",
+		Description: "test env3",
+		Required:    false,
+	}
+	testArgsArray = append(testArgsArray, testArg3)
+
+	var testEnvVars = &clientCPproto.EnvVars{
+		Args: testArgsArray,
+	}
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+	str, err := proto.Marshal(testMetadata)
+	if err != nil {
+		log.Error(err, "error in test data marshalling")
+	}
+	mockClient.On("GetValue", key).Return(string(str), nil)
+	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
+	assert.Equal(t, flag, true)
+	assert.Nil(t, err)
+	mockClient.AssertExpectations(t)
+}
+
+func TestValidateJobForArgMissingFailure(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	jobRepository := NewJobRepository(mockClient)
+
+	var testExecutionData = &clientCPproto.RequestForExecute{
+		JobName: "testJobName",
+		JobData: map[string]string{
+			"env1": "envValue1",
+		},
+	}
+	jobName := testExecutionData.JobName
+	key := "metadata/" + jobName
+
+	var testArgsArray []*clientCPproto.Arg
+	var testArg1 = &clientCPproto.Arg{
+		Name:        "env1",
+		Description: "test env1",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg1)
+	var testArg2 = &clientCPproto.Arg{
+		Name:        "env2",
+		Description: "test env2",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg2)
+	var testEnvVars = &clientCPproto.EnvVars{
+		Args: testArgsArray,
+	}
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+
+	str, err := proto.Marshal(testMetadata)
+	if err != nil {
+		log.Error(err, "error in test data marshalling")
+	}
+	mockClient.On("GetValue", key).Return(string(str), nil)
+	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
+	assert.Equal(t, flag, false)
+	assert.Nil(t, err)
+	mockClient.AssertExpectations(t)
+}
+
+func TestValidateJobForExtraArgFailure(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	jobRepository := NewJobRepository(mockClient)
+
+	var testExecutionData = &clientCPproto.RequestForExecute{
+		JobName: "testJobName",
+		JobData: map[string]string{
+			"env1": "envValue1",
+			"env2": "envValue2",
+		},
+	}
+	jobName := testExecutionData.JobName
+	key := "metadata/" + jobName
+
+	var testArgsArray []*clientCPproto.Arg
+	var testArg1 = &clientCPproto.Arg{
+		Name:        "env1",
+		Description: "test env1",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg1)
+	var testEnvVars = &clientCPproto.EnvVars{
+		Args: testArgsArray,
+	}
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+
+	str, err := proto.Marshal(testMetadata)
+	if err != nil {
+		log.Error(err, "error in test data marshalling")
+	}
+	mockClient.On("GetValue", key).Return(string(str), nil)
+	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
+	assert.Equal(t, flag, false)
+	assert.Nil(t, err)
+	mockClient.AssertExpectations(t)
+}

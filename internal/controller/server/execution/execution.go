@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jonboulle/clockwork"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"octavius/internal/controller/config"
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	jobRepo "octavius/internal/controller/server/repository/job"
@@ -19,6 +16,10 @@ import (
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"sync"
 	"time"
+
+	"github.com/jonboulle/clockwork"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Execution interface for methods related to execution
@@ -178,13 +179,20 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 	if jobAvailabilityStatus == false {
 		return uint64(0), errors.New("job with given name not available")
 	}
-	jobId, err := e.idGenerator.Generate()
+	valid, err := e.jobRepo.ValidateJob(ctx, executionData)
+	if err != nil {
+		return 0, err
+	}
+	if !valid {
+		return 0, errors.New("job data not as per metadata")
+	}
+	jobID, err := e.idGenerator.Generate()
 	if err != nil {
 		return uint64(0), err
 	}
-	err = e.scheduler.AddToPendingList(ctx, jobId, executionData)
+	err = e.scheduler.AddToPendingList(ctx, jobID, executionData)
 	if err != nil {
 		return uint64(0), err
 	}
-	return jobId, err
+	return jobID, err
 }
