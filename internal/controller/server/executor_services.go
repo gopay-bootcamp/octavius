@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"octavius/internal/controller/config"
 	"octavius/internal/controller/server/execution"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
@@ -27,7 +28,13 @@ func NewExecutorServiceServer(exec execution.Execution, idgen idgen.RandomIdGene
 }
 
 func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error) {
-	res, err := e.procExec.UpdateExecutorStatus(ctx, ping)
+	controllerConfig, err := config.Loader()
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pingTimeOut := controllerConfig.ExecutorPingDeadline
+	res, err := e.procExec.UpdateExecutorStatus(ctx, ping, pingTimeOut)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("executor id: %s, error in running health check", ping.ID))
 		return nil, err

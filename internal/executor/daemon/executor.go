@@ -4,6 +4,7 @@ import (
 	"errors"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
+	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
@@ -11,7 +12,7 @@ import (
 
 type Client interface {
 	RegisterClient() (bool, error)
-	StartClient() error
+	StartClient(executorConfig config.OctaviusExecutorConfig) error
 	StartPing()
 }
 
@@ -22,6 +23,7 @@ type executorClient struct {
 	accessToken           string
 	connectionTimeoutSecs time.Duration
 	pingInterval          time.Duration
+	kubernetesClient      kubernetes.KubeClient
 }
 
 func NewExecutorClient(grpcClient client.Client) Client {
@@ -30,13 +32,28 @@ func NewExecutorClient(grpcClient client.Client) Client {
 	}
 }
 
-func (e *executorClient) StartClient() error {
-	e.id = config.Config().ID
-	e.cpHost = config.Config().CPHost
-	e.accessToken = config.Config().AccessToken
-	e.connectionTimeoutSecs = config.Config().ConnTimeOutSec
-	e.pingInterval = config.Config().PingInterval
+func (e *executorClient) StartClient(executorConfig config.OctaviusExecutorConfig) error {
+	e.id = executorConfig.ID
+	e.cpHost = executorConfig.CPHost
+	e.accessToken = executorConfig.AccessToken
+	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
+	e.pingInterval = executorConfig.PingInterval
 	err := e.grpcClient.ConnectClient(e.cpHost)
+	if err != nil {
+		return err
+	}
+
+	var kubeConfig = config.OctaviusExecutorConfig{
+		KubeConfig:                   executorConfig.KubeConfig,
+		KubeContext:                  executorConfig.KubeContext,
+		DefaultNamespace:             executorConfig.DefaultNamespace,
+		KubeServiceAccountName:       executorConfig.KubeServiceAccountName,
+		JobPodAnnotations:            executorConfig.JobPodAnnotations,
+		KubeJobActiveDeadlineSeconds: executorConfig.KubeJobActiveDeadlineSeconds,
+		KubeJobRetries:               executorConfig.KubeJobRetries,
+		KubeWaitForResourcePollCount: executorConfig.KubeWaitForResourcePollCount,
+	}
+	e.kubernetesClient, err = kubernetes.NewKubernetesClient(kubeConfig)
 	if err != nil {
 		return err
 	}

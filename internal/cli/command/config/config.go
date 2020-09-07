@@ -65,8 +65,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 
 			var configFileContent string
 			configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, cpHost)
-			//TODO: config.EmailId should be config.EmailID
-			configFileContent += fmt.Sprintf("%s: %s\n", config.EmailId, emailID)
+			configFileContent += fmt.Sprintf("%s: %s\n", config.EmailID, emailID)
 			configFileContent += fmt.Sprintf("%s: %s\n", config.AccessToken, accessToken)
 			configFileContent += fmt.Sprintf("%s: %v\n", config.ConnectionTimeoutSecs, connectionTimeOutSecs)
 
