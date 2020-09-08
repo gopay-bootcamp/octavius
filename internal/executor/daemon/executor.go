@@ -14,7 +14,7 @@ import (
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
 
-	"github.com/jmoiron/sqlx/types"
+	"github.com/klauspost/compress/gzip"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -164,9 +164,9 @@ func startWatch(ctx context.Context, e *executorClient, executionName string) {
 		buffer.WriteString(scanner.Text() + "\n")
 	}
 
-	output := types.GzippedText(buffer.Bytes())
-
-	log.Info("Execution Output Produced " + executionName + " with length " + string(len(output)))
+	gzip.
+		log.Info("Execution Output Produced " + executionName + " with length ")
+	reader, err := gzip.NewReader(podLog)
 	return
 }
 
