@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/jedib0t/go-pretty/table"
+	"github.com/jedib0t/go-pretty/text"
 	"github.com/spf13/cobra"
 )
 
@@ -36,13 +37,13 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			printer.Println("Usage with arguments : ", color.FgGreen)
 			t := table.NewWriter()
 			t.SetOutputMirror(os.Stdout)
-			//TODO : set style on table that prints differently colored on different conditions
+			t.AppendHeader(table.Row{"Argument", "Description", "Is Required"})
 			jobArgs := res.EnvVars.Args
 			for _, arg := range jobArgs {
 				if arg.Required {
-					t.AppendRow([]interface{}{arg.Name, arg.Required})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiRed.Sprintf("YES")})
 				} else {
-					t.AppendRow([]interface{}{arg.Name, arg.Required})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiGreen.Sprintf("NO")})
 				}
 			}
 			t.Render()
