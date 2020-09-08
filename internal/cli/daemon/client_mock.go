@@ -33,3 +33,8 @@ func (m *MockClient) ExecuteJob(jobName string, jobData map[string]string, grpcC
 	args := m.Called(jobName, jobData)
 	return args.Get(0).(*protobuf.Response), args.Error(1)
 }
+
+func (m *MockClient) DescribeJob(jobName string, grpcClient client.Client) (*protobuf.Metadata, error){
+	args := m.Called(jobName)
+	return args.Get(0).(*protobuf.Metadata), args.Error(1)
+}
