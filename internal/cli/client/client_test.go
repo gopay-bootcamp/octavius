@@ -40,7 +40,7 @@ type server struct{}
 
 func (s *server) DescribeJob(ctx context.Context, describe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
 	return &protobuf.Metadata{
-		Name:             "test image",
+		Name: "test image",
 	}, nil
 }
 
@@ -133,7 +133,7 @@ func TestGetStream(t *testing.T) {
 	assert.Equal(t, actual, expected)
 }
 
-func TestDescribeJob (t *testing.T) {
+func TestDescribeJob(t *testing.T) {
 	createFakeServer()
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
@@ -151,4 +151,3 @@ func TestDescribeJob (t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "test image", actual.Name)
 }
-

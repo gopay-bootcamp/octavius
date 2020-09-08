@@ -2,13 +2,13 @@ package describe
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/jedib0t/go-pretty/text"
 	"github.com/spf13/cobra"

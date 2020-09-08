@@ -177,7 +177,7 @@ func TestGetStream(t *testing.T) {
 	mockConfigLoader.AssertExpectations(t)
 }
 
-func TestDescribeJob(t *testing.T){
+func TestDescribeJob(t *testing.T) {
 	mockGrpcClient := client.MockGrpcClient{}
 	mockConfigLoader := config.MockLoader{}
 	testClient := NewClient(&mockConfigLoader)
