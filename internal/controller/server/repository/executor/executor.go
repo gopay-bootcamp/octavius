@@ -2,7 +2,10 @@ package executor
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
@@ -39,12 +42,12 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 
 	val, err := proto.Marshal(executorInfo)
 	if err != nil {
-		return &executorCPproto.RegisterResponse{}, err
+		return &executorCPproto.RegisterResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	err = e.etcdClient.PutValue(ctx, dbKey, string(val))
 	if err != nil {
-		return &executorCPproto.RegisterResponse{}, err
+		return &executorCPproto.RegisterResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	log.Info(fmt.Sprintf("request ID: %v, saved executor %s info to etcd with value %v", ctx.Value(util.ContextKeyUUID), key, executorInfo))
@@ -61,10 +64,16 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 
 	infoString, err := e.etcdClient.GetValue(ctx, dbKey)
 	if err != nil {
-		return nil, err
+		if err.Error() == constant.NoValueFound {
+			return nil, status.Error(codes.NotFound, errors.New(constant.Etcd+constant.NoValueFound).Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	executor := &executorCPproto.ExecutorInfo{}
 
 	err = proto.Unmarshal([]byte(infoString), executor)
-	return executor, err
+	if err != nil {
+		return executor, status.Error(codes.Internal, err.Error())
+	}
+	return executor, nil
 }
