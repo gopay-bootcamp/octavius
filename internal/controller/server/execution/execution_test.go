@@ -96,7 +96,7 @@ func TestUpdateExecutorStatusNotRegistered(t *testing.T) {
 	res, err := testExec.UpdateExecutorStatus(ctx, &request, pingTimeOut)
 	executorRepoMock.AssertExpectations(t)
 	assert.Nil(t, res)
-	assert.Equal(t, err, status.Error(codes.PermissionDenied, "executor not registered"))
+	assert.Equal(t, err, status.Error(codes.PermissionDenied, "executor not registered").Error())
 }
 
 func TestUpdateExecutorStatus(t *testing.T) {

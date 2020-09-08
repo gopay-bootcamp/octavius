@@ -4,11 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-<<<<<<< HEAD
 	"octavius/internal/pkg/constant"
 
-=======
->>>>>>> a7e4e8793fe327b6892b2501da76db3c9589d57e
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
@@ -32,10 +29,7 @@ type Execution interface {
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
-<<<<<<< HEAD
 	GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
-=======
->>>>>>> a7e4e8793fe327b6892b2501da76db3c9589d57e
 }
 type execution struct {
 	metadataRepo      metadataRepo.Repository
@@ -176,10 +170,6 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
 	return &executorCPproto.HealthResponse{Recieved: true}, nil
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> a7e4e8793fe327b6892b2501da76db3c9589d57e
 func getActiveExecutorMap(e *execution) *activeExecutorMap {
 	return e.activeExecutorMap
 }
