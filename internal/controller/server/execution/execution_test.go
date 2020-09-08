@@ -244,3 +244,32 @@ func TestExecuteJobForSchedulerFailure(t *testing.T) {
 	mockScheduler.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
 }
+
+func TestGetMetadata(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	metadataRepoMock := new(metadata.MetadataMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	executorRepoMock := new(executor.ExecutorMock)
+
+	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+	testClientInfo := &clientCPproto.ClientInfo{
+		ClientEmail: "test@gmail.com",
+		AccessToken: "random",
+	}
+	testRequestForDescribe := &clientCPproto.RequestForDescribe{
+		JobName:    "testJobName",
+		ClientInfo: testClientInfo,
+	}
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+	}
+	metadataRepoMock.On("GetValue", testRequestForDescribe.JobName).Return(testMetadata, nil)
+	resultMetadata, getMetadataErr := testExec.GetMetadata(context.Background(), testRequestForDescribe)
+	assert.Equal(t, testMetadata, resultMetadata)
+	assert.Nil(t, getMetadataErr)
+	metadataRepoMock.AssertExpectations(t)
+
+}
