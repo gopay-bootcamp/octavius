@@ -14,7 +14,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:   "list",
 		Short: "Get job list",
 		Long:  `Get job list will give available jobs in octavius`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 
 			client := &client.GrpcClient{}
