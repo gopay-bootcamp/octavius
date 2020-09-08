@@ -63,7 +63,6 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 }
 
 func (e *executorCPServicesServer) GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error) {
-	log.Info("request recieved")
 	res, err := e.procExec.GetJob(ctx, start)
 	//GetJob searches for jobs under executor namespace first and returns from it
 	//if there is none, it then picks jobs from the jobs/pending namespace

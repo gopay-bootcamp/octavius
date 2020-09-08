@@ -1,6 +1,9 @@
 package daemon
 
 import (
+	"bufio"
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +13,9 @@ import (
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
+
+	"github.com/jmoiron/sqlx/types"
+	v1 "k8s.io/api/core/v1"
 )
 
 // Client executor client interface
@@ -31,6 +37,7 @@ type executorClient struct {
 	pingInterval          time.Duration
 	jobChan               chan *executorCPproto.Job
 	kubernetesClient      kubernetes.KubeClient
+	kubeLogWaitTime       time.Duration
 }
 
 //NewExecutorClient returns new empty executor client
@@ -46,6 +53,7 @@ func (e *executorClient) StartClient(executorConfig config.OctaviusExecutorConfi
 	e.accessToken = executorConfig.AccessToken
 	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
 	e.pingInterval = executorConfig.PingInterval
+	e.kubeLogWaitTime = 5 * time.Minute
 	err := e.grpcClient.ConnectClient(e.cpHost, e.connectionTimeoutSecs)
 	if err != nil {
 		return err
@@ -112,9 +120,54 @@ func (e *executorClient) StartKubernetesService() {
 		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
 		time.Sleep(5 * time.Second)
 		//assign job to kubernetes
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		executionName, err := e.kubernetesClient.ExecuteJob(ctx, job.JobID, job.ImageName, job.JobData)
+		log.Info(fmt.Sprint("Executed Job on Kubernetes got ", executionName, " execution jobName and ", err, "error"))
+		if err == nil {
+			go startWatch(ctx, e, executionName)
+		}
+
 		//get pod logs
 		//send pod logs through StreamJobLog
 	}
+}
+
+func startWatch(ctx context.Context, e *executorClient, executionName string) {
+
+	err := e.kubernetesClient.WaitForReadyJob(ctx, executionName, e.kubeLogWaitTime)
+
+	if err != nil {
+		return
+	}
+	pod, err := e.kubernetesClient.WaitForReadyPod(ctx, executionName, e.kubeLogWaitTime)
+	log.Error(err, fmt.Sprintln("wait for ready pod", pod))
+	if err != nil {
+		return
+	}
+	if pod.Status.Phase == v1.PodFailed {
+		log.Info(fmt.Sprintln("Pod Failed for ", executionName, " reason: ", pod.Status.Reason, " message: ", pod.Status.Message))
+	} else {
+		log.Info(fmt.Sprintln("Pod Ready for ", executionName))
+	}
+
+	podLog, err := e.kubernetesClient.GetPodLogs(ctx, pod)
+	if err != nil {
+		return
+	}
+
+	scanner := bufio.NewScanner(podLog)
+	scanner.Split(bufio.ScanLines)
+
+	var buffer bytes.Buffer
+	for scanner.Scan() {
+		buffer.WriteString(scanner.Text() + "\n")
+	}
+
+	output := types.GzippedText(buffer.Bytes())
+
+	log.Info("Execution Output Produced " + executionName + " with length " + string(len(output)))
+	return
 }
 
 func (e *executorClient) GetJob() (*executorCPproto.Job, error) {
