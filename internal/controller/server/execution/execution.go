@@ -201,7 +201,7 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 	return jobID, err
 }
 
-func (e *execution) GetJob(ctx context.Context, executorID *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
+func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
 	jobID, clientJob, err := e.scheduler.FetchJob(ctx)
 	if err != nil {
 		return nil, err
@@ -216,7 +216,7 @@ func (e *execution) GetJob(ctx context.Context, executorID *executorCPproto.Exec
 
 	job := &executorCPproto.Job{
 		HasJob:    true,
-		Job_ID:     jobID,
+		JobID:     jobID,
 		ImageName: imageName,
 		JobData:   clientJob.JobData,
 	}

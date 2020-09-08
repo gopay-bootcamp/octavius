@@ -3,12 +3,11 @@ option go_package = "octavius/internal/pkg/protofiles/executor_cp";
 
 message Job {
     bool has_job = 1;
-    string job_ID = 2;
+    string jobID = 2;
     string image_name = 3;
     map<string,string> job_data = 4;
 }
 
 message ExecutorID {
-    string ID = 1;
-    string state = 2;
+    string id = 1;
 }

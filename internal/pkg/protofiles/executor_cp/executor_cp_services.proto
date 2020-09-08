@@ -4,11 +4,11 @@ option go_package = "octavius/internal/pkg/protofiles/executor_cp";
 import "internal/pkg/protofiles/executor_cp/ping_message.proto";
 import "internal/pkg/protofiles/executor_cp/register_message.proto";
 import "internal/pkg/protofiles/executor_cp/job_message.proto";
-import "internal/pkg/protofiles/executor_cp/log_message.proto";
+import "internal/pkg/protofiles/executor_cp/execution_message.proto";
 
 service ExecutorCPServices{
     rpc HealthCheck(Ping) returns (HealthResponse);
     rpc Register(RegisterRequest) returns(RegisterResponse);
     rpc FetchJob(ExecutorID) returns(Job);
-    rpc StreamLog(stream JobLog) returns(LogSummary);
+    rpc SendExecutionContext(ExecutionContext) returns(Acknowledgement);
 }

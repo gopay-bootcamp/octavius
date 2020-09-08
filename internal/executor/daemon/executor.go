@@ -1,17 +1,34 @@
 package daemon
 
 import (
+	"bufio"
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
-	"io"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
+	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
+
+	v1 "k8s.io/api/core/v1"
+)
+
+const (
+	Received          = "RECEIVED"
+	RequirementNotMet = "REQUIREMENT_NOT_MET"
+	Created           = "CREATED"
+	CreationFailed    = "CREATION_FAILED"
+	JobCreationFailed = "JOB_CREATION_FAILED"
+	JobReady          = "JOB_READY"
+	PodCreationFailed = "POD_CREATION_FAILED"
+	PodReady          = "POD_READY"
+	PodFailed         = "POD_FAILED"
+	FetchPodLogFailed = "FETCH_POD_LOG_FAILED"
+	Finished          = "FINISHED"
 )
 
 // Client executor client interface
@@ -21,7 +38,6 @@ type Client interface {
 	StartPing()
 	FetchJob() (*executorCPproto.Job, error)
 	StartKubernetesService()
-	StreamJobLog()
 }
 
 type executorClient struct {
@@ -32,6 +48,7 @@ type executorClient struct {
 	connectionTimeoutSecs time.Duration
 	pingInterval          time.Duration
 	kubernetesClient      kubernetes.KubeClient
+	kubeLogWaitTime       time.Duration
 }
 
 //NewExecutorClient returns new empty executor client
@@ -47,6 +64,7 @@ func (e *executorClient) StartClient(executorConfig config.OctaviusExecutorConfi
 	e.accessToken = executorConfig.AccessToken
 	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
 	e.pingInterval = executorConfig.PingInterval
+	e.kubeLogWaitTime = 5 * time.Minute
 	err := e.grpcClient.ConnectClient(e.cpHost, e.connectionTimeoutSecs)
 	if err != nil {
 		return err
@@ -64,7 +82,7 @@ func (e *executorClient) StartClient(executorConfig config.OctaviusExecutorConfi
 	}
 	e.kubernetesClient, err = kubernetes.NewKubernetesClient(kubeConfig)
 	if err != nil {
-		return status.Error(codes.Internal, err.Error())
+		return err
 	}
 	return nil
 }
@@ -103,47 +121,110 @@ func (e *executorClient) StartKubernetesService() {
 	for {
 		job, err := e.FetchJob()
 		if err != nil {
+			if !job.HasJob {
+				time.Sleep(5 * time.Second)
+				continue
+			}
 			log.Fatal(fmt.Sprintf("error in getting job from server, error details: %s", err.Error()))
 		}
+		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
+		contextID, err := idgen.NewRandomIdGenerator().Generate()
+		if err != nil {
+			e.sendResponse(&executorCPproto.ExecutionContext{Status: CreationFailed})
+			return
+		}
+		imageName := job.ImageName
+		executionArgs := job.JobData
+		jobID := job.JobID
 
-		if !job.HasJob {
-			time.Sleep(5 * time.Second)
+		//assign job to kubernetes
+		jobContext := executorCPproto.ExecutionContext{
+			ExecutionID: contextID,
+			JobID:       jobID,
+			JobName:     imageName,
+			EnvArgs:     executionArgs,
+			Status:      Created,
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		executionName, err := e.kubernetesClient.ExecuteJob(ctx, jobID, imageName, executionArgs)
+		log.Info(fmt.Sprintln("Executed Job on Kubernetes got ", executionName, " execution jobName and ", err, "errors"))
+		if err != nil {
+			jobContext.Status = CreationFailed
+			e.sendResponse(&jobContext)
+			log.Error(err, "error while executing job")
+			time.Sleep(10 * time.Second)
 			continue
 		}
-		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
-		time.Sleep(5 * time.Second)
-		//assign job to kubernetes
+
+		jobContext.Name = executionName
+
+		e.startWatch(ctx, &jobContext)
+		e.sendResponse(&jobContext)
 		//get pod logs
 		//send pod logs through StreamJobLog
 	}
 }
 
-func (e *executorClient) FetchJob() (*executorCPproto.Job, error) {
-	start := &executorCPproto.ExecutorID{ID: e.id}
-	return e.grpcClient.FetchJob(start)
+func (e *executorClient) sendResponse(jobContext *executorCPproto.ExecutionContext) (*executorCPproto.Acknowledgement, error) {
+	return e.grpcClient.SendExecutionContext(jobContext)
 }
 
-func (e *executorClient) StreamJobLog() {
+func (e *executorClient) startWatch(ctx context.Context, executionContext *executorCPproto.ExecutionContext) {
 
-	logs := []*executorCPproto.JobLog{
-		{Log: "success log"},
-		{Log: "failed log"},
-	}
+	log.Info(fmt.Sprintf("Start Watch Process for Job With Context ID: %d , name: %s, and Status: %s", executionContext.ExecutionID, executionContext.Name, executionContext.Status))
 
-	logStream, err := e.grpcClient.StreamLog()
+	err := e.kubernetesClient.WaitForReadyJob(ctx, executionContext.Name, e.kubeLogWaitTime)
+
 	if err != nil {
-		log.Error(err, "error setting up job log stream")
+		executionContext.Status = JobCreationFailed
 		return
 	}
-	for _, jobLog := range logs {
-		if err := logStream.Send(jobLog); err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Error(err, "error streaming log")
-			return
-		}
+
+	executionContext.Status = JobReady
+	log.Info(fmt.Sprintf("Job Ready for %d", executionContext.ExecutionID))
+
+	pod, err := e.kubernetesClient.WaitForReadyPod(ctx, executionContext.Name, e.kubeLogWaitTime)
+	if err != nil {
+		log.Error(err, fmt.Sprintf("wait for ready pod ", pod.Name))
+		executionContext.Status = PodCreationFailed
+		return
 	}
-	logSummary, _ := logStream.CloseAndRecv()
-	fmt.Println(logSummary)
+	if pod.Status.Phase == v1.PodFailed {
+		executionContext.Status = PodFailed
+		log.Info(fmt.Sprintf("Pod Failed for ", executionContext.ExecutionID, " reason: ", pod.Status.Reason, " message: ", pod.Status.Message))
+	} else {
+		executionContext.Status = PodReady
+		log.Info(fmt.Sprintf("Pod Ready for ", executionContext.ExecutionID))
+	}
+
+	podLog, err := e.kubernetesClient.GetPodLogs(ctx, pod)
+	if err != nil {
+		executionContext.Status = FetchPodLogFailed
+		return
+	}
+
+	scanner := bufio.NewScanner(podLog)
+	scanner.Split(bufio.ScanLines)
+
+	var buffer bytes.Buffer
+	for scanner.Scan() {
+		buffer.WriteString(scanner.Text() + "\n")
+	}
+
+	output := string(buffer.Bytes())
+
+	executionContext.Output = output
+	log.Info("Execution Output Produced " + string(executionContext.ExecutionID) + " with length " + string(len(output)))
+
+	if executionContext.Status == PodReady {
+		executionContext.Status = Finished
+	}
+	return
+}
+
+func (e *executorClient) FetchJob() (*executorCPproto.Job, error) {
+	start := &executorCPproto.ExecutorID{Id: e.id}
+	return e.grpcClient.FetchJob(start)
 }
