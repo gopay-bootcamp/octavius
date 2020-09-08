@@ -10,6 +10,7 @@ import (
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"octavius/internal/pkg/util"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -18,6 +19,7 @@ import (
 type Repository interface {
 	Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
 	GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error)
+	GetAvailableJobList(ctx context.Context) (*clientCPproto.JobList, error)
 }
 
 type metadataRepository struct {
@@ -82,4 +84,19 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 	}
 	resp := &clientCPproto.MetadataArray{Values: resArr}
 	return resp, nil
+}
+
+//GetAvailableJobList returns list of available jobs
+func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*clientCPproto.JobList, error) {
+	keys, _, err := c.etcdClient.GetAllKeyAndValues(ctx, constant.MetadataPrefix)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+
+	}
+	var jobList []string
+
+	for index := range keys {
+		jobList = append(jobList, strings.Split(keys[index], "/")[1])
+	}
+	return &clientCPproto.JobList{Jobs: jobList}, nil
 }

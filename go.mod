@@ -7,6 +7,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/golang/protobuf v1.4.2
 	github.com/jonboulle/clockwork v0.2.0
+	github.com/magiconair/properties v1.8.1
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.19.0
 	github.com/sony/sonyflake v1.0.0

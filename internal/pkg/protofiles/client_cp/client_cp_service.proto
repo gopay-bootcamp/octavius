@@ -9,4 +9,5 @@ service ClientCPServices{
    rpc ExecuteJob(RequestForExecute) returns (Response);
    rpc PostMetadata(RequestToPostMetadata) returns (MetadataName);
    rpc GetAllMetadata(RequestToGetAllMetadata) returns (MetadataArray);
+   rpc GetJobList(RequestForGetJobList) returns (JobList);
 }

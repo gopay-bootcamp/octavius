@@ -28,6 +28,7 @@ type Execution interface {
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
+	GetJobList(ctx context.Context) (*clientCPproto.JobList, error)
 }
 type execution struct {
 	metadataRepo      metadataRepo.Repository
@@ -37,6 +38,7 @@ type execution struct {
 	scheduler         scheduler.Scheduler
 	activeExecutorMap *activeExecutorMap
 }
+
 type activeExecutor struct {
 	sessionID  uint64
 	healthChan chan string
@@ -193,4 +195,9 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 		return uint64(0), err
 	}
 	return jobID, err
+}
+
+// GetJobList function will call metadata repository and return list of available jobs
+func (e *execution) GetJobList(ctx context.Context) (*clientCPproto.JobList, error) {
+	return e.metadataRepo.GetAvailableJobList(ctx)
 }

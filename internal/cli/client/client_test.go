@@ -60,6 +60,17 @@ func (s *server) GetAllMetadata(context.Context, *protobuf.RequestToGetAllMetada
 	return nil, nil
 }
 
+func (s *server) GetJobList(context.Context, *protobuf.RequestForGetJobList) (*protobuf.JobList, error) {
+	var jobList []string
+	jobList = append(jobList, "demo-image-name")
+	jobList = append(jobList, "demo-image-name-1")
+
+	response := &protobuf.JobList{
+		Jobs: jobList,
+	}
+	return response, nil
+}
+
 // TestCreateMetadata used to test CreateMetadata
 func TestCreateMetadata(t *testing.T) {
 	createFakeServer()
@@ -123,6 +134,34 @@ func TestGetStream(t *testing.T) {
 	var expected [2]string
 	expected[0] = "Test log 1"
 	expected[1] = "Test log 2"
+
+	assert.Equal(t, actual, expected)
+}
+
+func TestGetJobList(t *testing.T) {
+
+	createFakeServer()
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	client := protobuf.NewClientCPServicesClient(conn)
+	testClient := GrpcClient{
+		client:                client,
+		connectionTimeoutSecs: 10 * time.Second,
+	}
+	testGetJobListRequest := &protobuf.RequestForGetJobList{}
+	res, err := testClient.GetJobList(testGetJobListRequest)
+	assert.Nil(t, err)
+	var actual [2]string
+	for index, value := range res.Jobs {
+		actual[index] = value
+	}
+	var expected [2]string
+	expected[0] = "demo-image-name"
+	expected[1] = "demo-image-name-1"
 
 	assert.Equal(t, actual, expected)
 }
