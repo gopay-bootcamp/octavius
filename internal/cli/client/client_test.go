@@ -38,6 +38,18 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
+func (s *server) DescribeJob(ctx context.Context, describe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
+	var args []*protobuf.Arg
+	args = append(args, &protobuf.Arg{Name: "test", Description: "test", Required: true})
+	envVars := protobuf.EnvVars{Args: args}
+	return &protobuf.Metadata{
+		Name:             "test image",
+		Description:      "description of test",
+		ImageName:        "",
+		EnvVars:          &envVars,
+	}, nil
+}
+
 func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.ClientCPServices_GetStreamLogsServer) error {
 	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
 	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
