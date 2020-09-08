@@ -102,3 +102,18 @@ func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, executionData *
 	jobIDString := strconv.FormatUint(jobID, 10)
 	return &clientCPproto.Response{Status: "Job created successfully with JobID " + jobIDString}, err
 }
+
+func (s *clientCPServicesServer) DescribeJob(ctx context.Context, descriptionData *clientCPproto.RequestForDescribe) (*clientCPproto.Metadata, error) {
+	uuid, err := s.idgen.Generate()
+	if err != nil {
+		log.Error(err, "error while assigning id to the request")
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	log.Info(fmt.Sprintf("request ID: %v, DescribeJob request received with name %+v", uuid, descriptionData))
+	metadata, err := s.procExec.GetMetadata(ctx, descriptionData)
+	if err != nil {
+		log.Error(err, "error in fetching metadata of job")
+	}
+	return metadata, err
+}

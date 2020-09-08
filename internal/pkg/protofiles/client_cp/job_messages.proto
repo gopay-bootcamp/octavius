@@ -22,6 +22,11 @@ message RequestForExecute{
     map<string,string> job_data=3;
 }
 
+message RequestForDescribe{
+    ClientInfo client_info=1;
+    string job_name=2;
+}
+
 message Response {
     string status = 1;
 }
