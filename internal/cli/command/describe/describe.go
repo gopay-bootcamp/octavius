@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewCmd create a command for execution
+// NewCmd create a command for describing job
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:     "describe",
