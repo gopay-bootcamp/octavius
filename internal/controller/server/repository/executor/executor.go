@@ -2,7 +2,6 @@ package executor
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -50,7 +49,7 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 		return &executorCPproto.RegisterResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	log.Info(fmt.Sprintf("request ID: %v, saved executor %s info to etcd with value %v", ctx.Value(util.ContextKeyUUID), key, executorInfo))
+	log.Info(fmt.Sprintf("request ID: %v, saved executor %s with value %v", ctx.Value(util.ContextKeyUUID), key, executorInfo))
 	return &executorCPproto.RegisterResponse{Registered: true}, nil
 }
 
@@ -65,7 +64,7 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 	infoString, err := e.etcdClient.GetValue(ctx, dbKey)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return nil, status.Error(codes.NotFound, errors.New(constant.Etcd+constant.NoValueFound).Error())
+			return nil, status.Error(codes.NotFound,constant.Etcd+constant.NoValueFound)
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}

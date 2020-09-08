@@ -130,7 +130,8 @@ func (client *kubeClient) ExecuteJob(ctx context.Context, jobID string, imageNam
 }
 
 func (client *kubeClient) ExecuteJobWithCommands(ctx context.Context, jobID string, imageName string, envMap map[string]string, commands []string) (string, error) {
-	executionName := fmt.Sprintf("%s-%s", constant.ExecutionKey, jobID)
+	fmt.Println(jobID)
+	executionName := fmt.Sprintf("%s_%s", constant.ExecutionKey, jobID)
 
 	label := jobLabel(executionName)
 

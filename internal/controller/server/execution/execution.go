@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"octavius/internal/pkg/constant"
+
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/controller/server/scheduler"
-	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
@@ -148,7 +149,7 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	//if executor is not registered in database
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
-		if err.Error() == constant.NoValueFound {
+		if err.Error() == status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound).Error() {
 			return nil, status.Error(codes.PermissionDenied, "executor not registered")
 		}
 		return nil, err
@@ -181,7 +182,7 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 		return uint64(0), err
 	}
 	if !isAvailable {
-		return uint64(0), status.Errorf(codes.Internal,"job with name %s not available", executionData.JobName)
+		return uint64(0), status.Errorf(codes.Internal, "job with name %s not available", executionData.JobName)
 	}
 	valid, err := e.jobRepo.ValidateJob(ctx, executionData)
 	if err != nil {
@@ -215,7 +216,7 @@ func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorI
 	imageName := metadata.ImageName
 
 	job := &executorCPproto.Job{
-		HasJob:    true,
+		HasJob:    "yes",
 		JobID:     jobID,
 		ImageName: imageName,
 		JobData:   clientJob.JobData,

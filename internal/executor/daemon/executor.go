@@ -106,7 +106,7 @@ func (e *executorClient) StartPing() {
 	for {
 		res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: "stale"})
 		if err != nil {
-			log.Error(err, "error in ping")
+			log.Fatal(err.Error())
 			return
 		}
 		if !res.Recieved {
@@ -121,12 +121,15 @@ func (e *executorClient) StartKubernetesService() {
 	for {
 		job, err := e.FetchJob()
 		if err != nil {
-			if !job.HasJob {
-				time.Sleep(5 * time.Second)
-				continue
-			}
 			log.Fatal(fmt.Sprintf("error in getting job from server, error details: %s", err.Error()))
+			time.Sleep(5 * time.Second)
+			continue
 		}
+		if job.HasJob == "no" {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
 		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
 		contextID, err := idgen.NewRandomIdGenerator().Generate()
 		if err != nil {
