@@ -38,6 +38,12 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
+func (s *server) DescribeJob(ctx context.Context, describe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
+	return &protobuf.Metadata{
+		Name: "test image",
+	}, nil
+}
+
 func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.ClientCPServices_GetStreamLogsServer) error {
 	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
 	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
@@ -125,4 +131,23 @@ func TestGetStream(t *testing.T) {
 	expected[1] = "Test log 2"
 
 	assert.Equal(t, actual, expected)
+}
+
+func TestDescribeJob(t *testing.T) {
+	createFakeServer()
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	client := protobuf.NewClientCPServicesClient(conn)
+	testClient := GrpcClient{
+		client:                client,
+		connectionTimeoutSecs: 10 * time.Second,
+	}
+	testDescribeRequest := &protobuf.RequestForDescribe{}
+	actual, err := testClient.DescribeJob(testDescribeRequest)
+	assert.Nil(t, err)
+	assert.Equal(t, "test image", actual.Name)
 }
