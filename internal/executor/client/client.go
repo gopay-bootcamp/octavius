@@ -14,7 +14,7 @@ type Client interface {
 	Ping(ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 	Register(request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	ConnectClient(cpHost string, connectionTimeOut time.Duration) error
-	GetJob(start *executorCPproto.Start) (*executorCPproto.Job, error)
+	FetchJob(executorID *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
 	StreamLog() (executorCPproto.ExecutorCPServices_StreamLogClient, error)
 }
 
@@ -48,10 +48,10 @@ func (g *GrpcClient) Register(request *executorCPproto.RegisterRequest) (*execut
 	return g.client.Register(ctx, request)
 }
 
-func (g *GrpcClient) GetJob(request *executorCPproto.Start) (*executorCPproto.Job, error) {
+func (g *GrpcClient) FetchJob(request *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
-	return g.client.GetJob(ctx, request)
+	return g.client.FetchJob(ctx, request)
 }
 
 func (g *GrpcClient) StreamLog() (executorCPproto.ExecutorCPServices_StreamLogClient, error) {

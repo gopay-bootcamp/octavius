@@ -19,7 +19,7 @@ type Client interface {
 	RegisterClient() (bool, error)
 	StartClient(executorConfig config.OctaviusExecutorConfig) error
 	StartPing()
-	GetJob() (*executorCPproto.Job, error)
+	FetchJob() (*executorCPproto.Job, error)
 	StartKubernetesService()
 	StreamJobLog()
 }
@@ -31,7 +31,6 @@ type executorClient struct {
 	accessToken           string
 	connectionTimeoutSecs time.Duration
 	pingInterval          time.Duration
-	jobChan               chan *executorCPproto.Job
 	kubernetesClient      kubernetes.KubeClient
 }
 
@@ -102,7 +101,7 @@ func (e *executorClient) StartPing() {
 
 func (e *executorClient) StartKubernetesService() {
 	for {
-		job, err := e.GetJob()
+		job, err := e.FetchJob()
 		if err != nil {
 			log.Fatal(fmt.Sprintf("error in getting job from server, error details: %s", err.Error()))
 		}
@@ -119,9 +118,9 @@ func (e *executorClient) StartKubernetesService() {
 	}
 }
 
-func (e *executorClient) GetJob() (*executorCPproto.Job, error) {
-	start := &executorCPproto.Start{Id: e.id}
-	return e.grpcClient.GetJob(start)
+func (e *executorClient) FetchJob() (*executorCPproto.Job, error) {
+	start := &executorCPproto.ExecutorID{ID: e.id}
+	return e.grpcClient.FetchJob(start)
 }
 
 func (e *executorClient) StreamJobLog() {

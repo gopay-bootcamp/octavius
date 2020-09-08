@@ -7,6 +7,6 @@ message JobLog {
 
 message LogSummary {
     bool recieved = 1;
-    int32 logCount = 2;
-    int32 elapsedTime = 3;
+    int32 log_count = 2;
+    int32 elapsed_time = 3;
 }

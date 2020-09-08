@@ -9,6 +9,6 @@ import "internal/pkg/protofiles/executor_cp/log_message.proto";
 service ExecutorCPServices{
     rpc HealthCheck(Ping) returns (HealthResponse);
     rpc Register(RegisterRequest) returns(RegisterResponse);
-    rpc GetJob(Start) returns(Job);
+    rpc FetchJob(ExecutorID) returns(Job);
     rpc StreamLog(stream JobLog) returns(LogSummary);
 }
