@@ -114,6 +114,7 @@ func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, g
 	return c.grpcClient.ExecuteJob(&executePostRequest)
 }
 
+// GetJobList takes grpcClient as argument and returns list of available jobs
 func (c *octaviusClient) GetJobList(grpcClient client.Client) (*protobuf.JobList, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {

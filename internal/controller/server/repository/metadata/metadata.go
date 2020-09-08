@@ -86,7 +86,7 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 	return resp, nil
 }
 
-//GetAvailableJobList returns list of available jobs
+// GetAvailableJobList returns list of available jobs
 func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*clientCPproto.JobList, error) {
 	keys, _, err := c.etcdClient.GetAllKeyAndValues(ctx, constant.MetadataPrefix)
 	if err != nil {
