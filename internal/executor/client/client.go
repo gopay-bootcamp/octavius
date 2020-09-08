@@ -2,10 +2,11 @@ package client
 
 import (
 	"context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"google.golang.org/grpc"
 )
@@ -14,8 +15,8 @@ type Client interface {
 	Ping(ping *executorCPproto.Ping) (*executorCPproto.HealthResponse, error)
 	Register(request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	ConnectClient(cpHost string, connectionTimeOut time.Duration) error
-	GetJob(start *executorCPproto.Start) (*executorCPproto.Job, error)
-	StreamLog() (executorCPproto.ExecutorCPServices_StreamLogClient, error)
+	FetchJob(start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
+	SendExecutionContext(executionData *executorCPproto.ExecutionContext) (*executorCPproto.Acknowledgement, error)
 }
 
 type GrpcClient struct {
@@ -48,13 +49,14 @@ func (g *GrpcClient) Register(request *executorCPproto.RegisterRequest) (*execut
 	return g.client.Register(ctx, request)
 }
 
-func (g *GrpcClient) GetJob(request *executorCPproto.Start) (*executorCPproto.Job, error) {
+func (g *GrpcClient) FetchJob(request *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
-	return g.client.GetJob(ctx, request)
+	return g.client.FetchJob(ctx, request)
 }
 
-func (g *GrpcClient) StreamLog() (executorCPproto.ExecutorCPServices_StreamLogClient, error) {
-	ctx := context.Background()
-	return g.client.StreamLog(ctx)
+func (g *GrpcClient) SendExecutionContext(executionData *executorCPproto.ExecutionContext) (*executorCPproto.Acknowledgement, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
+	defer cancel()
+	return g.client.SendExecutionContext(ctx, executionData)
 }

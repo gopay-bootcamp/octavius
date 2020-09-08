@@ -3,14 +3,13 @@ package server
 import (
 	"context"
 	"fmt"
-	"io"
 	"octavius/internal/controller/config"
 	"octavius/internal/controller/server/execution"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"octavius/internal/pkg/util"
-	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -62,12 +61,12 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 	return res, err
 }
 
-func (e *executorCPServicesServer) GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error) {
+func (e *executorCPServicesServer) FetchJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
 	res, err := e.procExec.GetJob(ctx, start)
 	//GetJob searches for jobs under executor namespace first and returns from it
 	//if there is none, it then picks jobs from the jobs/pending namespace
 	if err != nil {
-		if err.Error() == "no pending job" {
+		if err.Error() == status.Error(codes.NotFound, constant.Controller+"no pending job").Error() {
 			return &executorCPproto.Job{HasJob: false}, nil
 		}
 		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning job to executor", start.Id))
@@ -75,26 +74,9 @@ func (e *executorCPServicesServer) GetJob(ctx context.Context, start *executorCP
 	}
 	return res, err
 }
-
-func (e *executorCPServicesServer) StreamLog(stream executorCPproto.ExecutorCPServices_StreamLogServer) error {
-	var logCount int32
-	logs := []*executorCPproto.JobLog{}
-	startTime := time.Now()
-
-	for {
-		log, err := stream.Recv()
-		if err == io.EOF {
-			endTime := time.Now()
-			return stream.SendAndClose(&executorCPproto.LogSummary{
-				Recieved:    true,
-				LogCount:    logCount,
-				ElapsedTime: int32(endTime.Sub(startTime).Seconds()),
-			})
-		}
-		if err != nil {
-			return err
-		}
-		logCount++
-		logs = append(logs, log)
-	}
+func (e *executorCPServicesServer) SendExecutionContext(ctx context.Context, executionData *executorCPproto.ExecutionContext) (*executorCPproto.Acknowledgement, error) {
+	//save executiondata to etcd
+	log.Info(fmt.Sprintf("recieved execution data: %+v", executionData))
+	//if no error send success
+	return &executorCPproto.Acknowledgement{Recieved: true}, nil
 }

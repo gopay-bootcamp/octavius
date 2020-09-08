@@ -28,7 +28,7 @@ type Execution interface {
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
-	GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error)
+	GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
 }
 type execution struct {
 	metadataRepo      metadataRepo.Repository
@@ -201,7 +201,7 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 	return jobID, err
 }
 
-func (e *execution) GetJob(ctx context.Context, start *executorCPproto.Start) (*executorCPproto.Job, error) {
+func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
 	jobID, clientJob, err := e.scheduler.FetchJob(ctx)
 	if err != nil {
 		return nil, err

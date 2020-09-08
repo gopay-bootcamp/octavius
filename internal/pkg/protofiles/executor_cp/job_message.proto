@@ -2,12 +2,12 @@ syntax = "proto3";
 option go_package = "octavius/internal/pkg/protofiles/executor_cp";
 
 message Job {
-    bool hasJob = 1;
+    bool has_job = 1;
     string jobID = 2;
-    string imageName = 3;
+    string image_name = 3;
     map<string,string> job_data = 4;
 }
 
-message Start {
+message ExecutorID {
     string id = 1;
 }
