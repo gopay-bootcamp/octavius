@@ -26,7 +26,7 @@
       {
         "name": "RELEASE_NAME",
         "description": "[Mandatory] Helm release name to be migrated",
-        "required": true
+        "required": false
       },
       {
         "name": "EXECUTOR",

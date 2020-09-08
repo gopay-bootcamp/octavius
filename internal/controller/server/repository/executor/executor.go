@@ -64,7 +64,7 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 	infoString, err := e.etcdClient.GetValue(ctx, dbKey)
 	if err != nil {
 		if err.Error() == constant.NoValueFound {
-			return nil, status.Error(codes.NotFound,constant.Etcd+constant.NoValueFound)
+			return nil, status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound)
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
