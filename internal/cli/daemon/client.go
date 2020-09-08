@@ -130,6 +130,5 @@ func (c *octaviusClient) DescribeJob(jobName string, grpcClient client.Client) (
 		JobName:    jobName,
 	}
 
-	res, err := c.grpcClient.DescribeJob(&descriptionPostRequest)
-	return res, err
+	return c.grpcClient.DescribeJob(&descriptionPostRequest)
 }

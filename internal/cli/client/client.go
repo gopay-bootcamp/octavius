@@ -73,6 +73,5 @@ func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (
 }
 
 func (g *GrpcClient) DescribeJob(requestForDescribe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
-	res, err := g.client.DescribeJob(context.Background(), requestForDescribe)
-	return res, err
+	return g.client.DescribeJob(context.Background(), requestForDescribe)
 }
