@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
+	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 
 	"github.com/spf13/cobra"
@@ -22,10 +23,13 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			client := &client.GrpcClient{}
 			jobList, err := octaviusDaemon.GetJobList(client)
 			if err != nil {
+				log.Error(err, "error when getting job list")
 				printer.Println(fmt.Sprintln("error when getting job list"), color.FgRed)
+				return
 			}
 			if len(jobList.Jobs) == 0 {
 				printer.Println(fmt.Sprintln("No jobs available"), color.FgGreen)
+				return
 			}
 			for _, job := range jobList.Jobs {
 				printer.Println(fmt.Sprintln(job), color.FgGreen)
