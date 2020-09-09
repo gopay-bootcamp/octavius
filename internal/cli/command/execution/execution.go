@@ -22,7 +22,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jobName := args[0]
-			printer.Println(fmt.Sprintf("Job %s is being scheduled", jobName), color.FgBlack)
+			printer.Println(fmt.Sprintf("Job %s is being added to pending list", jobName), color.FgBlack)
 			jobData := map[string]string{}
 
 			for i := 1; i < len(args); i++ {
@@ -37,7 +37,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				return
 			}
 			log.Info(response.Status)
-			printer.Println(fmt.Sprintf("Job has been scheduled successfully.\n You can see the execution logs using jobID: %s", response.Status), color.FgGreen)
+			printer.Println(fmt.Sprintf("Job has been added to pending list successfully.\n You can see the execution logs using getstream %s", response.Status), color.FgGreen)
 		},
 	}
 }

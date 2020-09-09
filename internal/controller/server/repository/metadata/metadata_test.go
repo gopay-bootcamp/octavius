@@ -3,7 +3,6 @@ package metadata
 import (
 	"context"
 	"errors"
-
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
