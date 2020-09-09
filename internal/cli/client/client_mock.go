@@ -36,3 +36,9 @@ func (m *MockGrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecut
 	args := m.Called(requestForExecute)
 	return args.Get(0).(*protobuf.Response), args.Error(1)
 }
+
+func (m *MockGrpcClient) GetJobList(requestForGetJobList *protobuf.RequestForGetJobList) (*protobuf.JobList, error) {
+	args := m.Called(requestForGetJobList)
+	return args.Get(0).(*protobuf.JobList), args.Error(1)
+
+}

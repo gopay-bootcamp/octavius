@@ -6,6 +6,7 @@ import (
 	"octavius/internal/cli/command/describe"
 	"octavius/internal/cli/command/execution"
 	"octavius/internal/cli/command/getstream"
+	"octavius/internal/cli/command/list"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/file"
 
@@ -34,6 +35,9 @@ func Execute(octaviusDaemon daemon.Client) error {
 
 	executeCmd := execution.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(executeCmd)
+
+	listCmd := list.NewCmd(octaviusDaemon)
+	rootCmd.AddCommand(listCmd)
 
 	describeCmd := describe.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(describeCmd)

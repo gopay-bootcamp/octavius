@@ -179,3 +179,45 @@ func TestGetValue(t *testing.T) {
 	assert.Nil(t, getValueErr)
 	mockClient.AssertExpectations(t)
 }
+
+func Test_metadataRepository_GetAvailableJobList(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	var jobList []string
+	jobList = append(jobList, "demo-image-name")
+	jobList = append(jobList, "demo-image-name-1")
+
+	testResponse := &clientCPproto.JobList{
+		Jobs: jobList,
+	}
+
+	var keys []string
+	keys = append(keys, "metadata/demo-image-name")
+	keys = append(keys, "metadata/demo-image-name-1")
+
+	var values []string
+
+	mockClient.On("GetAllKeyAndValues", "metadata/").Return(keys, values, nil)
+
+	testMetadataRepo := NewMetadataRepository(mockClient)
+	ctx := context.Background()
+	res, err := testMetadataRepo.GetAvailableJobList(ctx)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, res, testResponse)
+	mockClient.AssertExpectations(t)
+}
+
+func Test_metadataRepository_GetAvailableJobList_ForEtcdClientFailure(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+
+	var keys []string
+	var values []string
+
+	mockClient.On("GetAllKeyAndValues", "metadata/").Return(keys, values, errors.New("error in etcd"))
+
+	testMetadataRepo := NewMetadataRepository(mockClient)
+	ctx := context.Background()
+	_, err := testMetadataRepo.GetAvailableJobList(ctx)
+	assert.Equal(t, status.Error(codes.Internal, "error in etcd").Error(), err.Error())
+
+	mockClient.AssertExpectations(t)
+}
