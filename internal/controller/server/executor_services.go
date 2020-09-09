@@ -33,7 +33,6 @@ func (e *executorCPServicesServer) HealthCheck(ctx context.Context, ping *execut
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
 	pingTimeOut := controllerConfig.ExecutorPingDeadline
 	res, err := e.procExec.UpdateExecutorStatus(ctx, ping, pingTimeOut)
 	if err != nil {
