@@ -3,8 +3,7 @@ package metadata
 import (
 	"context"
 	"errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
@@ -12,6 +11,9 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func init() {
@@ -151,5 +153,30 @@ func Test_metadataRepository_GetAll(t *testing.T) {
 		t.Error(err, "saving metadata failed")
 	}
 
+	mockClient.AssertExpectations(t)
+}
+
+func TestGetValue(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	testMetadataRepo := NewMetadataRepository(mockClient)
+	jobName := "testJobName"
+	key := "metadata/" + jobName
+
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+	}
+
+	str, err := proto.Marshal(testMetadata)
+	if err != nil {
+		log.Error(err, "error in test data marshalling")
+	}
+	mockClient.On("GetValue", key).Return(string(str), nil)
+	resultMetadata, getValueErr := testMetadataRepo.GetValue(context.Background(), jobName)
+	assert.Equal(t, resultMetadata.Name, testMetadata.Name)
+	assert.Equal(t, resultMetadata.ImageName, testMetadata.ImageName)
+	assert.Equal(t, resultMetadata.Description, testMetadata.Description)
+	assert.Nil(t, getValueErr)
 	mockClient.AssertExpectations(t)
 }

@@ -24,6 +24,7 @@ import (
 // Execution interface for methods related to execution
 type Execution interface {
 	SaveMetadata(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
+	GetMetadata(ctx context.Context, request *clientCPproto.RequestForDescribe) (*clientCPproto.Metadata, error)
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
@@ -78,6 +79,10 @@ func NewExec(metadataRepo metadataRepo.Repository, executorRepo executorRepo.Rep
 //SaveMetadata calls the repository/metadata Save() function and returns MetadataName
 func (e *execution) SaveMetadata(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error) {
 	return e.metadataRepo.Save(ctx, metadata.Name, metadata)
+}
+
+func (e *execution) GetMetadata(ctx context.Context, request *clientCPproto.RequestForDescribe) (*clientCPproto.Metadata, error) {
+	return e.metadataRepo.GetValue(ctx, request.JobName)
 }
 
 //ReadAllMetadata calls the repository/metadata GetAll() and returns MetadataArray
