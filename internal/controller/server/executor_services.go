@@ -62,21 +62,37 @@ func (e *executorCPServicesServer) Register(ctx context.Context, request *execut
 }
 
 func (e *executorCPServicesServer) FetchJob(ctx context.Context, executorData *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
+	uuid, err := e.idgen.Generate()
+	if err != nil {
+		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning id to the request", executorData.Id))
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	log.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, executorData.Id))
 	res, err := e.procExec.GetJob(ctx, executorData)
-	//GetJob searches for jobs under executor namespace first and returns from it
-	//if there is none, it then picks jobs from the jobs/pending namespace
 	if err != nil {
 		if err.Error() == status.Error(codes.NotFound, constant.Controller+"no pending job").Error() {
 			return &executorCPproto.Job{HasJob: "no"}, nil
 		}
-		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning job to executor", executorData.Id))
+		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while assigning job to executor", uuid, executorData.Id))
 		return nil, err
 	}
 	return res, err
 }
+
 func (e *executorCPServicesServer) SendExecutionContext(ctx context.Context, executionData *executorCPproto.ExecutionContext) (*executorCPproto.Acknowledgement, error) {
-	//save executiondata to etcd
-	log.Info(fmt.Sprintf("recieved execution data: %+v", executionData))
-	//if no error send success
+	uuid, err := e.idgen.Generate()
+	if err != nil {
+		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning id to the request", executionData.ExecutorID))
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	log.Info(fmt.Sprintf("request id: %v, recieved execution data: %+v", uuid, executionData))
+	err = e.procExec.SaveJobExecutionData(ctx, executionData)
+	if err != nil {
+		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while saving job execution logs", uuid, executionData.ExecutorID))
+		return &executorCPproto.Acknowledgement{Recieved: true}, err
+	}
 	return &executorCPproto.Acknowledgement{Recieved: true}, nil
 }

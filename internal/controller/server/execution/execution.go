@@ -29,6 +29,7 @@ type Execution interface {
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
+	SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error
 	GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
 }
 type execution struct {
@@ -223,4 +224,8 @@ func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorI
 	log.Info(fmt.Sprintf("in executor get job imagename: %v, jobID: %v ", imageName, jobID))
 
 	return job, nil
+}
+
+func (e *execution) SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error {
+	return e.executorRepo.SaveJobExecutionData(ctx, executionData.JobID, executionData)
 }

@@ -35,4 +35,5 @@ const (
 	JobPendingPrefix           = "jobs/pending/"
 	ExecutorRegistrationPrefix = "executor/register/"
 	ExecutorStatusPrefix       = "executor/status/"
+	ExecutionDataPrefix        = "executor/logs/"
 )

@@ -14,15 +14,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const (
-	executorJobPrefix = "executor/job"
-)
-
 //Repository interface for functions related to metadata repository
 type Repository interface {
 	Save(ctx context.Context, key string, executorInfo *executorCPproto.ExecutorInfo) (*executorCPproto.RegisterResponse, error)
 	Get(ctx context.Context, key string) (*executorCPproto.ExecutorInfo, error)
 	UpdateStatus(ctx context.Context, key string, health string) error
+	SaveJobExecutionData(ctx context.Context, jobID string, executionData *executorCPproto.ExecutionContext) error
 }
 
 type executorRepository struct {
@@ -75,4 +72,15 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 		return executor, status.Error(codes.Internal, err.Error())
 	}
 	return executor, nil
+}
+
+func (j *executorRepository) SaveJobExecutionData(ctx context.Context, jobID string, executionData *executorCPproto.ExecutionContext) error {
+	key := constant.ExecutionDataPrefix + jobID
+	value, err := proto.Marshal(executionData)
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	log.Info(fmt.Sprintf("Request ID: %v, saving executionData to etcd with value %+v", ctx.Value(util.ContextKeyUUID), executionData))
+	return j.etcdClient.PutValue(ctx, key, string(value))
 }

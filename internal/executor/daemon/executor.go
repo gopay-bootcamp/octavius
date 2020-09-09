@@ -149,6 +149,7 @@ func (e *executorClient) StartKubernetesService() {
 			JobName:     imageName,
 			EnvArgs:     executionArgs,
 			Status:      Created,
+			ExecutorID:  e.id,
 		}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
