@@ -68,7 +68,7 @@ func (e *executorCPServicesServer) FetchJob(ctx context.Context, executorData *e
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, recieve register request from executor with id %s", uuid, executorData.Id))
+
 	res, err := e.procExec.GetJob(ctx, executorData)
 	if err != nil {
 		if err.Error() == status.Error(codes.NotFound, constant.Controller+"no pending job").Error() {
