@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
-	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
@@ -135,7 +134,6 @@ func (e *executorClient) StartKubernetesService() {
 
 		e.state = RunningState
 		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
-		contextID, err := idgen.NewRandomIdGenerator().Generate()
 		if err != nil {
 			_, err = e.sendResponse(&executorCPproto.ExecutionContext{Status: CreationFailed})
 			if err != nil {
@@ -147,12 +145,11 @@ func (e *executorClient) StartKubernetesService() {
 		executionArgs := job.JobData
 		jobID := job.JobID
 		jobContext := executorCPproto.ExecutionContext{
-			ExecutionID: contextID,
-			JobID:       jobID,
-			JobName:     imageName,
-			EnvArgs:     executionArgs,
-			Status:      Created,
-			ExecutorID:  e.id,
+			JobID:      jobID,
+			JobName:    imageName,
+			EnvArgs:    executionArgs,
+			Status:     Created,
+			ExecutorID: e.id,
 		}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -210,6 +207,7 @@ func (e *executorClient) startWatch(executionContext *executorCPproto.ExecutionC
 	}
 
 	podLog, err := e.kubernetesClient.GetPodLogs(ctx, pod)
+	defer podLog.Close()
 	if err != nil {
 		executionContext.Status = FetchPodLogFailed
 		return

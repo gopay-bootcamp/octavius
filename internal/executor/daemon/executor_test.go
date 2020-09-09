@@ -1,18 +1,26 @@
 package daemon
 
 import (
+	"io/ioutil"
 	"octavius/internal/executor/client"
 	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func init() {
-	log.Init("", "", false)
+	log.Init("info", "", false)
+}
+
+func TestStartClient(t *testing.T) {
+
 }
 
 func TestRegisterClient(t *testing.T) {
@@ -84,13 +92,47 @@ func TestStartKubernetesServiceHasJob(t *testing.T) {
 		JobData:   testArgs,
 	}
 
+	pod := &v1.Pod{
+		TypeMeta: meta.TypeMeta{
+			Kind:       "Pod",
+			APIVersion: "v1",
+		},
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "test pod",
+			Namespace: "default",
+			Labels: map[string]string{
+				"tag": "",
+				"job": "test job",
+			},
+		},
+		Status: v1.PodStatus{
+			Phase: v1.PodSucceeded,
+		},
+	}
+
+	stringReadCloser := ioutil.NopCloser(strings.NewReader(""))
+
+	testExecutionContext := &executorCPproto.ExecutionContext{
+		Name:       "test execution",
+		JobID:      "123",
+		JobName:    "test image",
+		ExecutorID: "test id",
+		Status:     "FINISHED",
+		EnvArgs:    testArgs,
+		Output:     "",
+	}
+
 	mockGrpcClient.On("FetchJob", &executorCPproto.ExecutorID{Id: "test id"}).Return(testJob, nil)
 	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("test execution", nil)
 	mockKubeClient.On("WaitForReadyJob", "test execution", time.Second).Return(nil)
+	mockKubeClient.On("WaitForReadyPod", "test execution", time.Second).Return(pod, nil)
+	mockKubeClient.On("GetPodLogs", pod).Return(stringReadCloser, nil)
+	mockGrpcClient.On("SendExecutionContext", testExecutionContext).Return(&executorCPproto.Acknowledgement{}, nil)
 
 	go testExecutorClient.StartKubernetesService()
-	time.Sleep(time.Second)
+	time.Sleep(1 * time.Second)
 
 	assert.Equal(t, RunningState, testExecutorClient.state)
 	mockGrpcClient.AssertExpectations(t)
+	mockKubeClient.AssertExpectations(t)
 }
