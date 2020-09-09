@@ -273,3 +273,44 @@ func TestGetMetadata(t *testing.T) {
 	metadataRepoMock.AssertExpectations(t)
 
 }
+
+func TestGetJobList(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	metadataRepoMock := new(metadata.MetadataMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	executorRepoMock := new(executor.ExecutorMock)
+
+	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+
+	var jobList []string
+	jobList = append(jobList, "demo-image-name")
+	jobList = append(jobList, "demo-image-name-1")
+
+	testResponse := &clientCPproto.JobList{
+		Jobs: jobList,
+	}
+
+	metadataRepoMock.On("GetAvailableJobList").Return(testResponse, nil)
+
+	res, err := testExec.GetJobList(context.Background())
+	assert.Nil(t, err)
+	assert.Equal(t, testResponse, res)
+	mockScheduler.AssertExpectations(t)
+}
+
+func TestGetJobListForGetAvailableJobListFunctionErr(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	metadataRepoMock := new(metadata.MetadataMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	executorRepoMock := new(executor.ExecutorMock)
+
+	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+
+	metadataRepoMock.On("GetAvailableJobList").Return(&clientCPproto.JobList{}, errors.New("error in GetAvailableJobList function"))
+
+	_, err := testExec.GetJobList(context.Background())
+	assert.Equal(t, "error in GetAvailableJobList function", err.Error())
+	mockScheduler.AssertExpectations(t)
+}

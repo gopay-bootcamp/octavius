@@ -44,7 +44,7 @@ var file_internal_pkg_protofiles_client_cp_client_cp_service_proto_rawDesc = []b
 	0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x30, 0x69, 0x6e,
 	0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x66, 0x69, 0x6c, 0x65, 0x73, 0x2f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x5f, 0x63, 0x70, 0x2f,
-	0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0x90,
+	0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0xbf,
 	0x02, 0x0a, 0x10, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x43, 0x50, 0x53, 0x65, 0x72, 0x76, 0x69,
 	0x63, 0x65, 0x73, 0x12, 0x2d, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d,
 	0x4c, 0x6f, 0x67, 0x73, 0x12, 0x14, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x46, 0x6f,
@@ -59,13 +59,16 @@ var file_internal_pkg_protofiles_client_cp_client_cp_service_proto_rawDesc = []b
 	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12, 0x18, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x54, 0x6f, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
 	0x74, 0x61, 0x1a, 0x0e, 0x2e, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x41, 0x72, 0x72,
-	0x61, 0x79, 0x12, 0x2d, 0x0a, 0x0b, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x4a, 0x6f,
-	0x62, 0x12, 0x13, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x46, 0x6f, 0x72, 0x44, 0x65,
-	0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x1a, 0x09, 0x2e, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
-	0x61, 0x42, 0x2c, 0x5a, 0x2a, 0x6f, 0x63, 0x74, 0x61, 0x76, 0x69, 0x75, 0x73, 0x2f, 0x69, 0x6e,
-	0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x66, 0x69, 0x6c, 0x65, 0x73, 0x2f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x5f, 0x63, 0x70, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x79, 0x12, 0x2d, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x4a, 0x6f, 0x62, 0x4c, 0x69, 0x73, 0x74,
+	0x12, 0x15, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x46, 0x6f, 0x72, 0x47, 0x65, 0x74,
+	0x4a, 0x6f, 0x62, 0x4c, 0x69, 0x73, 0x74, 0x1a, 0x08, 0x2e, 0x4a, 0x6f, 0x62, 0x4c, 0x69, 0x73,
+	0x74, 0x12, 0x2d, 0x0a, 0x0b, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x4a, 0x6f, 0x62,
+	0x12, 0x13, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x46, 0x6f, 0x72, 0x44, 0x65, 0x73,
+	0x63, 0x72, 0x69, 0x62, 0x65, 0x1a, 0x09, 0x2e, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
+	0x42, 0x2c, 0x5a, 0x2a, 0x6f, 0x63, 0x74, 0x61, 0x76, 0x69, 0x75, 0x73, 0x2f, 0x69, 0x6e, 0x74,
+	0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x66,
+	0x69, 0x6c, 0x65, 0x73, 0x2f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x5f, 0x63, 0x70, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_internal_pkg_protofiles_client_cp_client_cp_service_proto_goTypes = []interface{}{
@@ -73,29 +76,33 @@ var file_internal_pkg_protofiles_client_cp_client_cp_service_proto_goTypes = []i
 	(*RequestForExecute)(nil),       // 1: RequestForExecute
 	(*RequestToPostMetadata)(nil),   // 2: RequestToPostMetadata
 	(*RequestToGetAllMetadata)(nil), // 3: RequestToGetAllMetadata
-	(*RequestForDescribe)(nil),      // 4: RequestForDescribe
-	(*Log)(nil),                     // 5: Log
-	(*Response)(nil),                // 6: Response
-	(*MetadataName)(nil),            // 7: MetadataName
-	(*MetadataArray)(nil),           // 8: MetadataArray
-	(*Metadata)(nil),                // 9: Metadata
+	(*RequestForGetJobList)(nil),    // 4: RequestForGetJobList
+	(*RequestForDescribe)(nil),      // 5: RequestForDescribe
+	(*Log)(nil),                     // 6: Log
+	(*Response)(nil),                // 7: Response
+	(*MetadataName)(nil),            // 8: MetadataName
+	(*MetadataArray)(nil),           // 9: MetadataArray
+	(*JobList)(nil),                 // 10: JobList
+	(*Metadata)(nil),                // 11: Metadata
 }
 var file_internal_pkg_protofiles_client_cp_client_cp_service_proto_depIdxs = []int32{
-	0, // 0: ClientCPServices.GetStreamLogs:input_type -> RequestForStreamLog
-	1, // 1: ClientCPServices.ExecuteJob:input_type -> RequestForExecute
-	2, // 2: ClientCPServices.PostMetadata:input_type -> RequestToPostMetadata
-	3, // 3: ClientCPServices.GetAllMetadata:input_type -> RequestToGetAllMetadata
-	4, // 4: ClientCPServices.DescribeJob:input_type -> RequestForDescribe
-	5, // 5: ClientCPServices.GetStreamLogs:output_type -> Log
-	6, // 6: ClientCPServices.ExecuteJob:output_type -> Response
-	7, // 7: ClientCPServices.PostMetadata:output_type -> MetadataName
-	8, // 8: ClientCPServices.GetAllMetadata:output_type -> MetadataArray
-	9, // 9: ClientCPServices.DescribeJob:output_type -> Metadata
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: ClientCPServices.GetStreamLogs:input_type -> RequestForStreamLog
+	1,  // 1: ClientCPServices.ExecuteJob:input_type -> RequestForExecute
+	2,  // 2: ClientCPServices.PostMetadata:input_type -> RequestToPostMetadata
+	3,  // 3: ClientCPServices.GetAllMetadata:input_type -> RequestToGetAllMetadata
+	4,  // 4: ClientCPServices.GetJobList:input_type -> RequestForGetJobList
+	5,  // 5: ClientCPServices.DescribeJob:input_type -> RequestForDescribe
+	6,  // 6: ClientCPServices.GetStreamLogs:output_type -> Log
+	7,  // 7: ClientCPServices.ExecuteJob:output_type -> Response
+	8,  // 8: ClientCPServices.PostMetadata:output_type -> MetadataName
+	9,  // 9: ClientCPServices.GetAllMetadata:output_type -> MetadataArray
+	10, // 10: ClientCPServices.GetJobList:output_type -> JobList
+	11, // 11: ClientCPServices.DescribeJob:output_type -> Metadata
+	6,  // [6:12] is the sub-list for method output_type
+	0,  // [0:6] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_internal_pkg_protofiles_client_cp_client_cp_service_proto_init() }
@@ -141,6 +148,7 @@ type ClientCPServicesClient interface {
 	ExecuteJob(ctx context.Context, in *RequestForExecute, opts ...grpc.CallOption) (*Response, error)
 	PostMetadata(ctx context.Context, in *RequestToPostMetadata, opts ...grpc.CallOption) (*MetadataName, error)
 	GetAllMetadata(ctx context.Context, in *RequestToGetAllMetadata, opts ...grpc.CallOption) (*MetadataArray, error)
+	GetJobList(ctx context.Context, in *RequestForGetJobList, opts ...grpc.CallOption) (*JobList, error)
 	DescribeJob(ctx context.Context, in *RequestForDescribe, opts ...grpc.CallOption) (*Metadata, error)
 }
 
@@ -211,6 +219,15 @@ func (c *clientCPServicesClient) GetAllMetadata(ctx context.Context, in *Request
 	return out, nil
 }
 
+func (c *clientCPServicesClient) GetJobList(ctx context.Context, in *RequestForGetJobList, opts ...grpc.CallOption) (*JobList, error) {
+	out := new(JobList)
+	err := c.cc.Invoke(ctx, "/ClientCPServices/GetJobList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *clientCPServicesClient) DescribeJob(ctx context.Context, in *RequestForDescribe, opts ...grpc.CallOption) (*Metadata, error) {
 	out := new(Metadata)
 	err := c.cc.Invoke(ctx, "/ClientCPServices/DescribeJob", in, out, opts...)
@@ -226,6 +243,7 @@ type ClientCPServicesServer interface {
 	ExecuteJob(context.Context, *RequestForExecute) (*Response, error)
 	PostMetadata(context.Context, *RequestToPostMetadata) (*MetadataName, error)
 	GetAllMetadata(context.Context, *RequestToGetAllMetadata) (*MetadataArray, error)
+	GetJobList(context.Context, *RequestForGetJobList) (*JobList, error)
 	DescribeJob(context.Context, *RequestForDescribe) (*Metadata, error)
 }
 
@@ -244,6 +262,9 @@ func (*UnimplementedClientCPServicesServer) PostMetadata(context.Context, *Reque
 }
 func (*UnimplementedClientCPServicesServer) GetAllMetadata(context.Context, *RequestToGetAllMetadata) (*MetadataArray, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllMetadata not implemented")
+}
+func (*UnimplementedClientCPServicesServer) GetJobList(context.Context, *RequestForGetJobList) (*JobList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetJobList not implemented")
 }
 func (*UnimplementedClientCPServicesServer) DescribeJob(context.Context, *RequestForDescribe) (*Metadata, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DescribeJob not implemented")
@@ -328,6 +349,24 @@ func _ClientCPServices_GetAllMetadata_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientCPServices_GetJobList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestForGetJobList)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientCPServicesServer).GetJobList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ClientCPServices/GetJobList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientCPServicesServer).GetJobList(ctx, req.(*RequestForGetJobList))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClientCPServices_DescribeJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RequestForDescribe)
 	if err := dec(in); err != nil {
@@ -361,6 +400,10 @@ var _ClientCPServices_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllMetadata",
 			Handler:    _ClientCPServices_GetAllMetadata_Handler,
+		},
+		{
+			MethodName: "GetJobList",
+			Handler:    _ClientCPServices_GetJobList_Handler,
 		},
 		{
 			MethodName: "DescribeJob",
