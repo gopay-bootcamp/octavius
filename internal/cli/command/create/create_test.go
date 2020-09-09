@@ -21,7 +21,7 @@ func TestCreateCmdHelp(t *testing.T) {
 	mockFileUtil := new(file.MockFileUtil)
 	testCreateCmd := NewCmd(mockOctaviusDClient, mockFileUtil)
 	assert.Equal(t, "Create new octavius job metadata", testCreateCmd.Short)
-	assert.Equal(t, "This command helps create new jobmetadata to your CP host with proper metadata.json file", testCreateCmd.Long)
+	assert.Equal(t, "This command helps create new job metadata to your CP host with proper metadata.json file", testCreateCmd.Long)
 	assert.Equal(t, "octavius create --job-path <filepath>/metadata.json", testCreateCmd.Example)
 }
 

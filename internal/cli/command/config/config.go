@@ -34,6 +34,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 			if isConfigFileExist == true {
 				log.Warn(fmt.Sprintln("[Warning] This will overwrite current config:"))
 				printer.Println("[Warning] This will overwrite the current config.", color.FgYellow)
+
 				existingOctaviusConfig, err := fileUtil.ReadFile(configFilePath)
 				if err != nil {
 					log.Error(err, fmt.Sprintln(existingOctaviusConfig))
@@ -44,7 +45,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 				printer.Println("Do you want to continue (Y/n)?\t", color.FgYellow)
 				userPermission, err := fileUtil.GetUserInput()
 				if err != nil {
-					log.Error(err, fmt.Sprintln("error getting user permission for overwriting config"))
+					log.Error(err, "error getting user permission for overwriting config")
 					printer.Println("error while getting the user permission", color.FgRed)
 					return
 				}
@@ -57,7 +58,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 				err := fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
 				if err != nil {
 					log.Error(err, "error in creating config file directory")
-					printer.Println("error in creating config file directory",color.FgRed)
+					printer.Println("error in creating config file directory", color.FgRed)
 					return
 				}
 				err = fileUtil.CreateFile(configFilePath)
@@ -68,6 +69,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 				}
 			}
 			printer.Println("Applying the configurations.", color.FgBlack)
+
 			var configFileContent string
 			configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, cpHost)
 			configFileContent += fmt.Sprintf("%s: %s\n", config.EmailID, emailID)
