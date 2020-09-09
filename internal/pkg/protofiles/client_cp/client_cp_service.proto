@@ -3,6 +3,7 @@ option go_package = "octavius/internal/pkg/protofiles/client_cp";
 
 import "internal/pkg/protofiles/client_cp/metadata_messages.proto";
 import "internal/pkg/protofiles/client_cp/job_messages.proto";
+import "internal/pkg/protofiles/client_cp/metadata.proto";
 
 service ClientCPServices{
    rpc GetStreamLogs(RequestForStreamLog) returns (stream Log);
@@ -10,4 +11,5 @@ service ClientCPServices{
    rpc PostMetadata(RequestToPostMetadata) returns (MetadataName);
    rpc GetAllMetadata(RequestToGetAllMetadata) returns (MetadataArray);
    rpc GetJobList(RequestForGetJobList) returns (JobList);
+   rpc DescribeJob(RequestForDescribe) returns (Metadata);
 }

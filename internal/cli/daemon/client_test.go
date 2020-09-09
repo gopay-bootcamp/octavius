@@ -177,6 +177,37 @@ func TestGetStream(t *testing.T) {
 	mockConfigLoader.AssertExpectations(t)
 }
 
+func TestDescribeJob(t *testing.T) {
+	mockGrpcClient := client.MockGrpcClient{}
+	mockConfigLoader := config.MockLoader{}
+	testClient := NewClient(&mockConfigLoader)
+
+	testConfig := config.OctaviusConfig{
+		Host:                  "localhost:5050",
+		Email:                 "akshay.busa@go-jek.com",
+		AccessToken:           "AllowMe",
+		ConnectionTimeoutSecs: time.Second,
+	}
+	testRequestHeader := protobuf.ClientInfo{
+		ClientEmail: "akshay.busa@go-jek.com",
+		AccessToken: "AllowMe",
+	}
+	testDescribeRequest := protobuf.RequestForDescribe{
+		ClientInfo: &testRequestHeader,
+		JobName:    "DemoJob",
+	}
+	describeResponse := protobuf.Metadata{Name: "DemoJob"}
+	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
+	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
+	mockGrpcClient.On("DescribeJob", &testDescribeRequest).Return(&describeResponse, nil).Once()
+	res, err := testClient.DescribeJob("DemoJob", &mockGrpcClient)
+	assert.Nil(t, err)
+	assert.Equal(t, &describeResponse, res)
+	mockGrpcClient.AssertExpectations(t)
+	mockConfigLoader.AssertExpectations(t)
+
+}
+
 func TestGetJobList(t *testing.T) {
 
 	mockGrpcClient := client.MockGrpcClient{}

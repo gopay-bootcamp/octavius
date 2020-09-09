@@ -11,6 +11,11 @@ type MetadataMock struct {
 	mock.Mock
 }
 
+func (m *MetadataMock) GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error) {
+	args := m.Called(jobName)
+	return args.Get(0).(*clientCPproto.Metadata), args.Error(1)
+}
+
 // Save mock that takes key and metadata as args
 func (m *MetadataMock) Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error) {
 	args := m.Called(key, metadata)

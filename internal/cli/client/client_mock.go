@@ -10,6 +10,11 @@ type MockGrpcClient struct {
 	mock.Mock
 }
 
+func (m *MockGrpcClient) DescribeJob(requestForDescribe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
+	args := m.Called(requestForDescribe)
+	return args.Get(0).(*protobuf.Metadata), args.Error(1)
+}
+
 // CreateMetadata mock
 func (m *MockGrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	args := m.Called(metadataPostRequest)

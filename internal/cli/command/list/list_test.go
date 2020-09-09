@@ -15,14 +15,14 @@ func init() {
 
 func TestListCmdHelp(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
-	testCreateCmd := NewCmd(mockOctaviusDClient)
-	assert.Equal(t, "Get job list", testCreateCmd.Short)
-	assert.Equal(t, "Get job list will give available jobs in octavius", testCreateCmd.Long)
+	testListCmd := NewCmd(mockOctaviusDClient)
+	assert.Equal(t, "Get job list", testListCmd.Short)
+	assert.Equal(t, "Get job list will give available jobs in octavius", testListCmd.Long)
 }
 
 func TestListCmd(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
-	testCreateCmd := NewCmd(mockOctaviusDClient)
+	testListCmd := NewCmd(mockOctaviusDClient)
 	var jobList []string
 	jobList = append(jobList, "demo-image-name")
 	jobList = append(jobList, "demo-image-name-1")
@@ -30,9 +30,9 @@ func TestListCmd(t *testing.T) {
 	response := &protobuf.JobList{
 		Jobs: jobList,
 	}
-	mockOctaviusDClient.On("GetJobList").Return(response, nil).Once()
+	mockOctaviusDClient.On("GetJobList").Return(response, nil)
 
-	testCreateCmd.Execute()
+	testListCmd.Execute()
 
 	mockOctaviusDClient.AssertExpectations(t)
 }

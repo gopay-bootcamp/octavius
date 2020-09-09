@@ -2,9 +2,10 @@ package list
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
-	"octavius/internal/pkg/log"
+	"octavius/internal/pkg/printer"
 
 	"github.com/spf13/cobra"
 )
@@ -15,19 +16,19 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:   "list",
 		Short: "Get job list",
 		Long:  `Get job list will give available jobs in octavius`,
-		Args:  cobra.MaximumNArgs(0),
+		Args:  cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 
 			client := &client.GrpcClient{}
 			jobList, err := octaviusDaemon.GetJobList(client)
 			if err != nil {
-				log.Error(err, "error when getting job list")
+				printer.Println(fmt.Sprintln("error when getting job list"), color.FgRed)
 			}
 			if len(jobList.Jobs) == 0 {
-				log.Info(fmt.Sprintln("No jobs available"))
+				printer.Println(fmt.Sprintln("No jobs available"), color.FgGreen)
 			}
 			for _, job := range jobList.Jobs {
-				log.Info(fmt.Sprintln(job))
+				printer.Println(fmt.Sprintln(job), color.FgGreen)
 			}
 		},
 	}

@@ -18,6 +18,7 @@ type Client interface {
 	GetStreamLog(string, client.Client) (*[]protobuf.Log, error)
 	ExecuteJob(string, map[string]string, client.Client) (*protobuf.Response, error)
 	GetJobList(client.Client) (*protobuf.JobList, error)
+	DescribeJob(string, client.Client) (*protobuf.Metadata, error)
 }
 
 type octaviusClient struct {
@@ -97,6 +98,7 @@ func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) 
 	logResponse, err := c.grpcClient.GetStreamLog(&getStreamPostRequest)
 	return logResponse, err
 }
+
 func (c *octaviusClient) ExecuteJob(jobName string, jobData map[string]string, grpcClient client.Client) (*protobuf.Response, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
@@ -130,4 +132,21 @@ func (c *octaviusClient) GetJobList(grpcClient client.Client) (*protobuf.JobList
 
 	return c.grpcClient.GetJobList(&listJobPostRequest)
 
+}
+
+func (c *octaviusClient) DescribeJob(jobName string, grpcClient client.Client) (*protobuf.Metadata, error) {
+	err := c.startOctaviusClient(grpcClient)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	postRequestHeader := protobuf.ClientInfo{
+		ClientEmail: c.emailId,
+		AccessToken: c.accessToken,
+	}
+	descriptionPostRequest := protobuf.RequestForDescribe{
+		ClientInfo: &postRequestHeader,
+		JobName:    jobName,
+	}
+
+	return c.grpcClient.DescribeJob(&descriptionPostRequest)
 }

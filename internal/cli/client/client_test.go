@@ -38,6 +38,12 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
+func (s *server) DescribeJob(ctx context.Context, describe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
+	return &protobuf.Metadata{
+		Name: "test image",
+	}, nil
+}
+
 func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.ClientCPServices_GetStreamLogsServer) error {
 	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
 	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
@@ -139,6 +145,35 @@ func TestGetStream(t *testing.T) {
 }
 
 func TestGetJobList(t *testing.T) {
+	createFakeServer()
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	client := protobuf.NewClientCPServicesClient(conn)
+	testClient := GrpcClient{
+		client:                client,
+		connectionTimeoutSecs: 10 * time.Second,
+	}
+
+	testGetJobListRequest := &protobuf.RequestForGetJobList{}
+	res, err := testClient.GetJobList(testGetJobListRequest)
+	assert.Nil(t, err)
+	var actual [2]string
+	for index, value := range res.Jobs {
+		actual[index] = value
+	}
+	var expected [2]string
+	expected[0] = "demo-image-name"
+	expected[1] = "demo-image-name-1"
+
+	assert.Equal(t, actual, expected)
+
+}
+
+func TestDescribeJob(t *testing.T) {
 
 	createFakeServer()
 	ctx := context.Background()
@@ -152,16 +187,10 @@ func TestGetJobList(t *testing.T) {
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
 	}
-	testGetJobListRequest := &protobuf.RequestForGetJobList{}
-	res, err := testClient.GetJobList(testGetJobListRequest)
-	assert.Nil(t, err)
-	var actual [2]string
-	for index, value := range res.Jobs {
-		actual[index] = value
-	}
-	var expected [2]string
-	expected[0] = "demo-image-name"
-	expected[1] = "demo-image-name-1"
 
-	assert.Equal(t, actual, expected)
+	testDescribeRequest := &protobuf.RequestForDescribe{}
+	actual, err := testClient.DescribeJob(testDescribeRequest)
+	assert.Nil(t, err)
+	assert.Equal(t, "test image", actual.Name)
+
 }
