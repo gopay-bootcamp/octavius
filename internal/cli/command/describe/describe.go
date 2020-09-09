@@ -29,6 +29,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			res, err := octaviusDaemon.DescribeJob(jobName, client)
 			if err != nil {
 				log.Error(err, "error in describing job")
+				printer.Println("error in describing job", color.FgRed)
 				return
 			}
 			log.Info(fmt.Sprintf("describe command for %v executed with metadata response %v", jobName, res))
