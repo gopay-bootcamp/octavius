@@ -44,6 +44,7 @@ type OctaviusExecutorConfig struct {
 	LogLevel                     string
 	PingInterval                 time.Duration
 	LogFilePath                  string
+	LogFileSize                  int
 	KubeConfig                   string
 	KubeContext                  string
 	DefaultNamespace             string
@@ -78,6 +79,7 @@ func load() (OctaviusExecutorConfig, error) {
 		ConnTimeOutSec:               time.Duration(GetIntDefault(fang, "conn_time_out", 10)) * time.Second,
 		PingInterval:                 time.Duration(GetIntDefault(fang, "ping_interval", 30)) * time.Second,
 		LogFilePath:                  GetStringDefault(fang, "log_file_path", "executor.log"),
+		LogFileSize:                  fang.GetInt("log_file_max_size_in_mb"),
 		KubeConfig:                   fang.GetString("kube_config"),
 		KubeContext:                  fang.GetString("kube_context"),
 		DefaultNamespace:             fang.GetString("default_namespace"),

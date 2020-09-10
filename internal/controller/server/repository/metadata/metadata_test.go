@@ -16,7 +16,7 @@ import (
 )
 
 func init() {
-	log.Init("info", "", false)
+	log.Init("info", "", false, 1)
 }
 
 func Test_metadataRepository_Save(t *testing.T) {
