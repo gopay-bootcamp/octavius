@@ -5,5 +5,6 @@
     "log_level": "debug",
     "app_port": 3000,
     "executor_ping_deadline": 10,
-    "log_file_path": "controller.log"
+    "log_file_path": "controller.log",
+    "log_file_max_size_in_mb": 100
 }

@@ -19,14 +19,14 @@ type engine struct {
 var logEngine engine // contain cli configuration
 
 // Init initializes the logger object
-func Init(configLogLevel string, logFile string, logInConsole bool) error {
+func Init(configLogLevel string, logFile string, logInConsole bool, logFileSize int) error {
 	usr, err := user.Current()
 	if err != nil {
 		return err
 	}
 
 	var (
-		writers   []io.Writer
+		writers []io.Writer
 		logPath string
 	)
 	dirName := filepath.Join(usr.HomeDir, ".octavius")
@@ -51,26 +51,18 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 		return err
 	}
 
+	fileWriter := &lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    logFileSize, // megabytes
+		MaxBackups: 1,
+		MaxAge:     0,     //days
+		Compress:   false, // disabled by default
+	}
+	writers = append(writers, fileWriter)
+
 	if logInConsole {
 		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
-		fileWriter := &lumberjack.Logger{
-			Filename:   logPath,
-			MaxSize:    100, // megabytes
-			MaxBackups: 1,
-			MaxAge:     2, //days
-			Compress:   false, // disabled by default
-		}
 		writers = append(writers, consoleWriter)
-		writers = append(writers, fileWriter)
-	} else {
-		fileWriter := &lumberjack.Logger{
-			Filename:   "/var/log/myapp/foo.log",
-			MaxSize:    100, // megabytes
-			MaxBackups: 1,
-			MaxAge:     2, //days
-			Compress:   false, // disabled by default
-		}
-		writers = append(writers, fileWriter)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850
@@ -109,7 +101,6 @@ func createDir(path string) error {
 	}
 	return nil
 }
-
 
 //Debug logs the message at debug level
 func Debug(msg string) {
