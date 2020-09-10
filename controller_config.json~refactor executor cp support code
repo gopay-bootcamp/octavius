@@ -1,6 +1,0 @@
-{
-    "etcd_port":2379,
-    "log_level" : "debug",
-    "app_port" : 3000,
-    "executor_ping_deadline" : 60
-}
