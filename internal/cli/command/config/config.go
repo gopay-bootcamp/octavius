@@ -33,16 +33,20 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 
 			if isConfigFileExist == true {
 				log.Warn(fmt.Sprintln("[Warning] This will overwrite current config:"))
+				printer.Println("[Warning] This will overwrite the current config.", color.FgYellow)
+
 				existingOctaviusConfig, err := fileUtil.ReadFile(configFilePath)
 				if err != nil {
 					log.Error(err, fmt.Sprintln(existingOctaviusConfig))
+					printer.Println("error while reading the existing configurations", color.FgRed)
 					return
 				}
 
-				printer.Println(fmt.Sprintln("\nDo you want to continue (Y/n)?\t"), color.FgYellow)
+				printer.Println("Do you want to continue (Y/n)?\t", color.FgYellow)
 				userPermission, err := fileUtil.GetUserInput()
 				if err != nil {
-					log.Error(err, fmt.Sprintln("error getting user permission for overwriting config"))
+					log.Error(err, "error getting user permission for overwriting config")
+					printer.Println("error while getting the user permission", color.FgRed)
 					return
 				}
 
@@ -54,14 +58,17 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 				err := fileUtil.CreateDirIfNotExist(config.ConfigFileDir())
 				if err != nil {
 					log.Error(err, "error in creating config file directory")
+					printer.Println("error in creating config file directory", color.FgRed)
 					return
 				}
 				err = fileUtil.CreateFile(configFilePath)
 				if err != nil {
 					log.Error(err, "error in creating config file")
+					printer.Println("error in creating config file", color.FgRed)
 					return
 				}
 			}
+			printer.Println("Applying the configurations.", color.FgBlack)
 
 			var configFileContent string
 			configFileContent += fmt.Sprintf("%s: %s\n", config.OctaviusCPHost, cpHost)
@@ -72,10 +79,12 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 			err := fileUtil.WriteFile(configFilePath, configFileContent)
 			if err != nil {
 				log.Error(err, fmt.Sprintf("error writing content %v to config file %s \n", configFileContent, configFilePath))
+				printer.Println("error in writing the configurations", color.FgRed)
 				return
 			}
 
 			log.Info("Octavius client configured successfully")
+			printer.Println("Octavius client configured successfully.", color.FgGreen)
 		},
 	}
 	configCmd.Flags().StringVarP(&cpHost, "cp-host", "", "", "CP_HOST port address(required)")

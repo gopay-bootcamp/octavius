@@ -15,14 +15,14 @@ func init() {
 
 func TestGetStreamCmdHelp(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
-	testCreateCmd := NewCmd(mockOctaviusDClient)
-	assert.Equal(t, "Get job log data", testCreateCmd.Short)
-	assert.Equal(t, "Get job log by giving arguments", testCreateCmd.Long)
+	testGetStreamCmd := NewCmd(mockOctaviusDClient)
+	assert.Equal(t, "Get job log data", testGetStreamCmd.Short)
+	assert.Equal(t, "Get job log by giving arguments", testGetStreamCmd.Long)
 }
 
 func TestGetStreamCmd(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
-	testCreateCmd := NewCmd(mockOctaviusDClient)
+	testGetStreamCmd := NewCmd(mockOctaviusDClient)
 	var logResponse []protobuf.Log
 	log1 := &protobuf.Log{
 		Log: "Test log 1",
@@ -35,8 +35,8 @@ func TestGetStreamCmd(t *testing.T) {
 
 	mockOctaviusDClient.On("GetStreamLog", "DemoJob").Return(&logResponse, nil).Once()
 
-	testCreateCmd.SetArgs([]string{"DemoJob"})
-	testCreateCmd.Execute()
+	testGetStreamCmd.SetArgs([]string{"DemoJob"})
+	testGetStreamCmd.Execute()
 
 	mockOctaviusDClient.AssertExpectations(t)
 }
