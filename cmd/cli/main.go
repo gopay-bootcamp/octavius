@@ -11,7 +11,7 @@ import (
 
 func main() {
 	logfilePath := config.LogFilePath
-	if err := octlog.Init("info", logfilePath, true); err != nil {
+	if err := octlog.Init("info", logfilePath, false); err != nil {
 		log.Fatal(fmt.Sprintf("failed to initialize logger %v", err))
 	}
 

@@ -17,6 +17,8 @@ type Client interface {
 	ExecuteJob(*protobuf.RequestForExecute) (*protobuf.Response, error)
 	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
 	ConnectClient(cpHost string) error
+	GetJobList(*protobuf.RequestForGetJobList) (*protobuf.JobList, error)
+	DescribeJob(*protobuf.RequestForDescribe) (*protobuf.Metadata, error)
 }
 
 type GrpcClient struct {
@@ -64,9 +66,13 @@ func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 }
 
 func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (*protobuf.Response, error) {
-	res, err := g.client.ExecuteJob(context.Background(), requestForExecute)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return g.client.ExecuteJob(context.Background(), requestForExecute)
+}
+
+func (g *GrpcClient) GetJobList(requestForGetJobList *protobuf.RequestForGetJobList) (*protobuf.JobList, error) {
+	return g.client.GetJobList(context.Background(), requestForGetJobList)
+}
+
+func (g *GrpcClient) DescribeJob(requestForDescribe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
+	return g.client.DescribeJob(context.Background(), requestForDescribe)
 }

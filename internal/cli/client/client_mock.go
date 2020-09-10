@@ -10,6 +10,11 @@ type MockGrpcClient struct {
 	mock.Mock
 }
 
+func (m *MockGrpcClient) DescribeJob(requestForDescribe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
+	args := m.Called(requestForDescribe)
+	return args.Get(0).(*protobuf.Metadata), args.Error(1)
+}
+
 // CreateMetadata mock
 func (m *MockGrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	args := m.Called(metadataPostRequest)
@@ -30,4 +35,10 @@ func (m *MockGrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForSt
 func (m *MockGrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (*protobuf.Response, error) {
 	args := m.Called(requestForExecute)
 	return args.Get(0).(*protobuf.Response), args.Error(1)
+}
+
+func (m *MockGrpcClient) GetJobList(requestForGetJobList *protobuf.RequestForGetJobList) (*protobuf.JobList, error) {
+	args := m.Called(requestForGetJobList)
+	return args.Get(0).(*protobuf.JobList), args.Error(1)
+
 }

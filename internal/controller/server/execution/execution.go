@@ -25,12 +25,14 @@ import (
 // Execution interface for methods related to execution
 type Execution interface {
 	SaveMetadata(ctx context.Context, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
+	GetMetadata(ctx context.Context, request *clientCPproto.RequestForDescribe) (*clientCPproto.Metadata, error)
 	ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error)
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
 	SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error
 	GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
+	GetJobList(ctx context.Context) (*clientCPproto.JobList, error)
 }
 type execution struct {
 	metadataRepo      metadataRepo.Repository
@@ -40,6 +42,7 @@ type execution struct {
 	scheduler         scheduler.Scheduler
 	activeExecutorMap *activeExecutorMap
 }
+
 type activeExecutor struct {
 	sessionID  uint64
 	healthChan chan string
@@ -83,13 +86,13 @@ func (e *execution) SaveMetadata(ctx context.Context, metadata *clientCPproto.Me
 	return e.metadataRepo.Save(ctx, metadata.Name, metadata)
 }
 
+func (e *execution) GetMetadata(ctx context.Context, request *clientCPproto.RequestForDescribe) (*clientCPproto.Metadata, error) {
+	return e.metadataRepo.GetValue(ctx, request.JobName)
+}
+
 //ReadAllMetadata calls the repository/metadata GetAll() and returns MetadataArray
 func (e *execution) ReadAllMetadata(ctx context.Context) (*clientCPproto.MetadataArray, error) {
 	return e.metadataRepo.GetAll(ctx)
-}
-
-func (e *execution) GetMetadata(ctx context.Context, metadataName string) (*clientCPproto.Metadata, error) {
-	return e.metadataRepo.Get(ctx, metadataName)
 }
 
 //RegisterExecutor saves executor information in DB
@@ -209,7 +212,7 @@ func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorI
 	}
 
 	metadataName := clientJob.JobName
-	metadata, err := e.metadataRepo.Get(ctx, metadataName)
+	metadata, err := e.metadataRepo.GetValue(ctx, metadataName)
 	if err != nil {
 		return nil, err
 	}
@@ -228,4 +231,9 @@ func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorI
 
 func (e *execution) SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error {
 	return e.executorRepo.SaveJobExecutionData(ctx, executionData.JobID, executionData)
+}
+
+// GetJobList function will call metadata repository and return list of available jobs
+func (e *execution) GetJobList(ctx context.Context) (*clientCPproto.JobList, error) {
+	return e.metadataRepo.GetAvailableJobList(ctx)
 }

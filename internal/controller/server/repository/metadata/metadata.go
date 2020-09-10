@@ -3,13 +3,15 @@ package metadata
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"octavius/internal/pkg/util"
+	"strings"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -17,8 +19,9 @@ import (
 //Repository interface for functions related to metadata repository
 type Repository interface {
 	Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
+	GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error)
 	GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error)
-	Get(ctx context.Context, name string) (*clientCPproto.Metadata, error)
+	GetAvailableJobList(ctx context.Context) (*clientCPproto.JobList, error)
 }
 
 type metadataRepository struct {
@@ -85,14 +88,29 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.Metadat
 	return resp, nil
 }
 
-func (c *metadataRepository) Get(ctx context.Context, name string) (*clientCPproto.Metadata, error) {
-	dbKey := constant.MetadataPrefix + name
-	res, err := c.etcdClient.GetValue(ctx, dbKey)
+// GetAvailableJobList returns list of available jobs
+func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*clientCPproto.JobList, error) {
+	keys, _, err := c.etcdClient.GetAllKeyAndValues(ctx, constant.MetadataPrefix)
 	if err != nil {
-		return nil, err
-	}
+		return nil, status.Error(codes.Internal, err.Error())
 
+	}
+	var jobList []string
+
+	for index := range keys {
+		jobList = append(jobList, strings.Split(keys[index], "/")[1])
+	}
+	return &clientCPproto.JobList{Jobs: jobList}, nil
+}
+
+func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error) {
+	dbKey := constant.MetadataPrefix + jobName
+	gr, err := c.etcdClient.GetValue(ctx, dbKey)
+	if err != nil {
+		return &clientCPproto.Metadata{}, err
+	}
 	metadata := &clientCPproto.Metadata{}
-	err = proto.Unmarshal([]byte(res), metadata)
+	err = proto.Unmarshal([]byte(gr), metadata)
 	return metadata, err
+
 }

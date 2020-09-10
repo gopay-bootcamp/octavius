@@ -5,7 +5,7 @@ import (
 	"errors"
 	"octavius/internal/controller/server/repository/executor"
 	executorRepo "octavius/internal/controller/server/repository/executor"
-	job "octavius/internal/controller/server/repository/job"
+	"octavius/internal/controller/server/repository/job"
 	"octavius/internal/controller/server/repository/metadata"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/controller/server/scheduler"
@@ -243,4 +243,74 @@ func TestExecuteJobForSchedulerFailure(t *testing.T) {
 	jobRepoMock.AssertExpectations(t)
 	mockScheduler.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
+}
+
+func TestGetMetadata(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	metadataRepoMock := new(metadata.MetadataMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	executorRepoMock := new(executor.ExecutorMock)
+
+	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+	testClientInfo := &clientCPproto.ClientInfo{
+		ClientEmail: "test@gmail.com",
+		AccessToken: "random",
+	}
+	testRequestForDescribe := &clientCPproto.RequestForDescribe{
+		JobName:    "testJobName",
+		ClientInfo: testClientInfo,
+	}
+	var testMetadata = &clientCPproto.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+	}
+	metadataRepoMock.On("GetValue", testRequestForDescribe.JobName).Return(testMetadata, nil)
+	resultMetadata, getMetadataErr := testExec.GetMetadata(context.Background(), testRequestForDescribe)
+	assert.Equal(t, testMetadata, resultMetadata)
+	assert.Nil(t, getMetadataErr)
+	metadataRepoMock.AssertExpectations(t)
+
+}
+
+func TestGetJobList(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	metadataRepoMock := new(metadata.MetadataMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	executorRepoMock := new(executor.ExecutorMock)
+
+	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+
+	var jobList []string
+	jobList = append(jobList, "demo-image-name")
+	jobList = append(jobList, "demo-image-name-1")
+
+	testResponse := &clientCPproto.JobList{
+		Jobs: jobList,
+	}
+
+	metadataRepoMock.On("GetAvailableJobList").Return(testResponse, nil)
+
+	res, err := testExec.GetJobList(context.Background())
+	assert.Nil(t, err)
+	assert.Equal(t, testResponse, res)
+	mockScheduler.AssertExpectations(t)
+}
+
+func TestGetJobListForGetAvailableJobListFunctionErr(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	metadataRepoMock := new(metadata.MetadataMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	executorRepoMock := new(executor.ExecutorMock)
+
+	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+
+	metadataRepoMock.On("GetAvailableJobList").Return(&clientCPproto.JobList{}, errors.New("error in GetAvailableJobList function"))
+
+	_, err := testExec.GetJobList(context.Background())
+	assert.Equal(t, "error in GetAvailableJobList function", err.Error())
+	mockScheduler.AssertExpectations(t)
 }

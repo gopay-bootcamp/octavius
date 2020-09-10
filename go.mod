@@ -5,8 +5,12 @@ go 1.14
 require (
 	github.com/coreos/etcd v3.3.13+incompatible
 	github.com/fatih/color v1.7.0
+	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/golang/protobuf v1.4.2
+	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/jonboulle/clockwork v0.2.0
+	github.com/magiconair/properties v1.8.1
+	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.19.0
 	github.com/sony/sonyflake v1.0.0

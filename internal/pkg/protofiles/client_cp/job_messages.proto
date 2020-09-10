@@ -9,6 +9,15 @@ message RequestForStreamLog {
     string job_name=2;
 }
 
+message RequestForGetJobList {
+    ClientInfo client_info=1;
+}
+
+message JobList {
+    repeated string jobs=1;
+
+}
+
 message Log{
     uint64 request_id = 1;
     string log=2;
@@ -20,6 +29,11 @@ message RequestForExecute{
     ClientInfo client_info=1;
     string job_name=2;
     map<string,string> job_data=3;
+}
+
+message RequestForDescribe{
+    ClientInfo client_info=1;
+    string job_name=2;
 }
 
 message Response {
