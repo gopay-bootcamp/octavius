@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	log.Init("info", "", false)
+	log.Init("info", "", false, 1)
 }
 
 func TestNewClient(t *testing.T) {

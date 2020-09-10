@@ -17,7 +17,8 @@ func main() {
 	}
 	logfilePath := executorConfig.LogFilePath
 	logLevel := executorConfig.LogLevel
-	if err = octlog.Init(logLevel, logfilePath, true); err != nil {
+	logFileSize := executorConfig.LogFileSize
+	if err = octlog.Init(logLevel, logfilePath, true, logFileSize); err != nil {
 		log.Fatal(fmt.Sprintf("failed to initialize logger %v", err))
 	}
 

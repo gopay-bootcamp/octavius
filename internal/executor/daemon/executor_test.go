@@ -145,7 +145,7 @@ func TestStartKubernetesServiceCreationFailed(t *testing.T) {
 	mockGrpcClient.On("FetchJob", &executorCPproto.ExecutorID{Id: "test id"}).Return(testJob, nil)
 	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("", errors.New("test error"))
 	mockGrpcClient.On("SendExecutionContext", testExecutionContext).Return(&executorCPproto.Acknowledgement{}, nil)
-	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "running"}).Return(&executorCPproto.HealthResponse{Recieved:true}, nil)
+	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "running"}).Return(&executorCPproto.HealthResponse{Recieved: true}, nil)
 
 	go testExecutorClient.StartKubernetesService()
 	time.Sleep(1 * time.Second)
@@ -201,13 +201,13 @@ func TestStartKubernetesService(t *testing.T) {
 	stringReadCloser := ioutil.NopCloser(strings.NewReader(""))
 
 	mockGrpcClient.On("FetchJob", &executorCPproto.ExecutorID{Id: "test id"}).Return(testJob, nil)
-	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("",nil)
+	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("", nil)
 	mockKubeClient.On("WaitForReadyJob", "", time.Second).Return(nil)
 	mockKubeClient.On("WaitForReadyPod", "", time.Second).Return(pod, nil)
 	mockKubeClient.On("GetPodLogs", pod).Return(stringReadCloser, nil)
 	mockGrpcClient.On("SendExecutionContext", testExecutionContext).Return(&executorCPproto.Acknowledgement{}, nil)
-	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "idle"}).Return(&executorCPproto.HealthResponse{Recieved:true}, nil)
-	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "running"}).Return(&executorCPproto.HealthResponse{Recieved:true}, nil)
+	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "idle"}).Return(&executorCPproto.HealthResponse{Recieved: true}, nil)
+	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "running"}).Return(&executorCPproto.HealthResponse{Recieved: true}, nil)
 
 	go testExecutorClient.StartKubernetesService()
 	time.Sleep(1 * time.Second)

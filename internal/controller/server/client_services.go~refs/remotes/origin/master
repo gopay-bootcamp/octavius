@@ -36,11 +36,11 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, PostMetadata request received with metadata %v", uuid, request.Metadata))
+	log.Info(fmt.Sprintf("request ID: %v, PostMetadata request received with metadata %v", uuid, request.Metadata))
 
 	name, err := s.procExec.SaveMetadata(ctx, request.Metadata)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("request id: %v, error in saving to etcd", uuid))
+		log.Error(err, fmt.Sprintf("request ID: %v, error in saving to etcd", uuid))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return name, nil
@@ -54,11 +54,11 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, GetAllMetadata request received", uuid))
+	log.Info(fmt.Sprintf("request ID: %v, GetAllMetadata request received", uuid))
 
 	dataList, err := s.procExec.ReadAllMetadata(ctx)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("request id: %v, error in getting all metadata from etcd", uuid))
+		log.Error(err, fmt.Sprintf("request ID: %v, error in getting all metadata from etcd", uuid))
 	}
 	return dataList, status.Error(codes.Internal, err.Error())
 }
@@ -72,7 +72,7 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 
 	// TODO: relay stream logs from executor
 	logString := &clientCPproto.Log{RequestId: uuid, Log: "lorem ipsum logger logger logger dumb"}
-	log.Info(fmt.Sprintf("request id: %v, getstream request received", uuid))
+	log.Info(fmt.Sprintf("request ID: %v, getstream request received", uuid))
 
 	err = stream.Send(logString)
 	if err != nil {
@@ -91,11 +91,11 @@ func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, executionData *
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, ExecuteJob request received with executionData %+v", uuid, executionData))
+	log.Info(fmt.Sprintf("request ID: %v, ExecuteJob request received with executionData %+v", uuid, executionData))
 
 	jobID, err := s.procExec.ExecuteJob(ctx, executionData)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("request id: %v, error in job execution", uuid))
+		log.Error(err, fmt.Sprintf("request ID: %v, error in job execution", uuid))
 		return &clientCPproto.Response{Status: "failure"}, err
 	}
 
