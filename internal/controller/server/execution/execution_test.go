@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	log.Init("info", "", true)
+	log.Init("info", "", true, 1)
 }
 
 func TestStartExecutorHealthCheck(t *testing.T) {
