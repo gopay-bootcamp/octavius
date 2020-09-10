@@ -52,7 +52,7 @@ func TestStartExecutorHealthCheck(t *testing.T) {
 		activeExecutorMap: testExecutorMap,
 	}
 
-	testExecRepo.On("UpdateStatus", "exec 1", "free").Return(nil)
+	testExecRepo.On("UpdateStatus", "exec 1", "idle").Return(nil)
 	testExecRepo.On("UpdateStatus", "exec 1", "expired").Return(nil)
 
 	var wg sync.WaitGroup
@@ -111,10 +111,10 @@ func TestUpdateExecutorStatus(t *testing.T) {
 	ctx := context.Background()
 	request := executorCPproto.Ping{
 		ID:    "exec 1",
-		State: "free",
+		State: "idle",
 	}
 	executorRepoMock.On("Get", "exec 1").Return(&executorCPproto.ExecutorInfo{}, nil)
-	executorRepoMock.On("UpdateStatus", "exec 1", "free").Return(nil)
+	executorRepoMock.On("UpdateStatus", "exec 1", "idle").Return(nil)
 	res, err := testExec.UpdateExecutorStatus(ctx, &request, 20*time.Second)
 	_, ok := getActiveExecutorMap(testExec.(*execution)).Get("exec 1")
 	assert.Equal(t, res.Recieved, true)

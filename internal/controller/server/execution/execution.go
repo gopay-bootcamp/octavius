@@ -112,7 +112,7 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 	executor, _ := activeExecutorMap.Get(id)
 	ctx := context.Background()
 	log.Info(fmt.Sprintf("session ID: %v, opening connection with executor: %s", executor.sessionID, id))
-	err := e.executorRepo.UpdateStatus(ctx, id, "free")
+	err := e.executorRepo.UpdateStatus(ctx, id, constant.IdleState)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
 		removeActiveExecutor(activeExecutorMap, id, executor)
@@ -219,7 +219,7 @@ func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorI
 	imageName := metadata.ImageName
 
 	job := &executorCPproto.Job{
-		HasJob:    "yes",
+		HasJob:    true,
 		JobID:     jobID,
 		ImageName: imageName,
 		JobData:   clientJob.JobData,
