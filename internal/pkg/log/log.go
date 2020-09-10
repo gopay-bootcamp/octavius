@@ -3,7 +3,6 @@ package log
 import (
 	"github.com/rs/zerolog"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"io"
 	"io/ioutil"
 	"octavius/internal/pkg/constant"
 	"os"
@@ -26,7 +25,7 @@ func Init(configLogLevel string, logFile string, logInConsole bool, logFileSize 
 	}
 
 	var (
-		writers []io.Writer
+		multi   zerolog.LevelWriter
 		logPath string
 	)
 	dirName := filepath.Join(usr.HomeDir, ".octavius")
@@ -58,17 +57,17 @@ func Init(configLogLevel string, logFile string, logInConsole bool, logFileSize 
 		MaxAge:     0,     //days
 		Compress:   false, // disabled by default
 	}
-	writers = append(writers, fileWriter)
 
 	if logInConsole {
 		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
-		writers = append(writers, consoleWriter)
+		multi = zerolog.MultiLevelWriter(fileWriter, consoleWriter)
+	} else {
+		multi = zerolog.MultiLevelWriter(fileWriter)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850
 
-	multiWriter := io.MultiWriter(writers...)
-	zerologInstance := zerolog.New(multiWriter).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
+	zerologInstance := zerolog.New(multi).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
 	logEngine = engine{
 		logger: &zerologInstance,
 	}
