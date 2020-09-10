@@ -26,9 +26,9 @@ func TestDescribeCmd(t *testing.T) {
 	testDescribeCmd := NewCmd(mockOctaviusDClient)
 
 	arg := protobuf.Arg{
-		Name: "test",
+		Name:        "test",
 		Description: "test description",
-		Required: false,
+		Required:    false,
 	}
 	var args []*protobuf.Arg
 	args = append(args, &arg)
@@ -36,7 +36,7 @@ func TestDescribeCmd(t *testing.T) {
 		Args: args,
 	}
 	describeResponse := &protobuf.Metadata{
-		Name: "Demo Job",
+		Name:    "Demo Job",
 		EnvVars: testEnvVars,
 	}
 
