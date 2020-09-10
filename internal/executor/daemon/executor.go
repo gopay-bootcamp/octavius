@@ -175,7 +175,7 @@ func (e *executorClient) startWatch(executionContext *executorCPproto.ExecutionC
 	}
 
 	executionContext.Status = constant.JobReady
-	log.Info(fmt.Sprintf("Job Ready for %d", executionContext.ExecutionID))
+	log.Info(fmt.Sprintf("Job Ready for %d", executionContext.Name))
 
 	pod, err := e.kubernetesClient.WaitForReadyPod(ctx, executionContext.Name, e.kubeLogWaitTime)
 	if err != nil {
@@ -185,18 +185,18 @@ func (e *executorClient) startWatch(executionContext *executorCPproto.ExecutionC
 	}
 	if pod.Status.Phase == v1.PodFailed {
 		executionContext.Status = constant.PodFailed
-		log.Info(fmt.Sprintf("Pod Failed for %d with reason: %s and message: %s", executionContext.ExecutionID, pod.Status.Reason, pod.Status.Message))
+		log.Info(fmt.Sprintf("Pod Failed for %s with reason: %s and message: %s", executionContext.Name, pod.Status.Reason, pod.Status.Message))
 	} else {
 		executionContext.Status = constant.PodReady
-		log.Info(fmt.Sprintf("Pod Ready for %d", executionContext.ExecutionID))
+		log.Info(fmt.Sprintf("Pod Ready for %s", executionContext.Name))
 	}
 
 	podLog, err := e.kubernetesClient.GetPodLogs(ctx, pod)
-	defer podLog.Close()
 	if err != nil {
 		executionContext.Status = constant.FetchPodLogFailed
 		return
 	}
+	defer podLog.Close()
 
 	scanner := bufio.NewScanner(podLog)
 	scanner.Split(bufio.ScanLines)
