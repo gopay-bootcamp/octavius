@@ -8,28 +8,13 @@ import (
 	"fmt"
 	"octavius/internal/executor/client"
 	"octavius/internal/executor/config"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-)
-
-const (
-	Received          = "RECEIVED"
-	RequirementNotMet = "REQUIREMENT_NOT_MET"
-	Created           = "CREATED"
-	CreationFailed    = "CREATION_FAILED"
-	JobCreationFailed = "JOB_CREATION_FAILED"
-	JobReady          = "JOB_READY"
-	PodCreationFailed = "POD_CREATION_FAILED"
-	PodReady          = "POD_READY"
-	PodFailed         = "POD_FAILED"
-	FetchPodLogFailed = "FETCH_POD_LOG_FAILED"
-	Finished          = "FINISHED"
-	IdleState         = "idle"
-	RunningState      = "running"
 )
 
 // Client executor client interface
@@ -39,6 +24,7 @@ type Client interface {
 	StartPing()
 	FetchJob() (*executorCPproto.Job, error)
 	StartKubernetesService()
+	startWatch(executionContext *executorCPproto.ExecutionContext)
 }
 
 type executorClient struct {
@@ -67,7 +53,7 @@ func (e *executorClient) StartClient(executorConfig config.OctaviusExecutorConfi
 	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
 	e.pingInterval = executorConfig.PingInterval
 	e.kubeLogWaitTime = 5 * time.Minute
-	e.state = IdleState
+	e.state = constant.IdleState
 	err := e.grpcClient.ConnectClient(e.cpHost, e.connectionTimeoutSecs)
 	if err != nil {
 		return err
@@ -132,10 +118,10 @@ func (e *executorClient) StartKubernetesService() {
 			continue
 		}
 
-		e.state = RunningState
+		e.state = constant.RunningState
 		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
 		if err != nil {
-			_, err = e.sendResponse(&executorCPproto.ExecutionContext{Status: CreationFailed})
+			_, err = e.sendResponse(&executorCPproto.ExecutionContext{Status: constant.CreationFailed})
 			if err != nil {
 				log.Error(err, "error in sending execution context")
 			}
@@ -148,7 +134,7 @@ func (e *executorClient) StartKubernetesService() {
 			JobID:      jobID,
 			JobName:    imageName,
 			EnvArgs:    executionArgs,
-			Status:     Created,
+			Status:     constant.Created,
 			ExecutorID: e.id,
 		}
 		ctx, cancel := context.WithCancel(context.Background())
@@ -157,9 +143,8 @@ func (e *executorClient) StartKubernetesService() {
 		executionName, err := e.kubernetesClient.ExecuteJob(ctx, jobID, imageName, executionArgs)
 		log.Info(fmt.Sprintln("Executed Job on Kubernetes got ", executionName, " execution jobName and ", err, "errors"))
 		if err != nil {
-			jobContext.Status = CreationFailed
-			e.sendResponse(&jobContext)
-			_, err = e.sendResponse(&executorCPproto.ExecutionContext{Status: CreationFailed})
+			jobContext.Status = constant.CreationFailed
+			_, err := e.sendResponse(&jobContext)
 			if err != nil {
 				log.Error(err, "error in sending execution context")
 			}
@@ -169,7 +154,7 @@ func (e *executorClient) StartKubernetesService() {
 		}
 		jobContext.Name = executionName
 		go e.startWatch(&jobContext)
-		e.state = IdleState
+		e.state = constant.IdleState
 	}
 }
 
@@ -185,31 +170,31 @@ func (e *executorClient) startWatch(executionContext *executorCPproto.ExecutionC
 	err := e.kubernetesClient.WaitForReadyJob(ctx, executionContext.Name, e.kubeLogWaitTime)
 
 	if err != nil {
-		executionContext.Status = JobCreationFailed
+		executionContext.Status = constant.JobCreationFailed
 		return
 	}
 
-	executionContext.Status = JobReady
+	executionContext.Status = constant.JobReady
 	log.Info(fmt.Sprintf("Job Ready for %d", executionContext.ExecutionID))
 
 	pod, err := e.kubernetesClient.WaitForReadyPod(ctx, executionContext.Name, e.kubeLogWaitTime)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("wait for ready pod %s", pod.Name))
-		executionContext.Status = PodCreationFailed
+		executionContext.Status = constant.PodCreationFailed
 		return
 	}
 	if pod.Status.Phase == v1.PodFailed {
-		executionContext.Status = PodFailed
+		executionContext.Status = constant.PodFailed
 		log.Info(fmt.Sprintf("Pod Failed for %d with reason: %s and message: %s", executionContext.ExecutionID, pod.Status.Reason, pod.Status.Message))
 	} else {
-		executionContext.Status = PodReady
+		executionContext.Status = constant.PodReady
 		log.Info(fmt.Sprintf("Pod Ready for %d", executionContext.ExecutionID))
 	}
 
 	podLog, err := e.kubernetesClient.GetPodLogs(ctx, pod)
 	defer podLog.Close()
 	if err != nil {
-		executionContext.Status = FetchPodLogFailed
+		executionContext.Status = constant.FetchPodLogFailed
 		return
 	}
 
@@ -224,8 +209,8 @@ func (e *executorClient) startWatch(executionContext *executorCPproto.ExecutionC
 	output := buffer.String()
 
 	executionContext.Output = output
-	if executionContext.Status == PodReady {
-		executionContext.Status = Finished
+	if executionContext.Status == constant.PodReady {
+		executionContext.Status = constant.Finished
 	}
 	_, err = e.sendResponse(executionContext)
 	if err != nil {

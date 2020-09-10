@@ -1,8 +1,11 @@
 package daemon
 
 import (
+	"errors"
 	"io/ioutil"
 	"octavius/internal/executor/client"
+	"octavius/internal/executor/config"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
@@ -20,7 +23,46 @@ func init() {
 }
 
 func TestStartClient(t *testing.T) {
+	mockGrpcClient := new(client.MockGrpcClient)
 
+	testClient := NewExecutorClient(mockGrpcClient)
+	testExecutorClient := testClient.(*executorClient)
+
+	testConfig := config.OctaviusExecutorConfig{
+		CPHost:                       "test host",
+		ID:                           "test id",
+		AccessToken:                  "test access",
+		ConnTimeOutSec:               time.Second,
+		PingInterval:                 time.Second,
+		KubeConfig:                   "test kube config",
+		KubeContext:                  "test context",
+		DefaultNamespace:             "default",
+		KubeServiceAccountName:       "test",
+		JobPodAnnotations:            map[string]string{"test pod": "test annotation"},
+		KubeJobActiveDeadlineSeconds: 1,
+		KubeJobRetries:               1,
+		KubeWaitForResourcePollCount: 1,
+	}
+
+	testKubeClient, _ := kubernetes.NewKubernetesClient(testConfig)
+
+	finalExecutorClient := &executorClient{
+		grpcClient:            mockGrpcClient,
+		cpHost:                "test host",
+		id:                    "test id",
+		accessToken:           "test access",
+		connectionTimeoutSecs: time.Second,
+		pingInterval:          time.Second,
+		kubeLogWaitTime:       5 * time.Minute,
+		kubernetesClient:      testKubeClient,
+		state:                 constant.IdleState,
+	}
+
+	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
+
+	testExecutorClient.StartClient(testConfig)
+	assert.Equal(t, finalExecutorClient, testExecutorClient)
+	mockGrpcClient.AssertExpectations(t)
 }
 
 func TestRegisterClient(t *testing.T) {
@@ -74,7 +116,7 @@ func TestStartKubernetesServiceWithNoJob(t *testing.T) {
 	mockGrpcClient.AssertExpectations(t)
 }
 
-func TestStartKubernetesServiceHasJob(t *testing.T) {
+func TestStartKubernetesServiceCreationFailed(t *testing.T) {
 	mockGrpcClient := new(client.MockGrpcClient)
 	mockKubeClient := new(kubernetes.MockKubernetesClient)
 	testClient := NewExecutorClient(mockGrpcClient)
@@ -91,6 +133,38 @@ func TestStartKubernetesServiceHasJob(t *testing.T) {
 		ImageName: "test image",
 		JobData:   testArgs,
 	}
+
+	testExecutionContext := &executorCPproto.ExecutionContext{
+		Name:       "",
+		JobID:      "123",
+		JobName:    "test image",
+		ExecutorID: "test id",
+		Status:     "CREATION_FAILED",
+		EnvArgs:    testArgs,
+	}
+
+	mockGrpcClient.On("FetchJob", &executorCPproto.ExecutorID{Id: "test id"}).Return(testJob, nil)
+	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("", errors.New("test error"))
+	mockGrpcClient.On("SendExecutionContext", testExecutionContext).Return(&executorCPproto.Acknowledgement{}, nil)
+
+	go testExecutorClient.StartKubernetesService()
+	time.Sleep(1 * time.Second)
+
+	assert.Equal(t, constant.RunningState, testExecutorClient.state)
+	mockGrpcClient.AssertExpectations(t)
+	mockKubeClient.AssertExpectations(t)
+}
+
+func TestStartWatch(t *testing.T) {
+	mockGrpcClient := new(client.MockGrpcClient)
+	mockKubeClient := new(kubernetes.MockKubernetesClient)
+	testClient := NewExecutorClient(mockGrpcClient)
+	testExecutorClient := testClient.(*executorClient)
+	testExecutorClient.id = "test id"
+	testExecutorClient.state = "idle"
+	testExecutorClient.kubernetesClient = mockKubeClient
+	testExecutorClient.kubeLogWaitTime = time.Second
+	testArgs := map[string]string{"data": "test data"}
 
 	pod := &v1.Pod{
 		TypeMeta: meta.TypeMeta{
@@ -110,29 +184,34 @@ func TestStartKubernetesServiceHasJob(t *testing.T) {
 		},
 	}
 
-	stringReadCloser := ioutil.NopCloser(strings.NewReader(""))
-
 	testExecutionContext := &executorCPproto.ExecutionContext{
+		Name:       "test execution",
+		JobID:      "123",
+		JobName:    "test image",
+		ExecutorID: "test id",
+		Status:     "CREATED",
+		EnvArgs:    testArgs,
+	}
+
+	finalExecutionContext := &executorCPproto.ExecutionContext{
 		Name:       "test execution",
 		JobID:      "123",
 		JobName:    "test image",
 		ExecutorID: "test id",
 		Status:     "FINISHED",
 		EnvArgs:    testArgs,
-		Output:     "",
+		Output:     "test logs\n",
 	}
 
-	mockGrpcClient.On("FetchJob", &executorCPproto.ExecutorID{Id: "test id"}).Return(testJob, nil)
-	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("test execution", nil)
+	stringReadCloser := ioutil.NopCloser(strings.NewReader("test logs"))
+
 	mockKubeClient.On("WaitForReadyJob", "test execution", time.Second).Return(nil)
 	mockKubeClient.On("WaitForReadyPod", "test execution", time.Second).Return(pod, nil)
 	mockKubeClient.On("GetPodLogs", pod).Return(stringReadCloser, nil)
-	mockGrpcClient.On("SendExecutionContext", testExecutionContext).Return(&executorCPproto.Acknowledgement{}, nil)
+	mockGrpcClient.On("SendExecutionContext", finalExecutionContext).Return(&executorCPproto.Acknowledgement{}, nil)
 
-	go testExecutorClient.StartKubernetesService()
-	time.Sleep(1 * time.Second)
+	testClient.startWatch(testExecutionContext)
 
-	assert.Equal(t, RunningState, testExecutorClient.state)
-	mockGrpcClient.AssertExpectations(t)
 	mockKubeClient.AssertExpectations(t)
+	mockGrpcClient.AssertExpectations(t)
 }

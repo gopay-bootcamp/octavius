@@ -36,4 +36,19 @@ const (
 	ExecutorRegistrationPrefix = "executor/register/"
 	ExecutorStatusPrefix       = "executor/status/"
 	ExecutionDataPrefix        = "executor/logs/"
+
+	// executor daemon constants
+	Received          = "RECEIVED"
+	RequirementNotMet = "REQUIREMENT_NOT_MET"
+	Created           = "CREATED"
+	CreationFailed    = "CREATION_FAILED"
+	JobCreationFailed = "JOB_CREATION_FAILED"
+	JobReady          = "JOB_READY"
+	PodCreationFailed = "POD_CREATION_FAILED"
+	PodReady          = "POD_READY"
+	PodFailed         = "POD_FAILED"
+	FetchPodLogFailed = "FETCH_POD_LOG_FAILED"
+	Finished          = "FINISHED"
+	IdleState         = "idle"
+	RunningState      = "running"
 )
