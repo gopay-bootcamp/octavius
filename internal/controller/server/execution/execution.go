@@ -32,7 +32,10 @@ type Execution interface {
 	SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error
 	GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
 	GetJobList(ctx context.Context) (*clientCPproto.JobList, error)
+<<<<<<< HEAD
 	GetJobLogs(ctx context.Context, jobk8sName string) (string, error)
+=======
+>>>>>>> master
 }
 type execution struct {
 	metadataRepo      metadataRepo.Repository
