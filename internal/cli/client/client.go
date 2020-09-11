@@ -57,7 +57,7 @@ func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStream
 	var logResponse []protobuf.Log
 	for {
 		log, err := responseStream.Recv()
-		if log == nil{
+		if log == nil {
 			break
 		}
 		if err == io.EOF {

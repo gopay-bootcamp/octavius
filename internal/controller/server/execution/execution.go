@@ -246,6 +246,6 @@ func (e *execution) GetJobList(ctx context.Context) (*clientCPproto.JobList, err
 	return e.metadataRepo.GetAvailableJobList(ctx)
 }
 
-func (e *execution) GetJobLogs(ctx context.Context, jobk8sName string) (string, error){
-	return e.jobRepo.GetLogs(ctx,jobk8sName)
+func (e *execution) GetJobLogs(ctx context.Context, jobk8sName string) (string, error) {
+	return e.jobRepo.GetLogs(ctx, jobk8sName)
 }

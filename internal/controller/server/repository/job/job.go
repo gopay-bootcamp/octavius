@@ -24,7 +24,7 @@ type Repository interface {
 	Delete(ctx context.Context, key string) error
 	FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error)
 	ValidateJob(context.Context, *clientCPproto.RequestForExecute) (bool, error)
-	GetLogs(context.Context, string)(string,error)
+	GetLogs(context.Context, string) (string, error)
 }
 type jobRepository struct {
 	etcdClient etcd.Client
@@ -131,7 +131,7 @@ func isPresentInArgs(jobKey string, args []*clientCPproto.Arg) bool {
 	return false
 }
 
-func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string,error){
+func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string, error) {
 	jobKey := constant.ExecutionDataPrefix + "octavius" + jobName
 	res, err := j.etcdClient.GetValue(ctx, jobKey)
 	if err != nil {
@@ -140,10 +140,10 @@ func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string,err
 
 	execContext := &executorCPproto.ExecutionContext{}
 	err = proto.Unmarshal([]byte(res), execContext)
-	if err!=nil{
-		return "",status.Error(codes.Internal, err.Error())
+	if err != nil {
+		return "", status.Error(codes.Internal, err.Error())
 	}
 
-	return execContext.Output,nil
+	return execContext.Output, nil
 
 }

@@ -64,7 +64,7 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 }
 
 func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestForStreamLog, stream clientCPproto.ClientCPServices_GetStreamLogsServer) error {
-	ctx,cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	uuid, err := s.idgen.Generate()
 	if err != nil {
@@ -74,12 +74,12 @@ func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestFor
 
 	log.Info(fmt.Sprintf("request id: %v, getstream request received", uuid))
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	joblogs,err := s.procExec.GetJobLogs(ctx, request.JobName)
-	if err!=nil{
+	joblogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
+	if err != nil {
 		log.Error(fmt.Errorf("request id: %v, error in fetching logs, error details: %v", uuid, err), "")
 		return status.Error(codes.Internal, err.Error())
 	}
-	logString := &clientCPproto.Log{Log:joblogs}
+	logString := &clientCPproto.Log{Log: joblogs}
 
 	err = stream.Send(logString)
 	if err != nil {
