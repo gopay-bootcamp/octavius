@@ -25,9 +25,9 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				log.Error(err, "error while getting the stream")
 				printer.Println("error while getting the stream", color.FgRed)
 			}
-			for _, logResp := range *logResponse {
-				log.Info(fmt.Sprintln(logResp.Log))
-				printer.Println(logResp.Log, color.FgBlack)
+			log.Info(fmt.Sprintln(logResponse))
+			for _,logs := range *logResponse{
+				printer.Println(fmt.Sprintf("%v",logs.Log), color.FgMagenta)
 			}
 		},
 	}

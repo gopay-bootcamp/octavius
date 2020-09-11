@@ -32,6 +32,7 @@ type Execution interface {
 	SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error
 	GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
 	GetJobList(ctx context.Context) (*clientCPproto.JobList, error)
+	GetJobLogs(ctx context.Context, jobk8sName string) (string, error)
 }
 type execution struct {
 	metadataRepo      metadataRepo.Repository
@@ -237,10 +238,14 @@ func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorI
 }
 
 func (e *execution) SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error {
-	return e.executorRepo.SaveJobExecutionData(ctx, executionData.JobID, executionData)
+	return e.executorRepo.SaveJobExecutionData(ctx, executionData.JobK8SName, executionData)
 }
 
 // GetJobList function will call metadata repository and return list of available jobs
 func (e *execution) GetJobList(ctx context.Context) (*clientCPproto.JobList, error) {
 	return e.metadataRepo.GetAvailableJobList(ctx)
+}
+
+func (e *execution) GetJobLogs(ctx context.Context, jobk8sName string) (string, error){
+	return e.jobRepo.GetLogs(ctx,jobk8sName)
 }

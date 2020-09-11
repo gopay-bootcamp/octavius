@@ -19,7 +19,6 @@ message JobList {
 }
 
 message Log{
-    uint64 request_id = 1;
     string log=2;
 }
 
