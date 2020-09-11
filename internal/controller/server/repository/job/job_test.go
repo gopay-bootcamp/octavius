@@ -7,6 +7,8 @@ import (
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+
 	"testing"
 
 	"google.golang.org/grpc/codes"
@@ -375,4 +377,31 @@ func TestValidateJobForExtraArgFailure(t *testing.T) {
 	assert.Equal(t, flag, false)
 	assert.Nil(t, err)
 	mockClient.AssertExpectations(t)
+}
+
+func TestGetJobLogs(t *testing.T) {
+	mockClient := new(etcd.ClientMock)
+	jobRepository := NewJobRepository(mockClient)
+	testArgs := map[string]string{"data": "test data"}
+	testExecutionContext := &executorCPproto.ExecutionContext{
+		JobK8SName: "test execution",
+		JobID:      "123",
+		ImageName:  "test image",
+		ExecutorID: "test id",
+		Status:     "CREATED",
+		EnvArgs:    testArgs,
+		Output:     "here are the logs",
+	}
+
+	val, err := proto.Marshal(testExecutionContext)
+	assert.Nil(t, err)
+
+	jobKey := constant.ExecutionDataPrefix + constant.KubeOctaviusPrefix + testExecutionContext.JobK8SName
+	mockClient.On("GetValue", jobKey).Return(string(val), nil)
+
+	logs, err := jobRepository.GetLogs(context.TODO(), testExecutionContext.JobK8SName)
+	assert.Nil(t, err)
+	assert.Equal(t, logs, "here are the logs")
+	mockClient.AssertExpectations(t)
+
 }

@@ -132,7 +132,7 @@ func isPresentInArgs(jobKey string, args []*clientCPproto.Arg) bool {
 }
 
 func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string, error) {
-	jobKey := constant.ExecutionDataPrefix + "octavius" + jobName
+	jobKey := constant.ExecutionDataPrefix + constant.KubeOctaviusPrefix + jobName
 	res, err := j.etcdClient.GetValue(ctx, jobKey)
 	if err != nil {
 		return "", status.Error(codes.Internal, err.Error())
