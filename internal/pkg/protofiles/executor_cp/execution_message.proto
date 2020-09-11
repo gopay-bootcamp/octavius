@@ -1,0 +1,19 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles/executor_cp";
+import "google/protobuf/timestamp.proto";
+
+message ExecutionContext{
+    string jobID = 2 ;             
+	string image_name = 3;             
+	string job_k8s_name  = 4;                                   
+	string image_tag = 5;               
+	map<string,string> env_args = 6;           
+	string Output = 7;  
+	string Status = 8;
+	google.protobuf.Timestamp created_at= 9;            
+    string executorID = 11;  
+}
+
+message Acknowledgement {
+    bool recieved = 1;
+}

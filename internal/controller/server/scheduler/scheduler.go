@@ -5,6 +5,7 @@ import (
 	jobRepo "octavius/internal/controller/server/repository/job"
 	"octavius/internal/pkg/idgen"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"sync"
 )
 
 type Scheduler interface {
@@ -15,6 +16,7 @@ type Scheduler interface {
 type scheduler struct {
 	idGenerator idgen.RandomIdGenerator
 	jobRepo     jobRepo.Repository
+	mutex       sync.Mutex
 }
 
 // NewScheduler initializes new scheduler with randomIdGenerator and jobRepo
@@ -27,7 +29,6 @@ func NewScheduler(idGenerator idgen.RandomIdGenerator, schedulerRepo jobRepo.Rep
 
 // AddToPendingList function add given job to pendingList
 func (s *scheduler) AddToPendingList(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
-
 	return s.jobRepo.Save(ctx, jobID, executionData)
 }
 
@@ -38,7 +39,8 @@ func (s *scheduler) RemoveFromPendingList(ctx context.Context, key string) error
 
 // FetchJob returns jobID and executionData from pendingList
 func (s *scheduler) FetchJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
-
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	nextJobID, nextExecutionData, err := s.jobRepo.FetchNextJob(ctx)
 	if err != nil {
 		return "", nil, err

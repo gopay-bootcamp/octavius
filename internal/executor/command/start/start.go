@@ -1,11 +1,11 @@
 package start
 
 import (
+	"fmt"
+	"github.com/spf13/cobra"
 	"octavius/internal/executor/config"
 	"octavius/internal/executor/daemon"
 	"octavius/internal/pkg/log"
-
-	"github.com/spf13/cobra"
 )
 
 //NewCmd returns start command
@@ -19,7 +19,9 @@ func NewCmd(executorDaemon daemon.Client, executorConfig config.OctaviusExecutor
 			if err != nil {
 				log.Error(err, "failed to configure client, see config")
 			}
+			log.Info(fmt.Sprintf("executor with id: %s started", executorConfig.ID))
 			executorDaemon.StartPing()
+			executorDaemon.StartKubernetesService()
 		},
 	}
 }

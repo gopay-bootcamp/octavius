@@ -3,7 +3,7 @@
     "cp_host": "localhost:3000",
     "ping_interval": 2,
     "access_token": "something",
-    "id": "random-ID-1",
+    "id": "random-ID",
     "conn_time_out": 10,
     "log_file_path": "executor.log",
     "log_file_max_size_in_mb": 100,

@@ -1,7 +1,7 @@
 {
-  "name": "demo-image-name-5",
+  "name": "demo-image-name-docker",
   "description": "This is a cool demo image",
-  "image_name": "images/demo-image",
+  "image_name": "hello-world",
   "author": "Gopay System Automation Team",
   "contributors": "",
   "organization": "gopay-systems",
@@ -19,14 +19,14 @@
       }
     ],
     "args": [{
-      "name": "ENV",
-      "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
-      "required": true
-    },
+        "name": "ENV",
+        "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
+        "required" : false
+      },
       {
         "name": "RELEASE_NAME",
         "description": "[Mandatory] Helm release name to be migrated",
-        "required": true
+        "required": false
       },
       {
         "name": "EXECUTOR",

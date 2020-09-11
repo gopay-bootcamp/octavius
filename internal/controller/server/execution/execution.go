@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"octavius/internal/pkg/constant"
+
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
 	"octavius/internal/controller/server/scheduler"
-	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
@@ -16,7 +17,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jonboulle/clockwork"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -29,6 +29,8 @@ type Execution interface {
 	RegisterExecutor(ctx context.Context, request *executorCPproto.RegisterRequest) (*executorCPproto.RegisterResponse, error)
 	UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error)
 	ExecuteJob(ctx context.Context, request *clientCPproto.RequestForExecute) (uint64, error)
+	SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error
+	GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error)
 	GetJobList(ctx context.Context) (*clientCPproto.JobList, error)
 }
 type execution struct {
@@ -42,8 +44,9 @@ type execution struct {
 
 type activeExecutor struct {
 	sessionID  uint64
-	healthChan chan string
-	timer      <-chan time.Time
+	statusChan chan string
+	pingChan   chan string
+	timer      *time.Timer
 }
 type activeExecutorMap struct {
 	execMap *sync.Map
@@ -100,7 +103,7 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 }
 func removeActiveExecutor(activeExecutorMap *activeExecutorMap, id string, executor *activeExecutor) {
 	log.Info(fmt.Sprintf("session id: %d, executor id : %s, closing executor session", executor.sessionID, id))
-	close(executor.healthChan)
+	close(executor.statusChan)
 	activeExecutorMap.Delete(id)
 }
 
@@ -109,7 +112,7 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 	executor, _ := activeExecutorMap.Get(id)
 	ctx := context.Background()
 	log.Info(fmt.Sprintf("session ID: %v, opening connection with executor: %s", executor.sessionID, id))
-	err := e.executorRepo.UpdateStatus(ctx, id, "free")
+	err := e.executorRepo.UpdateStatus(ctx, id, constant.IdleState)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
 		removeActiveExecutor(activeExecutorMap, id, executor)
@@ -117,14 +120,15 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 	}
 	for {
 		select {
-		case health := <-executor.healthChan:
+		case health := <-executor.statusChan:
 			err := e.executorRepo.UpdateStatus(ctx, id, health)
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
 				removeActiveExecutor(activeExecutorMap, id, executor)
 				return
 			}
-		case <-executor.timer:
+
+		case <-executor.timer.C:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
@@ -133,39 +137,45 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 			}
 			log.Info(fmt.Sprintf("session ID: %v, deadline exceeded for executor with %s id", executor.sessionID, id))
 			removeActiveExecutor(activeExecutorMap, id, executor)
-			executor.timer = nil
+			executor.timer.Stop()
 			return
+		case <-executor.pingChan:
 		}
 	}
 }
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
-	clock := clockwork.NewRealClock()
 	// if executor is already active
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
-		executor.healthChan <- request.State
-		executor.timer = clock.After(pingTimeOut)
+		if request.State != "" {
+			executor.statusChan <- request.State
+		} else {
+			executor.pingChan <- request.State
+			executor.timer.Reset(pingTimeOut)
+		}
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
 	//if executor is not registered in database
 	_, err := e.executorRepo.Get(ctx, request.ID)
 	if err != nil {
-		if err.Error() == constant.NoValueFound {
+		if err.Error() == status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound).Error() {
 			return nil, status.Error(codes.PermissionDenied, "executor not registered")
 		}
 		return nil, err
 	}
 	// if executor is registered and not yet active add it to activeExecutor map
-	healthChan := make(chan string)
+	statusChan := make(chan string)
+	pingChan := make(chan string)
 	sessionID, err := idgen.NewRandomIdGenerator().Generate()
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	timer := clock.After(pingTimeOut)
+	timer := time.NewTimer(pingTimeOut)
 	newActiveExecutor := activeExecutor{
-		healthChan: healthChan,
+		statusChan: statusChan,
 		sessionID:  sessionID,
 		timer:      timer,
+		pingChan:   pingChan,
 	}
 	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
@@ -177,12 +187,12 @@ func getActiveExecutorMap(e *execution) *activeExecutorMap {
 
 // ExecuteJob function will call job repository and get jobId
 func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (uint64, error) {
-	jobAvailabilityStatus, err := e.jobRepo.CheckJobIsAvailable(ctx, executionData.JobName)
+	isAvailable, err := e.jobRepo.CheckJobIsAvailable(ctx, executionData.JobName)
 	if err != nil {
 		return uint64(0), err
 	}
-	if jobAvailabilityStatus == false {
-		return uint64(0), errors.New("job with given name not available")
+	if !isAvailable {
+		return uint64(0), status.Errorf(codes.Internal, "job with name %s not available", executionData.JobName)
 	}
 	valid, err := e.jobRepo.ValidateJob(ctx, executionData)
 	if err != nil {
@@ -200,6 +210,34 @@ func (e *execution) ExecuteJob(ctx context.Context, executionData *clientCPproto
 		return uint64(0), err
 	}
 	return jobID, err
+}
+
+func (e *execution) GetJob(ctx context.Context, start *executorCPproto.ExecutorID) (*executorCPproto.Job, error) {
+	jobID, clientJob, err := e.scheduler.FetchJob(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	metadataName := clientJob.JobName
+	metadata, err := e.metadataRepo.GetValue(ctx, metadataName)
+	if err != nil {
+		return nil, err
+	}
+	imageName := metadata.ImageName
+
+	job := &executorCPproto.Job{
+		HasJob:    true,
+		JobID:     jobID,
+		ImageName: imageName,
+		JobData:   clientJob.JobData,
+	}
+	log.Info(fmt.Sprintf("in executor get job imagename: %v, jobID: %v ", imageName, jobID))
+
+	return job, nil
+}
+
+func (e *execution) SaveJobExecutionData(ctx context.Context, executionData *executorCPproto.ExecutionContext) error {
+	return e.executorRepo.SaveJobExecutionData(ctx, executionData.JobID, executionData)
 }
 
 // GetJobList function will call metadata repository and return list of available jobs

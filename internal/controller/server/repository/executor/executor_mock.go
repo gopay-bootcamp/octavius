@@ -29,3 +29,8 @@ func (m *ExecutorMock) UpdateStatus(ctx context.Context, key string, health stri
 	args := m.Called(key, health)
 	return args.Error(0)
 }
+
+func (m *ExecutorMock) SaveJobExecutionData(ctx context.Context, jobID string, executionData *executorCPproto.ExecutionContext) error {
+	args := m.Called(jobID, executionData)
+	return args.Error(0)
+}
