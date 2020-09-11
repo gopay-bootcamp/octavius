@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -34,4 +35,8 @@ func (m *JobMock) CheckJobIsAvailable(ctx context.Context, jobName string) (bool
 func (m *JobMock) ValidateJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (bool, error) {
 	args := m.Called(executionData)
 	return args.Bool(0), args.Error(1)
+}
+func (m *JobMock) SaveJobExecutionData(ctx context.Context, jobID string, executionData *executorCPproto.ExecutionContext) error {
+	args := m.Called(jobID, executionData)
+	return args.Error(0)
 }

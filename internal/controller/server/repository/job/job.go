@@ -3,8 +3,6 @@ package job
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
@@ -12,6 +10,9 @@ import (
 	"octavius/internal/pkg/util"
 	"strconv"
 	"strings"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -75,7 +76,7 @@ func (j jobRepository) FetchNextJob(ctx context.Context) (string, *clientCPproto
 		return "", nil, status.Error(codes.Internal, err.Error())
 	}
 	if len(values) == 0 {
-		return "", nil, status.Error(codes.NotFound, constant.Controller+"no pending job in pending job list")
+		return "", nil, status.Error(codes.NotFound, constant.Controller+"no pending job")
 	}
 	nextJobID := strings.Split(keys[0], "/")[2]
 	nextExecutionData := &clientCPproto.RequestForExecute{}

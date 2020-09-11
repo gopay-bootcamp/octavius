@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles/executor_cp";
+
+message JobLog {
+    string log = 1;
+}
+
+message LogSummary {
+    bool recieved = 1;
+    int32 log_count = 2;
+    int32 elapsed_time = 3;
+}

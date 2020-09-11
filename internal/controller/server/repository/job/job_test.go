@@ -3,13 +3,14 @@ package job
 import (
 	"context"
 	"errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
 	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
 	"testing"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
@@ -190,7 +191,7 @@ func TestFetchNextJobForJobNotAvailable(t *testing.T) {
 
 	assert.Nil(t, nextExecutionData)
 	assert.Equal(t, "", nextJobID)
-	assert.Equal(t, err.Error(), status.Error(codes.NotFound, constant.Controller+"no pending job in pending job list").Error())
+	assert.Equal(t, err.Error(), status.Error(codes.NotFound, constant.Controller+"no pending job").Error())
 	mockClient.AssertExpectations(t)
 
 }
