@@ -138,6 +138,7 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 			removeActiveExecutor(activeExecutorMap, id, executor)
 			executor.timer.Stop()
 			return
+		case <-executor.pingChan:
 		}
 	}
 }
