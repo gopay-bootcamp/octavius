@@ -76,7 +76,6 @@ func (e *executorRepository) Get(ctx context.Context, key string) (*executorCPpr
 
 func (j *executorRepository) SaveJobExecutionData(ctx context.Context, jobname string, executionData *executorCPproto.ExecutionContext) error {
 	key := constant.ExecutionDataPrefix + jobname
-	log.Info(key)
 	value, err := proto.Marshal(executionData)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
