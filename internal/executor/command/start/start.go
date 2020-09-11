@@ -1,6 +1,7 @@
 package start
 
 import (
+	"fmt"
 	"octavius/internal/executor/config"
 	"octavius/internal/executor/daemon"
 	"octavius/internal/pkg/log"
@@ -19,7 +20,8 @@ func NewCmd(executorDaemon daemon.Client, executorConfig config.OctaviusExecutor
 			if err != nil {
 				log.Error(err, "failed to configure client, see config")
 			}
-			go executorDaemon.StartPing()
+			log.Info(fmt.Sprintf("executor with id: %s started", executorConfig.ID))
+			executorDaemon.StartPing()
 			executorDaemon.StartKubernetesService()
 		},
 	}

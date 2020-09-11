@@ -31,6 +31,7 @@ type OctaviusConfig struct {
 	EtcdDialTimeout      time.Duration
 	ExecutorPingDeadline time.Duration
 	LogFilePath          string
+	LogFileSize          int
 }
 
 func load() (OctaviusConfig, error) {
@@ -54,6 +55,7 @@ func load() (OctaviusConfig, error) {
 		AppPort:              fang.GetString("app_port"),
 		ExecutorPingDeadline: time.Duration(GetIntDefault(fang, "executor_ping_deadline", 30)) * time.Second,
 		LogFilePath:          GetStringDefault(fang, "log_file_path", "controller.log"),
+		LogFileSize:          fang.GetInt("log_file_max_size_in_mb"),
 	}
 	return octaviusConfig, nil
 }

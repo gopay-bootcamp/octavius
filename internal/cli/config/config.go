@@ -17,6 +17,7 @@ const (
 	AccessToken           = "ACCESS_TOKEN"
 	ConnectionTimeoutSecs = "CONNECTION_TIMEOUT_SECS"
 	LogFilePath           = "./cli.log"
+	LogFileSize           = 100
 )
 
 // OctaviusConfig Struct containing Octavius Client details

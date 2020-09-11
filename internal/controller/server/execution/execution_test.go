@@ -18,24 +18,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jonboulle/clockwork"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func init() {
-	log.Init("info", "", true)
+	log.Init("info", "", true, 1)
 }
 
 func TestStartExecutorHealthCheck(t *testing.T) {
-	healthChan := make(chan string)
+	pingChan := make(chan string)
 	sessionID := uint64(1234)
-	clock := clockwork.NewFakeClock()
 	newActiveExecutor := activeExecutor{
-		healthChan: healthChan,
-		sessionID:  sessionID,
-		timer:      clock.After(10),
+		pingChan:  pingChan,
+		sessionID: sessionID,
+		timer:     time.NewTimer(1 * time.Second),
 	}
 
 	testExecutorMap := &activeExecutorMap{
@@ -52,7 +50,7 @@ func TestStartExecutorHealthCheck(t *testing.T) {
 		activeExecutorMap: testExecutorMap,
 	}
 
-	testExecRepo.On("UpdateStatus", "exec 1", "free").Return(nil)
+	testExecRepo.On("UpdateStatus", "exec 1", "idle").Return(nil)
 	testExecRepo.On("UpdateStatus", "exec 1", "expired").Return(nil)
 
 	var wg sync.WaitGroup
@@ -61,11 +59,6 @@ func TestStartExecutorHealthCheck(t *testing.T) {
 		startExecutorHealthCheck(testExecution, testExecutorMap, "exec 1")
 		wg.Done()
 	}()
-	//Block for asserting normal condition
-	clock.BlockUntil(1)
-
-	// Advance the FakeClock forward in time
-	clock.Advance(40 * time.Second)
 
 	// Wait until the function completes
 	wg.Wait()
@@ -111,10 +104,10 @@ func TestUpdateExecutorStatus(t *testing.T) {
 	ctx := context.Background()
 	request := executorCPproto.Ping{
 		ID:    "exec 1",
-		State: "free",
+		State: "idle",
 	}
 	executorRepoMock.On("Get", "exec 1").Return(&executorCPproto.ExecutorInfo{}, nil)
-	executorRepoMock.On("UpdateStatus", "exec 1", "free").Return(nil)
+	executorRepoMock.On("UpdateStatus", "exec 1", "idle").Return(nil)
 	res, err := testExec.UpdateExecutorStatus(ctx, &request, 20*time.Second)
 	_, ok := getActiveExecutorMap(testExec.(*execution)).Get("exec 1")
 	assert.Equal(t, res.Recieved, true)

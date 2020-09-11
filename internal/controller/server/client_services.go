@@ -100,7 +100,7 @@ func (s *clientCPServicesServer) ExecuteJob(ctx context.Context, executionData *
 	}
 
 	jobIDString := strconv.FormatUint(jobID, 10)
-	return &clientCPproto.Response{Status: "Job created successfully with JobID " + jobIDString}, err
+	return &clientCPproto.Response{Status: jobIDString}, err
 }
 
 // GetJobList will call GetJobList function of execution and return list of available jobs

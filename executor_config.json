@@ -6,6 +6,7 @@
     "id": "random-ID",
     "conn_time_out": 10,
     "log_file_path": "executor.log",
+    "log_file_max_size_in_mb": 100,
 
     "kube_config": "out-of-cluster",
     "kube_context": "minikube",

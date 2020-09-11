@@ -71,7 +71,7 @@ func (e *executorCPServicesServer) FetchJob(ctx context.Context, executorData *e
 	res, err := e.procExec.GetJob(ctx, executorData)
 	if err != nil {
 		if err.Error() == status.Error(codes.NotFound, constant.Controller+"no pending job").Error() {
-			return &executorCPproto.Job{HasJob: "no"}, nil
+			return &executorCPproto.Job{HasJob: false}, nil
 		}
 		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while assigning job to executor", uuid, executorData.Id))
 		return nil, err

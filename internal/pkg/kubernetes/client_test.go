@@ -78,7 +78,7 @@ func init() {
 	}
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
-	log.Init("info", "", false)
+	log.Init("info", "", false, 1)
 }
 
 func TestJobExecution(t *testing.T) {

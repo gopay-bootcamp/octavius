@@ -2,6 +2,7 @@ package log
 
 import (
 	"github.com/rs/zerolog"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
 	"octavius/internal/pkg/constant"
 	"os"
@@ -14,17 +15,16 @@ type engine struct {
 	logger *zerolog.Logger
 }
 
-var logEngine engine // contain cli configarution
+var logEngine engine // contain cli configuration
 
-// Init intializes the logger object
-func Init(configLogLevel string, logFile string, logInConsole bool) error {
+// Init initializes the logger object
+func Init(configLogLevel string, logFile string, logInConsole bool, logFileSize int) error {
 	usr, err := user.Current()
 	if err != nil {
 		return err
 	}
 
 	var (
-		f       *os.File
 		multi   zerolog.LevelWriter
 		logPath string
 	)
@@ -50,16 +50,19 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 		return err
 	}
 
-	f, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0777)
-	if err != nil {
-		return err
+	fileWriter := &lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    logFileSize, // megabytes
+		MaxBackups: 1,
+		MaxAge:     0,    //days
+		Compress:   true, // disabled by default
 	}
 
 	if logInConsole {
 		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
-		multi = zerolog.MultiLevelWriter(f, consoleWriter)
+		multi = zerolog.MultiLevelWriter(fileWriter, consoleWriter)
 	} else {
-		multi = zerolog.MultiLevelWriter(f)
+		multi = zerolog.MultiLevelWriter(fileWriter)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850
