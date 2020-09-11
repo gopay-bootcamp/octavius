@@ -54,8 +54,8 @@ func Init(configLogLevel string, logFile string, logInConsole bool, logFileSize 
 		Filename:   logPath,
 		MaxSize:    logFileSize, // megabytes
 		MaxBackups: 1,
-		MaxAge:     0,     //days
-		Compress:   false, // disabled by default
+		MaxAge:     0,    //days
+		Compress:   true, // disabled by default
 	}
 
 	if logInConsole {

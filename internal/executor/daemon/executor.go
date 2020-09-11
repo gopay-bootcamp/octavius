@@ -89,7 +89,7 @@ func (e *executorClient) RegisterClient() (bool, error) {
 }
 
 func (e *executorClient) StartPing() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(e.pingInterval)
 	go func() {
 		for {
 			select {
@@ -114,67 +114,66 @@ func (e *executorClient) StartKubernetesService() {
 		if err != nil {
 			log.Fatal(fmt.Sprintf("error in getting job from server, error details: %s", err.Error()))
 		}
-
-		if job.HasJob {
-			e.state = constant.RunningState
-			res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: e.state})
-			if err != nil {
-				log.Fatal(err.Error())
-				return
-			}
-			if !res.Recieved {
-				log.Error(errors.New("ping not acknowledeged by control plane"), "")
-				return
-			}
-			log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
-			if err != nil {
-				_, err = e.sendResponse(&executorCPproto.ExecutionContext{Status: constant.CreationFailed})
-				if err != nil {
-					log.Error(err, "error in sending execution context")
-				}
-				return
-			}
-			imageName := job.ImageName
-			executionArgs := job.JobData
-			jobID := job.JobID
-			jobContext := executorCPproto.ExecutionContext{
-				JobID:      jobID,
-				ImageName:  imageName,
-				EnvArgs:    executionArgs,
-				Status:     constant.Created,
-				ExecutorID: e.id,
-			}
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
-			executionName, err := e.kubernetesClient.ExecuteJob(ctx, jobID, imageName, executionArgs)
-			log.Info(fmt.Sprintln("Executed Job on Kubernetes got ", executionName, " execution jobName and ", err, "errors"))
-			if err != nil {
-				jobContext.Status = constant.CreationFailed
-				_, err := e.sendResponse(&jobContext)
-				if err != nil {
-					log.Fatal(err.Error())
-				}
-				log.Error(err, "error while executing job")
-				time.Sleep(10 * time.Second)
-				continue
-			}
-
-			jobContext.JobK8SName = executionName
-			go e.startWatch(&jobContext)
-			e.state = constant.IdleState
-			res, err = e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: e.state})
-			if err != nil {
-				log.Fatal(err.Error())
-				return
-			}
-			if !res.Recieved {
-				log.Error(errors.New("ping not acknowledeged by control plane"), "")
-				return
-			}
-		} else {
+		if !job.HasJob {
 			time.Sleep(5 * time.Second)
 			continue
+		}
+
+		e.state = constant.RunningState
+		res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: e.state})
+		if err != nil {
+			log.Fatal(err.Error())
+			return
+		}
+		if !res.Recieved {
+			log.Error(errors.New("ping not acknowledeged by control plane"), "")
+			return
+		}
+		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
+		if err != nil {
+			_, err = e.sendResponse(&executorCPproto.ExecutionContext{Status: constant.CreationFailed})
+			if err != nil {
+				log.Error(err, "error in sending execution context")
+			}
+			return
+		}
+		imageName := job.ImageName
+		executionArgs := job.JobData
+		jobID := job.JobID
+		jobContext := executorCPproto.ExecutionContext{
+			JobID:      jobID,
+			ImageName:  imageName,
+			EnvArgs:    executionArgs,
+			Status:     constant.Created,
+			ExecutorID: e.id,
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		executionName, err := e.kubernetesClient.ExecuteJob(ctx, jobID, imageName, executionArgs)
+		log.Info(fmt.Sprintln("Executed Job on Kubernetes got ", executionName, " execution jobName and ", err, "errors"))
+		if err != nil {
+			jobContext.Status = constant.CreationFailed
+			_, err := e.sendResponse(&jobContext)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			log.Error(err, "error while executing job")
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		jobContext.JobK8SName = executionName
+		go e.startWatch(&jobContext)
+		e.state = constant.IdleState
+		res, err = e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: e.state})
+		if err != nil {
+			log.Fatal(err.Error())
+			return
+		}
+		if !res.Recieved {
+			log.Error(errors.New("ping not acknowledeged by control plane"), "")
+			return
 		}
 	}
 }

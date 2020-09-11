@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	log.Init("info", "", false,1)
+	log.Init("info", "", false, 1)
 }
 
 func TestStartClient(t *testing.T) {
@@ -89,12 +89,28 @@ func TestRegisterClient(t *testing.T) {
 }
 
 func TestStartPing(t *testing.T) {
+	testConfig := config.OctaviusExecutorConfig{
+		CPHost:                       "test host",
+		ID:                           "test id",
+		AccessToken:                  "test access",
+		ConnTimeOutSec:               time.Second,
+		PingInterval:                 time.Second,
+		KubeConfig:                   "test kube config",
+		KubeContext:                  "test context",
+		DefaultNamespace:             "default",
+		KubeServiceAccountName:       "test",
+		JobPodAnnotations:            map[string]string{"test pod": "test annotation"},
+		KubeJobActiveDeadlineSeconds: 1,
+		KubeJobRetries:               1,
+		KubeWaitForResourcePollCount: 1,
+	}
 	mockGrpcClient := new(client.MockGrpcClient)
 	testClient := NewExecutorClient(mockGrpcClient)
 	testExecutorClient := testClient.(*executorClient)
 	testExecutorClient.id = "test id"
+	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
 	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id"}).Return(&executorCPproto.HealthResponse{Recieved: true}, nil)
-
+	testExecutorClient.StartClient(testConfig)
 	testExecutorClient.StartPing()
 	time.Sleep(6 * time.Second)
 	mockGrpcClient.AssertExpectations(t)

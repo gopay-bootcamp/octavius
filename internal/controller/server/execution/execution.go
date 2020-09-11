@@ -45,8 +45,8 @@ type execution struct {
 type activeExecutor struct {
 	sessionID  uint64
 	statusChan chan string
-	pingChan chan string
-	timer     *time.Timer
+	pingChan   chan string
+	timer      *time.Timer
 }
 type activeExecutorMap struct {
 	execMap *sync.Map
@@ -127,7 +127,7 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 				removeActiveExecutor(activeExecutorMap, id, executor)
 				return
 			}
-			
+
 		case <-executor.timer.C:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
@@ -137,9 +137,9 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 			}
 			log.Info(fmt.Sprintf("session ID: %v, deadline exceeded for executor with %s id", executor.sessionID, id))
 			removeActiveExecutor(activeExecutorMap, id, executor)
-			executor.timer = nil
+			executor.timer.Stop()
 			return
-		case <- executor.pingChan:
+		case <-executor.pingChan:
 		}
 	}
 }
@@ -147,11 +147,11 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 	executorID := request.ID
 	// if executor is already active
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
-		if request.State!="" {
-		executor.statusChan <- request.State
-		}else {
-		executor.pingChan <- request.State
-		executor.timer.Reset(pingTimeOut)
+		if request.State != "" {
+			executor.statusChan <- request.State
+		} else {
+			executor.pingChan <- request.State
+			executor.timer.Reset(pingTimeOut)
 		}
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
@@ -175,7 +175,7 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		statusChan: statusChan,
 		sessionID:  sessionID,
 		timer:      timer,
-		pingChan: pingChan,
+		pingChan:   pingChan,
 	}
 	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)

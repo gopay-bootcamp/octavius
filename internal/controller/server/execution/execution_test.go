@@ -33,7 +33,7 @@ func TestStartExecutorHealthCheck(t *testing.T) {
 	newActiveExecutor := activeExecutor{
 		statusChan: statusChan,
 		sessionID:  sessionID,
-		timer:      time.NewTimer(10*time.Second),
+		timer:      time.NewTimer(10 * time.Second),
 	}
 
 	testExecutorMap := &activeExecutorMap{
