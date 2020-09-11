@@ -36,6 +36,8 @@ const (
 	ExecutorRegistrationPrefix = "executor/register/"
 	ExecutorStatusPrefix       = "executor/status/"
 	ExecutionDataPrefix        = "executor/logs/"
+	K8sJobPrefix               = "context/octavius"
+	KubeOctaviusPrefix         = "octavius"
 
 	// executor daemon constants
 	Received          = "RECEIVED"

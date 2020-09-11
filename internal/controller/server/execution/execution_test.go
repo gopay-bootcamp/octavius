@@ -3,6 +3,7 @@ package execution
 import (
 	"context"
 	"errors"
+	"github.com/golang/protobuf/proto"
 	"octavius/internal/controller/server/repository/executor"
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	"octavius/internal/controller/server/repository/job"
@@ -306,4 +307,31 @@ func TestGetJobListForGetAvailableJobListFunctionErr(t *testing.T) {
 	_, err := testExec.GetJobList(context.Background())
 	assert.Equal(t, "error in GetAvailableJobList function", err.Error())
 	mockScheduler.AssertExpectations(t)
+}
+
+func TestGetJobLogs(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	metadataRepoMock := new(metadata.MetadataMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	executorRepoMock := new(executor.ExecutorMock)
+	testArgs := map[string]string{"data": "test data"}
+	testExecutionContext := &executorCPproto.ExecutionContext{
+		JobK8SName: "test execution",
+		JobID:      "123",
+		ImageName:  "test image",
+		ExecutorID: "test id",
+		Status:     "CREATED",
+		EnvArgs:    testArgs,
+		Output:     "here are the logs",
+	}
+
+	val, err := proto.Marshal(testExecutionContext)
+	assert.Nil(t, err)
+	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+	jobRepoMock.On("GetLogs", testExecutionContext.JobK8SName).Return(string(val), nil)
+	res, err := testExec.GetJobLogs(context.TODO(), testExecutionContext.JobK8SName)
+	assert.Nil(t, err)
+	assert.Equal(t, res, string(val))
+	jobRepoMock.AssertExpectations(t)
 }

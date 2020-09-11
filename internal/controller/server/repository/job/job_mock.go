@@ -40,3 +40,7 @@ func (m *JobMock) SaveJobExecutionData(ctx context.Context, jobID string, execut
 	args := m.Called(jobID, executionData)
 	return args.Error(0)
 }
+func (m *JobMock) GetLogs(ctx context.Context, jobID string) (string, error) {
+	args := m.Called(jobID)
+	return args.String(0), args.Error(1)
+}
