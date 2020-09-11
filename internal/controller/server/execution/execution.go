@@ -17,7 +17,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jonboulle/clockwork"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -45,8 +44,9 @@ type execution struct {
 
 type activeExecutor struct {
 	sessionID  uint64
-	healthChan chan string
-	timer      <-chan time.Time
+	statusChan chan string
+	pingChan chan string
+	timer     *time.Timer
 }
 type activeExecutorMap struct {
 	execMap *sync.Map
@@ -103,7 +103,7 @@ func (e *execution) RegisterExecutor(ctx context.Context, request *executorCPpro
 }
 func removeActiveExecutor(activeExecutorMap *activeExecutorMap, id string, executor *activeExecutor) {
 	log.Info(fmt.Sprintf("session id: %d, executor id : %s, closing executor session", executor.sessionID, id))
-	close(executor.healthChan)
+	close(executor.statusChan)
 	activeExecutorMap.Delete(id)
 }
 
@@ -120,14 +120,15 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 	}
 	for {
 		select {
-		case health := <-executor.healthChan:
+		case health := <-executor.statusChan:
 			err := e.executorRepo.UpdateStatus(ctx, id, health)
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
 				removeActiveExecutor(activeExecutorMap, id, executor)
 				return
 			}
-		case <-executor.timer:
+			
+		case <-executor.timer.C:
 			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
@@ -138,16 +139,20 @@ func startExecutorHealthCheck(e *execution, activeExecutorMap *activeExecutorMap
 			removeActiveExecutor(activeExecutorMap, id, executor)
 			executor.timer = nil
 			return
+		case <- executor.pingChan:
 		}
 	}
 }
 func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorCPproto.Ping, pingTimeOut time.Duration) (*executorCPproto.HealthResponse, error) {
 	executorID := request.ID
-	clock := clockwork.NewRealClock()
 	// if executor is already active
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
-		executor.healthChan <- request.State
-		executor.timer = clock.After(pingTimeOut)
+		if request.State!="" {
+		executor.statusChan <- request.State
+		}else {
+		executor.pingChan <- request.State
+		executor.timer.Reset(pingTimeOut)
+		}
 		return &executorCPproto.HealthResponse{Recieved: true}, nil
 	}
 	//if executor is not registered in database
@@ -159,16 +164,18 @@ func (e *execution) UpdateExecutorStatus(ctx context.Context, request *executorC
 		return nil, err
 	}
 	// if executor is registered and not yet active add it to activeExecutor map
-	healthChan := make(chan string)
+	statusChan := make(chan string)
+	pingChan := make(chan string)
 	sessionID, err := idgen.NewRandomIdGenerator().Generate()
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	timer := clock.After(pingTimeOut)
+	timer := time.NewTimer(pingTimeOut)
 	newActiveExecutor := activeExecutor{
-		healthChan: healthChan,
+		statusChan: statusChan,
 		sessionID:  sessionID,
 		timer:      timer,
+		pingChan: pingChan,
 	}
 	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)

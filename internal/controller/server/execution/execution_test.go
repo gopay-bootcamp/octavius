@@ -18,7 +18,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jonboulle/clockwork"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,13 +28,12 @@ func init() {
 }
 
 func TestStartExecutorHealthCheck(t *testing.T) {
-	healthChan := make(chan string)
+	statusChan := make(chan string)
 	sessionID := uint64(1234)
-	clock := clockwork.NewFakeClock()
 	newActiveExecutor := activeExecutor{
-		healthChan: healthChan,
+		statusChan: statusChan,
 		sessionID:  sessionID,
-		timer:      clock.After(10),
+		timer:      time.NewTimer(10*time.Second),
 	}
 
 	testExecutorMap := &activeExecutorMap{
@@ -61,11 +59,6 @@ func TestStartExecutorHealthCheck(t *testing.T) {
 		startExecutorHealthCheck(testExecution, testExecutorMap, "exec 1")
 		wg.Done()
 	}()
-	//Block for asserting normal condition
-	clock.BlockUntil(1)
-
-	// Advance the FakeClock forward in time
-	clock.Advance(40 * time.Second)
 
 	// Wait until the function completes
 	wg.Wait()
