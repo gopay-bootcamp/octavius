@@ -161,7 +161,6 @@ func TestStartKubernetesServiceCreationFailed(t *testing.T) {
 	mockGrpcClient.On("FetchJob", &executorCPproto.ExecutorID{Id: "test id"}).Return(testJob, nil)
 	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("", errors.New("test error"))
 	mockGrpcClient.On("SendExecutionContext", testExecutionContext).Return(&executorCPproto.Acknowledgement{}, nil)
-	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "running"}).Return(&executorCPproto.HealthResponse{Recieved: true}, nil)
 
 	go testExecutorClient.StartKubernetesService()
 	time.Sleep(1 * time.Second)
