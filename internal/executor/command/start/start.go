@@ -2,10 +2,11 @@ package start
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"octavius/internal/executor/config"
 	"octavius/internal/executor/daemon"
 	"octavius/internal/pkg/log"
+
+	"github.com/spf13/cobra"
 )
 
 //NewCmd returns start command

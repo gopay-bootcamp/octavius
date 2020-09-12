@@ -12,6 +12,7 @@ import (
 	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
 	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"sync"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -37,6 +38,7 @@ type executorClient struct {
 	kubernetesClient      kubernetes.KubeClient
 	kubeLogWaitTime       time.Duration
 	state                 string
+	statusLock            sync.RWMutex
 }
 
 //NewExecutorClient returns new empty executor client
@@ -94,7 +96,9 @@ func (e *executorClient) StartPing() {
 		for {
 			select {
 			case <-ticker.C:
-				res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id})
+				e.statusLock.RLock()
+				res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: e.state})
+				e.statusLock.RUnlock()
 				if err != nil {
 					log.Fatal(err.Error())
 					return
@@ -118,25 +122,11 @@ func (e *executorClient) StartKubernetesService() {
 			time.Sleep(5 * time.Second)
 			continue
 		}
-
+		e.statusLock.Lock()
 		e.state = constant.RunningState
-		res, err := e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: e.state})
-		if err != nil {
-			log.Fatal(err.Error())
-			return
-		}
-		if !res.Recieved {
-			log.Error(errors.New("ping not acknowledeged by control plane"), "")
-			return
-		}
+		e.statusLock.Unlock()
 		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
-		if err != nil {
-			_, err = e.sendResponse(&executorCPproto.ExecutionContext{Status: constant.CreationFailed})
-			if err != nil {
-				log.Error(err, "error in sending execution context")
-			}
-			return
-		}
+
 		imageName := job.ImageName
 		executionArgs := job.JobData
 		jobID := job.JobID
@@ -165,16 +155,10 @@ func (e *executorClient) StartKubernetesService() {
 
 		jobContext.JobK8SName = executionName
 		go e.startWatch(&jobContext)
+
+		e.statusLock.Lock()
 		e.state = constant.IdleState
-		res, err = e.grpcClient.Ping(&executorCPproto.Ping{ID: e.id, State: e.state})
-		if err != nil {
-			log.Fatal(err.Error())
-			return
-		}
-		if !res.Recieved {
-			log.Error(errors.New("ping not acknowledeged by control plane"), "")
-			return
-		}
+		e.statusLock.Unlock()
 	}
 }
 

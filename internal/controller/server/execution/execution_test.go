@@ -29,12 +29,12 @@ func init() {
 }
 
 func TestStartExecutorHealthCheck(t *testing.T) {
-	statusChan := make(chan string)
+	pingChan := make(chan string)
 	sessionID := uint64(1234)
 	newActiveExecutor := activeExecutor{
-		statusChan: statusChan,
-		sessionID:  sessionID,
-		timer:      time.NewTimer(10 * time.Second),
+		pingChan:  pingChan,
+		sessionID: sessionID,
+		timer:     time.NewTimer(1 * time.Second),
 	}
 
 	testExecutorMap := &activeExecutorMap{
