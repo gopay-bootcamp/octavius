@@ -19,6 +19,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:   "getstream",
 		Short: "Get job log data",
 		Long:  `Get job log by giving arguments`,
+		Args:  cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 
 			client := &client.GrpcClient{}

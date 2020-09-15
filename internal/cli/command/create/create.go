@@ -20,6 +20,7 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 		Short:   "Create new octavius job metadata",
 		Long:    "This command helps create new job metadata to your CP host with proper metadata.json file",
 		Example: fmt.Sprintf("octavius create --job-path <filepath>/metadata.json"),
+		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 

@@ -25,6 +25,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 		Short:   "Configure octavius client",
 		Long:    "This command helps configure client with control plane host, email id and access token",
 		Example: "octavius config [flags]",
+		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 

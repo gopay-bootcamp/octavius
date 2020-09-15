@@ -31,7 +31,7 @@ func TestListCmd(t *testing.T) {
 		Jobs: jobList,
 	}
 	mockOctaviusDClient.On("GetJobList").Return(response, nil)
-
+	testListCmd.SetArgs([]string{})
 	testListCmd.Execute()
 
 	mockOctaviusDClient.AssertExpectations(t)

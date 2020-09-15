@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"octavius/internal/cli/client"
@@ -21,6 +22,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Short:   "Execute the existing job",
 		Long:    "This command helps to execute the job which is already created in server",
 		Example: fmt.Sprintf("octavius execute --job-name <job-name> --args arg1=value1,arg2=value2"),
+		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -28,8 +30,13 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			args = strings.Split(jobArgs, ",")
 			jobData := map[string]string{}
 
-			for i := 0; i < len(args); i++ {
+			for i := range args {
 				arg := strings.Split(args[i], "=")
+				if len(arg) != 2 {
+					log.Error(errors.New("invalid argument format"), "")
+					printer.Println("Invalid argument format. Use octavius execute --help for more details.", color.FgRed)
+					return
+				}
 				jobData[arg[0]] = arg[1]
 			}
 
