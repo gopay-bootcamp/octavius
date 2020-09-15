@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"io"
 	protobuf "octavius/internal/pkg/protofiles/client_cp"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 )
 
 type Client interface {
-	GetStreamLog(*protobuf.RequestForStreamLog) (*[]protobuf.Log, error)
+	GetStreamLog(*protobuf.RequestForStreamLog) (*protobuf.Log, error)
 	ExecuteJob(*protobuf.RequestForExecute) (*protobuf.Response, error)
 	CreateMetadata(*protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error)
 	ConnectClient(cpHost string) error
@@ -48,24 +47,8 @@ func (g *GrpcClient) CreateMetadata(metadataPostRequest *protobuf.RequestToPostM
 	return res, nil
 }
 
-func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) (*[]protobuf.Log, error) {
-	responseStream, err := g.client.GetStreamLogs(context.Background(), requestForStreamLog)
-	if err != nil {
-		return nil, err
-	}
-
-	var logResponse []protobuf.Log
-	for {
-		log, err := responseStream.Recv()
-		if log == nil {
-			break
-		}
-		if err == io.EOF {
-			break
-		}
-		logResponse = append(logResponse, *log)
-	}
-	return &logResponse, nil
+func (g *GrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) (*protobuf.Log, error) {
+	return g.client.GetStreamLogs(context.Background(), requestForStreamLog)
 }
 
 func (g *GrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (*protobuf.Response, error) {

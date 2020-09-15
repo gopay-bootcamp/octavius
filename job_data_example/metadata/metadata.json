@@ -1,7 +1,7 @@
 {
-  "name": "demo-image-name-docker-7",
+  "name": "demo-image-name-docker-8",
   "description": "This is a cool demo image",
-  "image_name": "jaiminrathod98765/i2",
+  "image_name": "hello-world",
   "author": "Gopay System Automation Team",
   "contributors": "",
   "organization": "gopay-systems",

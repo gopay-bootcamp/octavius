@@ -28,8 +28,10 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 
 			printer.Println(fmt.Sprintf("Job %s is being added to pending list", jobName), color.FgBlack)
 			args = strings.Split(jobArgs, ",")
+			if args[0] == "" {
+				args = nil
+			}
 			jobData := map[string]string{}
-
 			for i := range args {
 				arg := strings.Split(args[i], "=")
 				if len(arg) != 2 {

@@ -63,30 +63,24 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 	return dataList, status.Error(codes.Internal, err.Error())
 }
 
-func (s *clientCPServicesServer) GetStreamLogs(request *clientCPproto.RequestForStreamLog, stream clientCPproto.ClientCPServices_GetStreamLogsServer) error {
+func (s *clientCPServicesServer) GetStreamLogs(ctx context.Context, request *clientCPproto.RequestForStreamLog) (*clientCPproto.Log, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
-		return status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	log.Info(fmt.Sprintf("request id: %v, getstream request received", uuid))
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	joblogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
+	jobLogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
 	if err != nil {
 		log.Error(fmt.Errorf("request id: %v, error in fetching logs, error details: %v", uuid, err), "")
-		return status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	logString := &clientCPproto.Log{Log: joblogs}
-
-	err = stream.Send(logString)
-	if err != nil {
-		log.Error(fmt.Errorf("request id: %v, error in streaming logs, error details: %v", uuid, err), "")
-		return status.Error(codes.Internal, err.Error())
-	}
-	return nil
+	logString := &clientCPproto.Log{Log: jobLogs}
+	return logString, nil
 }
 
 // ExecuteJob will call ExecuteJob function of execution and get jobId

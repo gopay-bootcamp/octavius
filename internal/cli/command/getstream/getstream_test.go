@@ -23,15 +23,9 @@ func TestGetStreamCmdHelp(t *testing.T) {
 func TestGetStreamCmd(t *testing.T) {
 	mockOctaviusDClient := new(daemon.MockClient)
 	testGetStreamCmd := NewCmd(mockOctaviusDClient)
-	var logResponse []protobuf.Log
-	log1 := &protobuf.Log{
-		Log: "Test log 1",
+	logResponse := protobuf.Log{
+		Log: "sample log 1",
 	}
-	log2 := &protobuf.Log{
-		Log: "Test log 2",
-	}
-	logResponse = append(logResponse, *log1)
-	logResponse = append(logResponse, *log2)
 
 	mockOctaviusDClient.On("GetStreamLog", "DemoJob").Return(&logResponse, nil).Once()
 

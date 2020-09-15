@@ -15,7 +15,7 @@ import (
 
 type Client interface {
 	CreateMetadata(io.Reader, client.Client) (*protobuf.MetadataName, error)
-	GetStreamLog(string, client.Client) (*[]protobuf.Log, error)
+	GetStreamLog(string, client.Client) (*protobuf.Log, error)
 	ExecuteJob(string, map[string]string, client.Client) (*protobuf.Response, error)
 	GetJobList(client.Client) (*protobuf.JobList, error)
 	DescribeJob(string, client.Client) (*protobuf.Metadata, error)
@@ -81,7 +81,7 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 	return res, err
 }
 
-func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*[]protobuf.Log, error) {
+func (c *octaviusClient) GetStreamLog(jobName string, grpcClient client.Client) (*protobuf.Log, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

@@ -38,16 +38,16 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
+func (s *server) GetStreamLogs(ctx context.Context, streamLog *protobuf.RequestForStreamLog) (*protobuf.Log, error) {
+	return &protobuf.Log{
+		Log: "sample log 1",
+	}, nil
+}
+
 func (s *server) DescribeJob(ctx context.Context, describe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
 	return &protobuf.Metadata{
 		Name: "test image",
 	}, nil
-}
-
-func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.ClientCPServices_GetStreamLogsServer) error {
-	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
-	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
-	return nil
 }
 
 func (s *server) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
@@ -132,16 +132,9 @@ func TestGetStream(t *testing.T) {
 	}
 	testGetStreamRequest := &protobuf.RequestForStreamLog{}
 	res, err := testClient.GetStreamLog(testGetStreamRequest)
-	assert.Nil(t, err)
-	var actual [2]string
-	for index, value := range *res {
-		actual[index] = value.Log
-	}
-	var expected [2]string
-	expected[0] = "Test log 1"
-	expected[1] = "Test log 2"
 
-	assert.Equal(t, actual, expected)
+	assert.Nil(t, err)
+	assert.Equal(t, res.Log, "sample log 1")
 }
 
 func TestGetJobList(t *testing.T) {

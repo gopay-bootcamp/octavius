@@ -25,15 +25,12 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			client := &client.GrpcClient{}
 			logResponse, err := octaviusDaemon.GetStreamLog(jobID, client)
 			if err != nil {
-				log.Error(err, "error while getting the stream")
-				printer.Println("error while getting the stream", color.FgRed)
+				log.Error(err, "error while getting the logs")
+				printer.Println("error while getting the logs", color.FgRed)
 				return
 			}
 			log.Info(fmt.Sprintln(logResponse))
-			for _, logs := range *logResponse {
-				log.Info(fmt.Sprintf("%v", logs.Log))
-				printer.Println(fmt.Sprintf("%v", logs.Log), color.FgMagenta)
-			}
+			printer.Println(fmt.Sprintf("%v", logResponse.Log), color.FgMagenta)
 		},
 	}
 
