@@ -12,18 +12,21 @@ import (
 )
 
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
-	return &cobra.Command{
+
+	var jobID string
+
+	getStreamCmd := &cobra.Command{
 		Use:   "getstream",
 		Short: "Get job log data",
 		Long:  `Get job log by giving arguments`,
-		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			jobName := args[0]
+
 			client := &client.GrpcClient{}
-			logResponse, err := octaviusDaemon.GetStreamLog(jobName, client)
+			logResponse, err := octaviusDaemon.GetStreamLog(jobID, client)
 			if err != nil {
 				log.Error(err, "error while getting the stream")
 				printer.Println("error while getting the stream", color.FgRed)
+				return
 			}
 			log.Info(fmt.Sprintln(logResponse))
 			for _, logs := range *logResponse {
@@ -32,4 +35,8 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			}
 		},
 	}
+
+	getStreamCmd.Flags().StringVarP(&jobID, "job-id", "", "", "It contains jobID")
+	getStreamCmd.MarkFlagRequired("job-id")
+	return getStreamCmd
 }

@@ -14,21 +14,25 @@ import (
 
 // NewCmd create a command for execution
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
-	return &cobra.Command{
+	var jobName string
+	var jobArgs string
+	executionCmd := &cobra.Command{
 		Use:     "execute",
 		Short:   "Execute the existing job",
 		Long:    "This command helps to execute the job which is already created in server",
-		Example: fmt.Sprintf("octavius execute <job-name> arg1=argvalue1 arg2=argvalue2"),
-		Args:    cobra.MinimumNArgs(1),
+		Example: fmt.Sprintf("octavius execute --job-name <job-name> --args arg1=value1,arg2=value2"),
+
 		Run: func(cmd *cobra.Command, args []string) {
-			jobName := args[0]
+
 			printer.Println(fmt.Sprintf("Job %s is being added to pending list", jobName), color.FgBlack)
+			args = strings.Split(jobArgs, ",")
 			jobData := map[string]string{}
 
-			for i := 1; i < len(args); i++ {
+			for i := 0; i < len(args); i++ {
 				arg := strings.Split(args[i], "=")
 				jobData[arg[0]] = arg[1]
 			}
+
 			client := &client.GrpcClient{}
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
@@ -40,4 +44,10 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			printer.Println(fmt.Sprintf("Job has been added to pending list successfully.\nYou can see the execution logs using getstream %s", response.Status), color.FgGreen)
 		},
 	}
+
+	executionCmd.Flags().StringVarP(&jobName, "job-name", "", "", "It contains Job Name")
+	executionCmd.MarkFlagRequired("job-name")
+	executionCmd.Flags().StringVarP(&jobArgs, "args", "", "", "It contains Job arguments")
+
+	return executionCmd
 }

@@ -35,7 +35,8 @@ func TestGetStreamCmd(t *testing.T) {
 
 	mockOctaviusDClient.On("GetStreamLog", "DemoJob").Return(&logResponse, nil).Once()
 
-	testGetStreamCmd.SetArgs([]string{"DemoJob"})
+	testGetStreamCmd.SetArgs([]string{"--job-id", "DemoJob"})
+
 	testGetStreamCmd.Execute()
 
 	mockOctaviusDClient.AssertExpectations(t)
