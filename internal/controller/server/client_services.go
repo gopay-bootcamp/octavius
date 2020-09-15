@@ -63,7 +63,7 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 	return dataList, status.Error(codes.Internal, err.Error())
 }
 
-func (s *clientCPServicesServer) GetStreamLogs(ctx context.Context, request *clientCPproto.RequestForStreamLog) (*clientCPproto.Log, error) {
+func (s *clientCPServicesServer) GetLogs(ctx context.Context, request *clientCPproto.RequestForLogs) (*clientCPproto.Log, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	uuid, err := s.idgen.Generate()
@@ -72,7 +72,7 @@ func (s *clientCPServicesServer) GetStreamLogs(ctx context.Context, request *cli
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	log.Info(fmt.Sprintf("request id: %v, getstream request received", uuid))
+	log.Info(fmt.Sprintf("request id: %v, getlogs request received", uuid))
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	jobLogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
 	if err != nil {

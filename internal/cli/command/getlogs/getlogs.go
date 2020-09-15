@@ -1,4 +1,4 @@
-package getstream
+package getlogs
 
 import (
 	"fmt"
@@ -15,15 +15,15 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 
 	var jobID string
 
-	getStreamCmd := &cobra.Command{
-		Use:   "getstream",
+	getLogsCmd := &cobra.Command{
+		Use:   "getlogs",
 		Short: "Get job log data",
 		Long:  `Get job log by giving arguments`,
 		Args:  cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 
 			client := &client.GrpcClient{}
-			logResponse, err := octaviusDaemon.GetStreamLog(jobID, client)
+			logResponse, err := octaviusDaemon.GetLogs(jobID, client)
 			if err != nil {
 				log.Error(err, "error while getting the logs")
 				printer.Println("error while getting the logs", color.FgRed)
@@ -34,7 +34,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		},
 	}
 
-	getStreamCmd.Flags().StringVarP(&jobID, "job-id", "", "", "It contains jobID")
-	getStreamCmd.MarkFlagRequired("job-id")
-	return getStreamCmd
+	getLogsCmd.Flags().StringVarP(&jobID, "job-id", "", "", "It contains jobID")
+	getLogsCmd.MarkFlagRequired("job-id")
+	return getLogsCmd
 }

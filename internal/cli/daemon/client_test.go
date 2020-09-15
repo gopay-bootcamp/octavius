@@ -137,7 +137,7 @@ func TestExecuteJob_ExecuteJobError(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestGetStream(t *testing.T) {
+func TestGetLogs(t *testing.T) {
 	mockGrpcClient := client.MockGrpcClient{}
 	mockConfigLoader := config.MockLoader{}
 	testClient := NewClient(&mockConfigLoader)
@@ -152,7 +152,7 @@ func TestGetStream(t *testing.T) {
 		ClientEmail: "akshay.busa@go-jek.com",
 		AccessToken: "AllowMe",
 	}
-	testGetStreamRequest := protobuf.RequestForStreamLog{
+	testGetLogRequest := protobuf.RequestForLogs{
 		ClientInfo: &testRequestHeader,
 		JobName:    "DemoJob",
 	}
@@ -161,8 +161,8 @@ func TestGetStream(t *testing.T) {
 	}
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("GetStreamLog", &testGetStreamRequest).Return(&logResponse, nil).Once()
-	res, err := testClient.GetStreamLog("DemoJob", &mockGrpcClient)
+	mockGrpcClient.On("GetLogs", &testGetLogRequest).Return(&logResponse, nil).Once()
+	res, err := testClient.GetLogs("DemoJob", &mockGrpcClient)
 
 	assert.Nil(t, err)
 	assert.Equal(t, &logResponse, res)

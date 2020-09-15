@@ -24,8 +24,8 @@ func (m *MockClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient cl
 	return args.Get(0).(*protobuf.MetadataName), args.Error(1)
 }
 
-func (m *MockClient) GetStreamLog(jobName string, grpcClient client.Client) (*protobuf.Log, error) {
-	args := m.Called(jobName)
+func (m *MockClient) GetLogs(jobID string, grpcClient client.Client) (*protobuf.Log, error) {
+	args := m.Called(jobID)
 	return args.Get(0).(*protobuf.Log), args.Error(1)
 }
 

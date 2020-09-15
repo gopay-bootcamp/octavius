@@ -5,7 +5,7 @@ import (
 	"octavius/internal/cli/command/create"
 	"octavius/internal/cli/command/describe"
 	"octavius/internal/cli/command/execution"
-	"octavius/internal/cli/command/getstream"
+	"octavius/internal/cli/command/getlogs"
 	"octavius/internal/cli/command/list"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/file"
@@ -30,8 +30,8 @@ func Execute(octaviusDaemon daemon.Client) error {
 	createCmd := create.NewCmd(octaviusDaemon, fileUtil)
 	rootCmd.AddCommand(createCmd)
 
-	getstreamCmd := getstream.NewCmd(octaviusDaemon)
-	rootCmd.AddCommand(getstreamCmd)
+	getLogsCmd := getlogs.NewCmd(octaviusDaemon)
+	rootCmd.AddCommand(getLogsCmd)
 
 	executeCmd := execution.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(executeCmd)

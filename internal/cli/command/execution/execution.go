@@ -50,7 +50,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 				return
 			}
 			log.Info(response.Status)
-			printer.Println(fmt.Sprintf("Job has been added to pending list successfully.\nYou can see the execution logs using getstream %s", response.Status), color.FgGreen)
+			printer.Println(fmt.Sprintf("Job has been added to pending list successfully.\nYou can see the execution logs using getlogs --job-id %s", response.Status), color.FgGreen)
 		},
 	}
 

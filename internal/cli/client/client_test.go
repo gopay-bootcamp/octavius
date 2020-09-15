@@ -38,7 +38,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
-func (s *server) GetStreamLogs(ctx context.Context, streamLog *protobuf.RequestForStreamLog) (*protobuf.Log, error) {
+func (s *server) GetLogs(ctx context.Context, GetLogs *protobuf.RequestForLogs) (*protobuf.Log, error) {
 	return &protobuf.Log{
 		Log: "sample log 1",
 	}, nil
@@ -117,7 +117,7 @@ func TestExecuteJob(t *testing.T) {
 	assert.Equal(t, "success", res.Status)
 }
 
-func TestGetStream(t *testing.T) {
+func TestGetLogs(t *testing.T) {
 	createFakeServer()
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
@@ -130,8 +130,8 @@ func TestGetStream(t *testing.T) {
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
 	}
-	testGetStreamRequest := &protobuf.RequestForStreamLog{}
-	res, err := testClient.GetStreamLog(testGetStreamRequest)
+	testGetRequest := &protobuf.RequestForLogs{}
+	res, err := testClient.GetLogs(testGetRequest)
 
 	assert.Nil(t, err)
 	assert.Equal(t, res.Log, "sample log 1")
