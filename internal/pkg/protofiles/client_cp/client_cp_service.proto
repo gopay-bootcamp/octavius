@@ -6,7 +6,7 @@ import "internal/pkg/protofiles/client_cp/job_messages.proto";
 import "internal/pkg/protofiles/client_cp/metadata.proto";
 
 service ClientCPServices{
-   rpc GetStreamLogs(RequestForStreamLog) returns (stream Log);
+   rpc GetLogs(RequestForLogs) returns (Log);
    rpc ExecuteJob(RequestForExecute) returns (Response);
    rpc PostMetadata(RequestToPostMetadata) returns (MetadataName);
    rpc GetAllMetadata(RequestToGetAllMetadata) returns (MetadataArray);

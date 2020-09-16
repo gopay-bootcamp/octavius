@@ -16,15 +16,15 @@ import (
 
 // NewCmd create a command for describing job
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
-	return &cobra.Command{
+	var jobName string
+	describeCmd := &cobra.Command{
 		Use:     "describe",
 		Short:   "Describe the existing job",
 		Long:    "This command helps to describe the job which is already created in server",
-		Example: fmt.Sprintf("octavius describe <job-name>"),
-		Args:    cobra.ExactArgs(1),
+		Example: fmt.Sprintf("octavius describe --job-name <job-name>"),
+		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
-			jobName := args[0]
 			client := &client.GrpcClient{}
 			res, err := octaviusDaemon.DescribeJob(jobName, client)
 			if err != nil {
@@ -50,4 +50,12 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			t.Render()
 		},
 	}
+	describeCmd.Flags().StringVarP(&jobName, "job-name", "", "", "It contains job name")
+	err := describeCmd.MarkFlagRequired("job-name")
+	if err != nil {
+		log.Error(err, "error while setting the flag required")
+		printer.Println("error while setting the flag required", color.FgRed)
+		return nil
+	}
+	return describeCmd
 }

@@ -25,6 +25,7 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 		Short:   "Configure octavius client",
 		Long:    "This command helps configure client with control plane host, email id and access token",
 		Example: "octavius config [flags]",
+		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -91,6 +92,11 @@ func NewCmd(fileUtil file.File) *cobra.Command {
 	configCmd.Flags().StringVarP(&emailID, "email-id", "", "", "Client Email-id")
 	configCmd.Flags().StringVarP(&accessToken, "token", "", "", "Client Access Token")
 	configCmd.Flags().IntVarP(&connectionTimeOutSecs, "time-out", "", 0, "Connection Time Out In Sec")
-	configCmd.MarkFlagRequired("cp-host")
+	err := configCmd.MarkFlagRequired("cp-host")
+	if err != nil {
+		log.Error(err, "error while setting the flag required")
+		printer.Println("error while setting the flag required", color.FgRed)
+		return nil
+	}
 	return configCmd
 }

@@ -18,7 +18,7 @@ func TestExecuteCmdHelp(t *testing.T) {
 	testExecutionCmd := NewCmd(mockOctaviusDClient)
 	assert.Equal(t, "Execute the existing job", testExecutionCmd.Short)
 	assert.Equal(t, "This command helps to execute the job which is already created in server", testExecutionCmd.Long)
-	assert.Equal(t, "octavius execute <job-name> arg1=argvalue1 arg2=argvalue2", testExecutionCmd.Example)
+	assert.Equal(t, "octavius execute --job-name <job-name> --args arg1=value1,arg2=value2", testExecutionCmd.Example)
 }
 
 func TestExecuteCmd(t *testing.T) {
@@ -33,7 +33,8 @@ func TestExecuteCmd(t *testing.T) {
 
 	mockOctaviusDClient.On("ExecuteJob", "DemoJob", jobData).Return(executedResponse, nil).Once()
 
-	testExecutionCmd.SetArgs([]string{"DemoJob", "Namespace=default"})
+	testExecutionCmd.SetArgs([]string{"--job-name", "DemoJob", "--args", "Namespace=default"})
+
 	testExecutionCmd.Execute()
 
 	mockOctaviusDClient.AssertExpectations(t)
