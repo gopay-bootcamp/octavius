@@ -35,6 +35,11 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 	}
 
 	getLogsCmd.Flags().StringVarP(&jobID, "job-id", "", "", "It contains jobID")
-	getLogsCmd.MarkFlagRequired("job-id")
+	err := getLogsCmd.MarkFlagRequired("job-id")
+	if err != nil {
+		log.Error(err, "error while setting the flag required")
+		printer.Println("error while setting the flag required", color.FgRed)
+		return nil
+	}
 	return getLogsCmd
 }

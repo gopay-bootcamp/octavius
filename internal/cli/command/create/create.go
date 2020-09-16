@@ -45,7 +45,11 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 		},
 	}
 	createCmd.Flags().StringVarP(&metadataFilePath, "job-path", "", "", "path to metadata.json(required)")
-	_ = createCmd.MarkFlagRequired("job-path")
-
+	err := createCmd.MarkFlagRequired("job-path")
+	if err != nil {
+		log.Error(err, "error while setting the flag required")
+		printer.Println("error while setting the flag required", color.FgRed)
+		return nil
+	}
 	return createCmd
 }

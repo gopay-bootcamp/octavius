@@ -18,7 +18,7 @@ func TestDescribeCmdHelp(t *testing.T) {
 	testDescribeCmd := NewCmd(mockOctaviusDClient)
 	assert.Equal(t, "Describe the existing job", testDescribeCmd.Short)
 	assert.Equal(t, "This command helps to describe the job which is already created in server", testDescribeCmd.Long)
-	assert.Equal(t, "octavius describe <job-name>", testDescribeCmd.Example)
+	assert.Equal(t, "octavius describe --job-name <job-name>", testDescribeCmd.Example)
 }
 
 func TestDescribeCmd(t *testing.T) {
@@ -41,7 +41,7 @@ func TestDescribeCmd(t *testing.T) {
 	}
 
 	mockOctaviusDClient.On("DescribeJob", "DemoJob").Return(describeResponse, nil).Once()
-	testDescribeCmd.SetArgs([]string{"DemoJob"})
+	testDescribeCmd.SetArgs([]string{"--job-name", "DemoJob"})
 	testDescribeCmd.Execute()
 	mockOctaviusDClient.AssertExpectations(t)
 }
