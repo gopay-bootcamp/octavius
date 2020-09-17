@@ -1,12 +1,12 @@
 package list
 
 import (
-	"github.com/fatih/color"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
