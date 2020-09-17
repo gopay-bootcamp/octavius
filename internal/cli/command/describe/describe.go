@@ -2,7 +2,7 @@ package describe
 
 import (
 	"fmt"
-	"google.golang.org/grpc/status"
+
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
@@ -13,6 +13,7 @@ import (
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/jedib0t/go-pretty/text"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 // NewCmd create a command for describing job

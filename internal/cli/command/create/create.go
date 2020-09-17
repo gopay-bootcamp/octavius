@@ -2,14 +2,15 @@ package create
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
-	"google.golang.org/grpc/status"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/file"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 // NewCmd Returns an instance of Create command for registering Job Metadata in Octavius

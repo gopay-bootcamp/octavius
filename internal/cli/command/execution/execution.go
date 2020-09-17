@@ -3,15 +3,15 @@ package execution
 import (
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
-	"google.golang.org/grpc/status"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 // NewCmd create a command for execution

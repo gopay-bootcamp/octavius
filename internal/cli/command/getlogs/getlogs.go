@@ -2,14 +2,14 @@ package getlogs
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"google.golang.org/grpc/status"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
