@@ -27,9 +27,9 @@ func (m *MockGrpcClient) ConnectClient(cpHost string) error {
 	return args.Error(0)
 }
 
-func (m *MockGrpcClient) GetStreamLog(requestForStreamLog *protobuf.RequestForStreamLog) (*[]protobuf.Log, error) {
-	args := m.Called(requestForStreamLog)
-	return args.Get(0).(*[]protobuf.Log), args.Error(1)
+func (m *MockGrpcClient) GetLogs(requestForLog *protobuf.RequestForLogs) (*protobuf.Log, error) {
+	args := m.Called(requestForLog)
+	return args.Get(0).(*protobuf.Log), args.Error(1)
 }
 
 func (m *MockGrpcClient) ExecuteJob(requestForExecute *protobuf.RequestForExecute) (*protobuf.Response, error) {

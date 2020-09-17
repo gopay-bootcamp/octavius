@@ -38,16 +38,16 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 type server struct{}
 
+func (s *server) GetLogs(ctx context.Context, GetLogs *protobuf.RequestForLogs) (*protobuf.Log, error) {
+	return &protobuf.Log{
+		Log: "sample log 1",
+	}, nil
+}
+
 func (s *server) DescribeJob(ctx context.Context, describe *protobuf.RequestForDescribe) (*protobuf.Metadata, error) {
 	return &protobuf.Metadata{
 		Name: "test image",
 	}, nil
-}
-
-func (s *server) GetStreamLogs(streamLog *protobuf.RequestForStreamLog, logsServer protobuf.ClientCPServices_GetStreamLogsServer) error {
-	logsServer.Send(&protobuf.Log{Log: "Test log 1"})
-	logsServer.Send(&protobuf.Log{Log: "Test log 2"})
-	return nil
 }
 
 func (s *server) ExecuteJob(ctx context.Context, execute *protobuf.RequestForExecute) (*protobuf.Response, error) {
@@ -117,7 +117,7 @@ func TestExecuteJob(t *testing.T) {
 	assert.Equal(t, "success", res.Status)
 }
 
-func TestGetStream(t *testing.T) {
+func TestGetLogs(t *testing.T) {
 	createFakeServer()
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
@@ -130,18 +130,11 @@ func TestGetStream(t *testing.T) {
 		client:                client,
 		connectionTimeoutSecs: 10 * time.Second,
 	}
-	testGetStreamRequest := &protobuf.RequestForStreamLog{}
-	res, err := testClient.GetStreamLog(testGetStreamRequest)
-	assert.Nil(t, err)
-	var actual [2]string
-	for index, value := range *res {
-		actual[index] = value.Log
-	}
-	var expected [2]string
-	expected[0] = "Test log 1"
-	expected[1] = "Test log 2"
+	testGetRequest := &protobuf.RequestForLogs{}
+	res, err := testClient.GetLogs(testGetRequest)
 
-	assert.Equal(t, actual, expected)
+	assert.Nil(t, err)
+	assert.Equal(t, res.Log, "sample log 1")
 }
 
 func TestGetJobList(t *testing.T) {

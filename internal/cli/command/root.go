@@ -5,7 +5,7 @@ import (
 	"octavius/internal/cli/command/create"
 	"octavius/internal/cli/command/describe"
 	"octavius/internal/cli/command/execution"
-	"octavius/internal/cli/command/getstream"
+	"octavius/internal/cli/command/getlogs"
 	"octavius/internal/cli/command/list"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/file"
@@ -25,22 +25,32 @@ func Execute(octaviusDaemon daemon.Client) error {
 	fileUtil := file.New()
 
 	configCmd := config.NewCmd(fileUtil)
-	rootCmd.AddCommand(configCmd)
+	if configCmd != nil {
+		rootCmd.AddCommand(configCmd)
+	}
 
 	createCmd := create.NewCmd(octaviusDaemon, fileUtil)
-	rootCmd.AddCommand(createCmd)
+	if createCmd != nil {
+		rootCmd.AddCommand(createCmd)
+	}
 
-	getstreamCmd := getstream.NewCmd(octaviusDaemon)
-	rootCmd.AddCommand(getstreamCmd)
+	getLogsCmd := getlogs.NewCmd(octaviusDaemon)
+	if getLogsCmd != nil {
+		rootCmd.AddCommand(getLogsCmd)
+	}
 
 	executeCmd := execution.NewCmd(octaviusDaemon)
-	rootCmd.AddCommand(executeCmd)
+	if executeCmd != nil {
+		rootCmd.AddCommand(executeCmd)
+	}
 
 	listCmd := list.NewCmd(octaviusDaemon)
 	rootCmd.AddCommand(listCmd)
 
 	describeCmd := describe.NewCmd(octaviusDaemon)
-	rootCmd.AddCommand(describeCmd)
+	if describeCmd != nil {
+		rootCmd.AddCommand(describeCmd)
+	}
 
 	if err := rootCmd.Execute(); err != nil {
 		return err

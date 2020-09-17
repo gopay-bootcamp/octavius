@@ -3,8 +3,8 @@ option go_package = "octavius/internal/pkg/protofiles/client_cp";
 
 import "internal/pkg/protofiles/client_cp/client_info.proto";
 
-// GetStreamLogs service
-message RequestForStreamLog {
+// GetLogs service
+message RequestForLogs {
     ClientInfo client_info=1;
     string job_name=2;
 }
