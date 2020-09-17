@@ -64,8 +64,6 @@ func (s *clientCPServicesServer) GetAllMetadata(ctx context.Context, request *cl
 }
 
 func (s *clientCPServicesServer) GetLogs(ctx context.Context, request *clientCPproto.RequestForLogs) (*clientCPproto.Log, error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	uuid, err := s.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")

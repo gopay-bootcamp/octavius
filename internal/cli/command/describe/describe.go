@@ -22,7 +22,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:     "describe",
 		Short:   "Describe the existing job",
 		Long:    "This command helps to describe the job which is already created in server",
-		Example: fmt.Sprintf("octavius describe --job-name <job-name>"),
+		Example: "octavius describe --job-name <job-name>",
 		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
@@ -43,9 +43,9 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			jobArgs := res.EnvVars.Args
 			for _, arg := range jobArgs {
 				if arg.Required {
-					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiRed.Sprintf("YES")})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiGreen.Sprintf("YES")})
 				} else {
-					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiGreen.Sprintf("NO")})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiRed.Sprintf("NO")})
 				}
 			}
 			t.Render()

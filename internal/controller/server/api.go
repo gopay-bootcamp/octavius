@@ -56,7 +56,7 @@ func Start() error {
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	log.Info(fmt.Sprintln("Started server at port: ", listener.Addr().String()))
+	log.Info(fmt.Sprintln("Started controller at port: ", listener.Addr().String()))
 	err = server.Serve(listener)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
