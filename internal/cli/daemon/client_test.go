@@ -28,16 +28,18 @@ func TestCreateMetadata(t *testing.T) {
 	metadataTestFileHandler := strings.NewReader(
 		`{
 			"name": "test-name",
-			"image_name": "test-image",
+			"image_name": "hello-world",
 			"author": "test-author",
-			"organization": "gopay-systems"
+			"organization": "gopay-systems",
+			"env_vars": {}
 	}`)
 
 	testMetadata := protobuf.Metadata{
 		Name:         "test-name",
-		ImageName:    "test-image",
+		ImageName:    "hello-world",
 		Author:       "test-author",
 		Organization: "gopay-systems",
+		EnvVars:      &protobuf.EnvVars{},
 	}
 
 	testRequestHeader := protobuf.ClientInfo{
