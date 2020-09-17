@@ -42,9 +42,9 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			jobArgs := res.EnvVars.Args
 			for _, arg := range jobArgs {
 				if arg.Required {
-					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiRed.Sprintf("YES")})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiGreen.Sprintf("YES")})
 				} else {
-					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiGreen.Sprintf("NO")})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiRed.Sprintf("NO")})
 				}
 			}
 			t.Render()
