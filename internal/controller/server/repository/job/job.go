@@ -144,6 +144,6 @@ func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string, er
 		return "", status.Error(codes.Internal, err.Error())
 	}
 
-	return execContext.Output, status.Error(codes.OK, "")
+	return execContext.Output, nil
 
 }

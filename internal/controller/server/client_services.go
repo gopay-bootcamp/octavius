@@ -73,7 +73,7 @@ func (s *clientCPServicesServer) GetLogs(ctx context.Context, request *clientCPp
 	log.Info(fmt.Sprintf("request id: %v, getlogs request received", uuid))
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	jobLogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
-	if status.Code(err) != codes.OK {
+	if err != nil {
 		log.Error(fmt.Errorf("request id: %v, error in fetching logs, error details: %v", uuid, err), "")
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (s *clientCPServicesServer) DescribeJob(ctx context.Context, descriptionDat
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	log.Info(fmt.Sprintf("request ID: %v, DescribeJob request received with name %+v", uuid, descriptionData))
 	metadata, err := s.procExec.GetMetadata(ctx, descriptionData)
-	if status.Code(err) != codes.OK {
+	if err != nil {
 		log.Error(err, "error in fetching metadata of job")
 	}
 	return metadata, err

@@ -119,5 +119,5 @@ func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*cli
 	if err != nil {
 		return &clientCPproto.Metadata{}, status.Error(codes.Internal, err.Error())
 	}
-	return metadata, status.Error(codes.OK, "")
+	return metadata, nil
 }

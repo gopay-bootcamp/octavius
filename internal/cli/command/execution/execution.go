@@ -22,7 +22,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:     "execute",
 		Short:   "Execute the existing job",
 		Long:    "This command helps to execute the job which is already created in server",
-		Example: fmt.Sprintf("octavius execute --job-name <job-name> --args arg1=value1,arg2=value2"),
+		Example: "octavius execute --job-name <job-name> --args arg1=value1,arg2=value2",
 		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
