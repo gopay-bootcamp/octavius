@@ -107,7 +107,7 @@ func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*cli
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 
-	if err == errors.New(constant.NoValueFound){
+	if err == errors.New(constant.NoValueFound) {
 		return &clientCPproto.Metadata{}, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
@@ -116,8 +116,8 @@ func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*cli
 
 	metadata := &clientCPproto.Metadata{}
 	err = proto.Unmarshal([]byte(gr), metadata)
-	if err != nil{
-		return &clientCPproto.Metadata{},status.Error(codes.Internal, err.Error())
+	if err != nil {
+		return &clientCPproto.Metadata{}, status.Error(codes.Internal, err.Error())
 	}
 	return metadata, status.Error(codes.OK, "")
 }
