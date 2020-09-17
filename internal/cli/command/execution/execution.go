@@ -3,14 +3,15 @@ package execution
 import (
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 // NewCmd create a command for execution
@@ -25,6 +26,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
+
 			printer.Println(fmt.Sprintf("Job %s is being added to pending list", jobName), color.FgBlack)
 			args = strings.Split(jobArgs, ",")
 			if args[0] == "" {
@@ -45,7 +47,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
 				log.Error(err, "error in executing job")
-				printer.Println(err.Error(), color.FgRed)
+				printer.Println(fmt.Sprintf("error in executing job, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 			log.Info(response.Status)

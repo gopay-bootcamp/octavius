@@ -16,7 +16,7 @@ const (
 	ExecutionKey                        = "octavius"
 	OutOfClustor                        = "out-of-cluster"
 	ServerError                         = "something went wrong"
-	NoValueFound                        = "no value found"
+	NoValueFound                        = "value not found"
 	KeyAlreadyPresent                   = "key already present"
 	EtcdSaveError                       = "error in saving to etcd"
 	JobNotFound                         = "job not found"

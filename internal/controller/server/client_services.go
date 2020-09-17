@@ -41,7 +41,7 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 	name, err := s.procExec.SaveMetadata(ctx, request.Metadata)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, error in saving to etcd", uuid))
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 	return name, nil
 }
@@ -75,7 +75,7 @@ func (s *clientCPServicesServer) GetLogs(ctx context.Context, request *clientCPp
 	jobLogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
 	if err != nil {
 		log.Error(fmt.Errorf("request id: %v, error in fetching logs, error details: %v", uuid, err), "")
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 	logString := &clientCPproto.Log{Log: jobLogs}
 	return logString, nil
