@@ -21,11 +21,10 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:     "execute",
 		Short:   "Execute the existing job",
 		Long:    "This command helps to execute the job which is already created in server",
-		Example: fmt.Sprintf("octavius execute --job-name <job-name> --args arg1=value1,arg2=value2"),
+		Example: "octavius execute --job-name <job-name> --args arg1=value1,arg2=value2",
 		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
-
 			printer.Println(fmt.Sprintf("Job %s is being added to pending list", jobName), color.FgBlack)
 			args = strings.Split(jobArgs, ",")
 			if args[0] == "" {
@@ -46,7 +45,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
 				log.Error(err, "error in executing job")
-				printer.Println("error in executing job", color.FgRed)
+				printer.Println(err.Error(), color.FgRed)
 				return
 			}
 			log.Info(response.Status)
