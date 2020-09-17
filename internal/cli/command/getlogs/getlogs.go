@@ -3,6 +3,7 @@ package getlogs
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"google.golang.org/grpc/status"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
@@ -26,7 +27,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			logResponse, err := octaviusDaemon.GetLogs(jobID, client)
 			if err != nil {
 				log.Error(err, "error while getting the logs")
-				printer.Println("error while getting the logs", color.FgRed)
+				printer.Println(fmt.Sprintf("error while getting the logs, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 			log.Info(fmt.Sprintln(logResponse))

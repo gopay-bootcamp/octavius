@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fatih/color"
+	"google.golang.org/grpc/status"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
@@ -46,7 +47,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
 				log.Error(err, "error in executing job")
-				printer.Println("error in executing job", color.FgRed)
+				printer.Println(fmt.Sprintf("error in executing job, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 			log.Info(response.Status)

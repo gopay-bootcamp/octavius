@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/file"
@@ -28,7 +29,7 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 			metadataFileIoReader, err := fileUtil.GetIoReader(metadataFilePath)
 			if err != nil {
 				log.Error(err, "error in reading file")
-				printer.Println("error in reading file", color.FgRed)
+				printer.Println(fmt.Sprintf("error in reading file %v", err.Error()), color.FgRed)
 				return
 			}
 
@@ -36,7 +37,7 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
 				log.Error(err, "error in creating metadata")
-				printer.Println("error in creating metadata", color.FgRed)
+				printer.Println(fmt.Sprintf("error in creating metadata, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 

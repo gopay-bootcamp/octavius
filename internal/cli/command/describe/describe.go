@@ -2,6 +2,7 @@ package describe
 
 import (
 	"fmt"
+	"google.golang.org/grpc/status"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
@@ -29,7 +30,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			res, err := octaviusDaemon.DescribeJob(jobName, client)
 			if err != nil {
 				log.Error(err, "error in describing job")
-				printer.Println("error in describing job", color.FgRed)
+				printer.Println(fmt.Sprintf("error in describing job, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 			log.Info(fmt.Sprintf("describe command for %v executed with metadata response %v", jobName, res))

@@ -41,7 +41,7 @@ func (s *clientCPServicesServer) PostMetadata(ctx context.Context, request *clie
 	name, err := s.procExec.SaveMetadata(ctx, request.Metadata)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, error in saving to etcd", uuid))
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 	return name, nil
 }
@@ -75,9 +75,9 @@ func (s *clientCPServicesServer) GetLogs(ctx context.Context, request *clientCPp
 	log.Info(fmt.Sprintf("request id: %v, getlogs request received", uuid))
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	jobLogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
-	if err != nil {
+	if status.Code(err) != codes.OK {
 		log.Error(fmt.Errorf("request id: %v, error in fetching logs, error details: %v", uuid, err), "")
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 	logString := &clientCPproto.Log{Log: jobLogs}
 	return logString, nil
@@ -127,7 +127,7 @@ func (s *clientCPServicesServer) DescribeJob(ctx context.Context, descriptionDat
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	log.Info(fmt.Sprintf("request ID: %v, DescribeJob request received with name %+v", uuid, descriptionData))
 	metadata, err := s.procExec.GetMetadata(ctx, descriptionData)
-	if err != nil {
+	if status.Code(err) != codes.OK {
 		log.Error(err, "error in fetching metadata of job")
 	}
 	return metadata, err
