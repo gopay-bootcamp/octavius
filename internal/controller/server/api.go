@@ -41,14 +41,16 @@ func Start() error {
 	executorRepository := executorRepo.NewExecutorRepository(etcdClient)
 	jobRepository := jobRepo.NewJobRepository(etcdClient)
 
-	randomIdGenerator := idgen.NewRandomIdGenerator()
-	scheduler := scheduler.NewScheduler(randomIdGenerator, jobRepository)
-	exec := execution.NewExec(metadataRepository, executorRepository, jobRepository, randomIdGenerator, scheduler)
-	clientCPGrpcServer := NewClientServiceServer(exec, randomIdGenerator)
-	executorCPGrpcServer := NewExecutorServiceServer(exec, randomIdGenerator)
+	randomIDGenerator := idgen.NewRandomIdGenerator()
+	scheduler := scheduler.NewScheduler(randomIDGenerator, jobRepository)
+	exec := execution.NewExec(metadataRepository, executorRepository, jobRepository, randomIDGenerator, scheduler)
+	metadataGrpcServer := NewMetadataServicesServer(exec, randomIDGenerator)
+	jobGrpcServer := NewJobServicesServer(exec, randomIDGenerator)
+	executorCPGrpcServer := NewExecutorServiceServer(exec, randomIDGenerator)
 
 	server := grpc.NewServer()
-	clientCPproto.RegisterClientCPServicesServer(server, clientCPGrpcServer)
+	clientCPproto.RegisterJobServicesServer(server, jobGrpcServer)
+	clientCPproto.RegisterMetadataServicesServer(server, metadataGrpcServer)
 	executorCPproto.RegisterExecutorCPServicesServer(server, executorCPGrpcServer)
 
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
@@ -56,7 +58,7 @@ func Start() error {
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	log.Info(fmt.Sprintln("Started controller at port: ", listener.Addr().String()))
+	log.Info(fmt.Sprintln("Started server at port: ", listener.Addr().String()))
 	err = server.Serve(listener)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
