@@ -57,7 +57,7 @@ func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
 	return nil
 }
 
-func validateImageName(imageName string) (bool, error) {
+func validateImageNameDocker(imageName string) (bool, error) {
 	splitedImageName := strings.Split(imageName, "/")
 	splitedimageTag := strings.Split(imageName, ":")
 	imageNameWithoutTag := splitedimageTag[0]
@@ -86,6 +86,8 @@ func validateImageName(imageName string) (bool, error) {
 	}
 	if response.StatusCode == 200 {
 		return true, nil
+	} else if response.StatusCode == 404 {
+		return false, status.Error(codes.NotFound, "image not found in docker hub")
 	}
 	return false, nil
 }
@@ -101,11 +103,11 @@ func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClien
 		return nil, status.Error(codes.Internal, "job-name should not be empty in metadata")
 	}
 
-	doesExist, err := validateImageName(metadata.ImageName)
+	isImageExist, err := validateImageNameDocker(metadata.ImageName)
 	if err != nil {
 		return nil, err
 	}
-	if metadata.ImageName == "" || doesExist == false {
+	if metadata.ImageName == "" || isImageExist == false {
 		return nil, status.Error(codes.Internal, "image-name should be valid in metadata")
 	}
 	if metadata.EnvVars == nil {
