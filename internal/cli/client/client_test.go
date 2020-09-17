@@ -24,7 +24,8 @@ var lis *bufconn.Listener
 func createFakeServer() {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
-	protobuf.RegisterClientCPServicesServer(s, &server{})
+	protobuf.RegisterMetadataServicesServer(s, &server{})
+	protobuf.RegisterJobServicesServer(s, &server{})
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -87,9 +88,12 @@ func TestCreateMetadata(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	jobGrpcClient := protobuf.NewJobServicesClient(conn)
+	metadataGrpcClient := protobuf.NewMetadataServicesClient(conn)
 	testClient := GrpcClient{
-		client:                client,
+		jobClient:      jobGrpcClient,
+		metadataClient: metadataGrpcClient,
+
 		connectionTimeoutSecs: 10 * time.Second,
 	}
 	testPostRequest := &protobuf.RequestToPostMetadata{}
@@ -106,9 +110,12 @@ func TestExecuteJob(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	jobGrpcClient := protobuf.NewJobServicesClient(conn)
+	metadataGrpcClient := protobuf.NewMetadataServicesClient(conn)
 	testClient := GrpcClient{
-		client:                client,
+		jobClient:      jobGrpcClient,
+		metadataClient: metadataGrpcClient,
+
 		connectionTimeoutSecs: 10 * time.Second,
 	}
 	testExecuteRequest := &protobuf.RequestForExecute{}
@@ -125,9 +132,12 @@ func TestGetLogs(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	jobGrpcClient := protobuf.NewJobServicesClient(conn)
+	metadataGrpcClient := protobuf.NewMetadataServicesClient(conn)
 	testClient := GrpcClient{
-		client:                client,
+		jobClient:      jobGrpcClient,
+		metadataClient: metadataGrpcClient,
+
 		connectionTimeoutSecs: 10 * time.Second,
 	}
 	testGetRequest := &protobuf.RequestForLogs{}
@@ -145,9 +155,12 @@ func TestGetJobList(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	jobGrpcClient := protobuf.NewJobServicesClient(conn)
+	metadataGrpcClient := protobuf.NewMetadataServicesClient(conn)
 	testClient := GrpcClient{
-		client:                client,
+		jobClient:      jobGrpcClient,
+		metadataClient: metadataGrpcClient,
+
 		connectionTimeoutSecs: 10 * time.Second,
 	}
 
@@ -175,9 +188,12 @@ func TestDescribeJob(t *testing.T) {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
 
-	client := protobuf.NewClientCPServicesClient(conn)
+	jobGrpcClient := protobuf.NewJobServicesClient(conn)
+	metadataGrpcClient := protobuf.NewMetadataServicesClient(conn)
 	testClient := GrpcClient{
-		client:                client,
+		jobClient:      jobGrpcClient,
+		metadataClient: metadataGrpcClient,
+
 		connectionTimeoutSecs: 10 * time.Second,
 	}
 
