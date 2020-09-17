@@ -19,10 +19,10 @@
       }
     ],
     "args": [{
-        "name": "name",
-        "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
-        "required" : false
-      },
+      "name": "name",
+      "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
+      "required" : false
+    },
       {
         "name": "surname",
         "description": "[Mandatory] Helm release name to be migrated",

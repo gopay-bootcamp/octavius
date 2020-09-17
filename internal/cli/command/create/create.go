@@ -35,6 +35,7 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 			client := &client.GrpcClient{}
 			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
 			if err != nil {
+				fmt.Println(err)
 				log.Error(err, "error in creating metadata")
 				printer.Println("error in creating metadata", color.FgRed)
 				return

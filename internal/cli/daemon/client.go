@@ -3,9 +3,11 @@ package daemon
 import (
 	"errors"
 	"io"
+	"net/http"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/config"
 	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	"strings"
 	"time"
 
 	"github.com/golang/protobuf/jsonpb"
@@ -55,12 +57,59 @@ func (c *octaviusClient) startOctaviusClient(grpcClient client.Client) error {
 	return nil
 }
 
+func validateImageName(imageName string) (bool, error) {
+	splitedImageName := strings.Split(imageName, "/")
+	splitedimageTag := strings.Split(imageName, ":")
+	imageNameWithoutTag := splitedimageTag[0]
+	var tag string
+
+	if len(splitedimageTag) == 1 {
+		tag = "latest"
+	} else if len(splitedimageTag) == 2 {
+		tag = splitedimageTag[1]
+	} else {
+		return false, status.Error(codes.Internal, "invalid image tag")
+	}
+
+	var url string
+	if len(splitedImageName) == 1 {
+		url = "https://hub.docker.com/v2/repositories/library/" + imageNameWithoutTag + "/tags/" + tag
+	} else if len(splitedImageName) == 2 {
+		url = "https://hub.docker.com/v2/repositories/" + imageNameWithoutTag + "/tags/" + tag
+	} else {
+		return false, status.Error(codes.Internal, "invalid image name")
+	}
+
+	response, err := http.Get(url)
+	if err != nil {
+		return false, status.Error(codes.Internal, "error in validating image name")
+	}
+	if response.StatusCode == 200 {
+		return true, nil
+	}
+	return false, nil
+}
+
 // CreateMetadata take metadata file handler and grpc client
 func (c *octaviusClient) CreateMetadata(metadataFileHandler io.Reader, grpcClient client.Client) (*protobuf.MetadataName, error) {
 	metadata := protobuf.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if metadata.Name == "" {
+		return nil, status.Error(codes.Internal, "job-name should not be empty in metadata")
+	}
+
+	doesExist, err := validateImageName(metadata.ImageName)
+	if err != nil {
+		return nil, err
+	}
+	if metadata.ImageName == "" || doesExist == false {
+		return nil, status.Error(codes.Internal, "image-name should be valid in metadata")
+	}
+	if metadata.EnvVars == nil {
+		return nil, status.Error(codes.Internal, "there should be envVars field in metadata")
 	}
 
 	err = c.startOctaviusClient(grpcClient)
