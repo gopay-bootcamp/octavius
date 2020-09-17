@@ -3,14 +3,15 @@ package execution
 import (
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 // NewCmd create a command for execution
@@ -21,7 +22,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:     "execute",
 		Short:   "Execute the existing job",
 		Long:    "This command helps to execute the job which is already created in server",
-		Example: fmt.Sprintf("octavius execute --job-name <job-name> --args arg1=value1,arg2=value2"),
+		Example: "octavius execute --job-name <job-name> --args arg1=value1,arg2=value2",
 		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
@@ -46,7 +47,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
 			if err != nil {
 				log.Error(err, "error in executing job")
-				printer.Println("error in executing job", color.FgRed)
+				printer.Println(fmt.Sprintf("error in executing job, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 			log.Info(response.Status)

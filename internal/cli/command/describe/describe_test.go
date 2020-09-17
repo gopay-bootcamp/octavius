@@ -42,6 +42,8 @@ func TestDescribeCmd(t *testing.T) {
 
 	mockOctaviusDClient.On("DescribeJob", "DemoJob").Return(describeResponse, nil).Once()
 	testDescribeCmd.SetArgs([]string{"--job-name", "DemoJob"})
-	testDescribeCmd.Execute()
+
+	err := testDescribeCmd.Execute()
+	assert.Nil(t, err)
 	mockOctaviusDClient.AssertExpectations(t)
 }

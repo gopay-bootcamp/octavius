@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
@@ -93,7 +94,6 @@ func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*clientCP
 	keys, _, err := c.etcdClient.GetAllKeyAndValues(ctx, constant.MetadataPrefix)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
-
 	}
 	var jobList []string
 
@@ -106,11 +106,18 @@ func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*clientCP
 func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
-	if err != nil {
-		return &clientCPproto.Metadata{}, err
+
+	if err == errors.New(constant.NoValueFound) {
+		return &clientCPproto.Metadata{}, status.Error(codes.NotFound, err.Error())
 	}
+	if err != nil {
+		return &clientCPproto.Metadata{}, status.Error(codes.Internal, err.Error())
+	}
+
 	metadata := &clientCPproto.Metadata{}
 	err = proto.Unmarshal([]byte(gr), metadata)
-	return metadata, err
-
+	if err != nil {
+		return &clientCPproto.Metadata{}, status.Error(codes.Internal, err.Error())
+	}
+	return metadata, nil
 }

@@ -2,6 +2,7 @@ package describe
 
 import (
 	"fmt"
+
 	"octavius/internal/cli/client"
 	"octavius/internal/cli/daemon"
 	"octavius/internal/pkg/log"
@@ -12,6 +13,7 @@ import (
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/jedib0t/go-pretty/text"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 // NewCmd create a command for describing job
@@ -21,7 +23,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Use:     "describe",
 		Short:   "Describe the existing job",
 		Long:    "This command helps to describe the job which is already created in server",
-		Example: fmt.Sprintf("octavius describe --job-name <job-name>"),
+		Example: "octavius describe --job-name <job-name>",
 		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
@@ -29,7 +31,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			res, err := octaviusDaemon.DescribeJob(jobName, client)
 			if err != nil {
 				log.Error(err, "error in describing job")
-				printer.Println("error in describing job", color.FgRed)
+				printer.Println(fmt.Sprintf("error in describing job, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 			log.Info(fmt.Sprintf("describe command for %v executed with metadata response %v", jobName, res))
@@ -42,9 +44,9 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			jobArgs := res.EnvVars.Args
 			for _, arg := range jobArgs {
 				if arg.Required {
-					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiRed.Sprintf("YES")})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiGreen.Sprintf("YES")})
 				} else {
-					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiGreen.Sprintf("NO")})
+					t.AppendRow([]interface{}{arg.Name, arg.Description, text.FgHiRed.Sprintf("NO")})
 				}
 			}
 			t.Render()
