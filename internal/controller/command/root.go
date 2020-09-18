@@ -1,15 +1,16 @@
 package command
 
 import (
-	"github.com/spf13/cobra"
 	"octavius/internal/controller/command/start"
+
+	"github.com/spf13/cobra"
 )
 
 var cfgFile string
 var rootCmd = &cobra.Command{
-	Use:   "control_plane",
-	Short: "Control plane of octavius",
-	Long:  `Control plane of octavius takes request from cli`,
+	Use:   "controller",
+	Short: "Controller of octavius",
+	Long:  `Controller of octavius takes request from cli`,
 }
 
 // Execute executes the root command of octavius control plane
