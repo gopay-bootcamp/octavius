@@ -26,9 +26,10 @@ type healthExecution struct {
 }
 
 type activeExecutor struct {
-	sessionID uint64
-	pingChan  chan string
-	timer     *time.Timer
+	sessionID  uint64
+	pingChan   chan string
+	statusChan chan string
+	timer      *time.Timer
 }
 type activeExecutorMap struct {
 	execMap *sync.Map
@@ -78,7 +79,7 @@ func startExecutorHealthCheck(e *healthExecution, activeExecutorMap *activeExecu
 	}
 	for {
 		select {
-		case health := <-executor.pingChan:
+		case health := <-executor.statusChan:
 			err := e.executorRepo.UpdateStatus(ctx, id, health)
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
@@ -105,7 +106,11 @@ func (e *healthExecution) UpdateExecutorStatus(ctx context.Context, request *pro
 	executorID := request.ID
 	// if executor is already active
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
-		executor.pingChan <- request.State
+		if request.State != "ping" {
+			executor.statusChan <- request.State
+		} else {
+			executor.pingChan <- request.State
+		}
 		executor.timer.Reset(pingTimeOut)
 		return &protofiles.HealthResponse{Recieved: true}, nil
 	}
@@ -119,15 +124,17 @@ func (e *healthExecution) UpdateExecutorStatus(ctx context.Context, request *pro
 	}
 	// if executor is registered and not yet active add it to activeExecutor map
 	pingChan := make(chan string)
+	statusChan := make(chan string)
 	sessionID, err := idgen.NewRandomIdGenerator().Generate()
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	timer := time.NewTimer(pingTimeOut)
 	newActiveExecutor := activeExecutor{
-		sessionID: sessionID,
-		timer:     timer,
-		pingChan:  pingChan,
+		sessionID:  sessionID,
+		timer:      timer,
+		pingChan:   pingChan,
+		statusChan: statusChan,
 	}
 	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
