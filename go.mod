@@ -9,7 +9,6 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/jonboulle/clockwork v0.2.0
-	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.19.0
@@ -22,6 +21,7 @@ require (
 	google.golang.org/genproto v0.0.0-20200831141814-d751682dd103 // indirect
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.25.0
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	k8s.io/api v0.18.0
 	k8s.io/apimachinery v0.18.0
 	k8s.io/client-go v0.18.0

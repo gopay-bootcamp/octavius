@@ -2,6 +2,8 @@ package log
 
 import (
 	"github.com/rs/zerolog"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"io"
 	"io/ioutil"
 	"octavius/internal/pkg/constant"
 	"os"
@@ -14,9 +16,9 @@ type engine struct {
 	logger *zerolog.Logger
 }
 
-var logEngine engine // contain cli configarution
+var logEngine engine // contain cli configuration
 
-// Init intializes the logger object
+// Init initializes the logger object
 func Init(configLogLevel string, logFile string, logInConsole bool) error {
 	usr, err := user.Current()
 	if err != nil {
@@ -24,8 +26,7 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 	}
 
 	var (
-		f       *os.File
-		multi   zerolog.LevelWriter
+		writers   []io.Writer
 		logPath string
 	)
 	dirName := filepath.Join(usr.HomeDir, ".octavius")
@@ -50,21 +51,32 @@ func Init(configLogLevel string, logFile string, logInConsole bool) error {
 		return err
 	}
 
-	f, err = os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0777)
-	if err != nil {
-		return err
-	}
-
 	if logInConsole {
 		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
-		multi = zerolog.MultiLevelWriter(f, consoleWriter)
+		fileWriter := &lumberjack.Logger{
+			Filename:   logPath,
+			MaxSize:    100, // megabytes
+			MaxBackups: 1,
+			MaxAge:     2, //days
+			Compress:   false, // disabled by default
+		}
+		writers = append(writers, consoleWriter)
+		writers = append(writers, fileWriter)
 	} else {
-		multi = zerolog.MultiLevelWriter(f)
+		fileWriter := &lumberjack.Logger{
+			Filename:   "/var/log/myapp/foo.log",
+			MaxSize:    100, // megabytes
+			MaxBackups: 1,
+			MaxAge:     2, //days
+			Compress:   false, // disabled by default
+		}
+		writers = append(writers, fileWriter)
 	}
 
 	zerolog.TimeFieldFormat = time.RFC850
 
-	zerologInstance := zerolog.New(multi).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
+	multiWriter := io.MultiWriter(writers...)
+	zerologInstance := zerolog.New(multiWriter).With().Timestamp().CallerWithSkipFrameCount(constant.LoggerSkipFrameCount).Logger().Level(logLevel)
 	logEngine = engine{
 		logger: &zerologInstance,
 	}
@@ -97,6 +109,7 @@ func createDir(path string) error {
 	}
 	return nil
 }
+
 
 //Debug logs the message at debug level
 func Debug(msg string) {
