@@ -3,8 +3,8 @@ package describe
 import (
 	"fmt"
 
-	"octavius/internal/cli/client"
-	"octavius/internal/cli/daemon"
+	client "octavius/internal/cli/client/metadata"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 	"os"
@@ -28,7 +28,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			client := &client.GrpcClient{}
-			res, err := octaviusDaemon.DescribeJob(jobName, client)
+			res, err := octaviusDaemon.Describe(jobName, client)
 			if err != nil {
 				log.Error(err, "error in describing job")
 				printer.Println(fmt.Sprintf("error in describing job, %v", status.Convert(err).Message()), color.FgRed)

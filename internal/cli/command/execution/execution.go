@@ -3,8 +3,8 @@ package execution
 import (
 	"errors"
 	"fmt"
-	"octavius/internal/cli/client"
-	"octavius/internal/cli/daemon"
+	client "octavius/internal/cli/client/job"
+	daemon "octavius/internal/cli/daemon/job"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 	"strings"
@@ -44,7 +44,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 			}
 
 			client := &client.GrpcClient{}
-			response, err := octaviusDaemon.ExecuteJob(jobName, jobData, client)
+			response, err := octaviusDaemon.Execute(jobName, jobData, client)
 			if err != nil {
 				log.Error(err, "error in executing job")
 				printer.Println(fmt.Sprintf("error in executing job, %v", status.Convert(err).Message()), color.FgRed)

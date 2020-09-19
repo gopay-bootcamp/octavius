@@ -2,8 +2,7 @@ package job
 
 import (
 	"context"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"octavius/internal/pkg/protofiles"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -12,7 +11,7 @@ type JobMock struct {
 	mock.Mock
 }
 
-func (m *JobMock) Save(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
+func (m *JobMock) Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
 	args := m.Called(jobID, executionData)
 	return args.Error(0)
 }
@@ -22,9 +21,9 @@ func (m *JobMock) Delete(ctx context.Context, key string) error {
 	return args.Error(0)
 }
 
-func (m *JobMock) FetchNextJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
+func (m *JobMock) FetchNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
 	args := m.Called()
-	return args.String(0), args.Get(1).(*clientCPproto.RequestForExecute), args.Error(2)
+	return args.String(0), args.Get(1).(*protofiles.RequestToExecute), args.Error(2)
 }
 
 func (m *JobMock) CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
@@ -32,11 +31,11 @@ func (m *JobMock) CheckJobIsAvailable(ctx context.Context, jobName string) (bool
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *JobMock) ValidateJob(ctx context.Context, executionData *clientCPproto.RequestForExecute) (bool, error) {
+func (m *JobMock) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
 	args := m.Called(executionData)
 	return args.Bool(0), args.Error(1)
 }
-func (m *JobMock) SaveJobExecutionData(ctx context.Context, jobID string, executionData *executorCPproto.ExecutionContext) error {
+func (m *JobMock) SaveJobExecutionData(ctx context.Context, jobID string, executionData *protofiles.ExecutionContext) error {
 	args := m.Called(jobID, executionData)
 	return args.Error(0)
 }

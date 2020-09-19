@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles";
+
+import "internal/pkg/protofiles/job_messages.proto";
+import "internal/pkg/protofiles/execution_message.proto";
+
+service JobService{
+   rpc Logs(RequestToGetLogs) returns (Log);
+   rpc Execute(RequestToExecute) returns (Response);
+   rpc Get(ExecutorID) returns (Job);
+   rpc PostExecutionData(ExecutionContext) returns(Acknowledgement);
+}

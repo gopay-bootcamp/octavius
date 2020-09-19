@@ -6,7 +6,7 @@ import (
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	clientCPproto "octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/golang/protobuf/proto"

@@ -1,9 +1,9 @@
 package getlogs
 
 import (
-	"octavius/internal/cli/daemon"
+	daemon "octavius/internal/cli/daemon/job"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	protobuf "octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

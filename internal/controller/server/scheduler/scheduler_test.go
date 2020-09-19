@@ -5,7 +5,7 @@ import (
 	"errors"
 	"octavius/internal/controller/server/repository/job"
 	"octavius/internal/pkg/idgen"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ func TestAddToPendingList(t *testing.T) {
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	testExecutionData := &clientCPproto.RequestForExecute{
+	testExecutionData := &protofiles.RequestToExecute{
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -37,7 +37,7 @@ func TestAddToPendingListForJobRepoFailure(t *testing.T) {
 	mockRandomIdGenerator := idgen.IdGeneratorMock{}
 	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 
-	testExecutionData := &clientCPproto.RequestForExecute{
+	testExecutionData := &protofiles.RequestToExecute{
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",

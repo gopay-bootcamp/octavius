@@ -2,8 +2,8 @@ package create
 
 import (
 	"fmt"
-	"octavius/internal/cli/client"
-	"octavius/internal/cli/daemon"
+	client "octavius/internal/cli/client/metadata"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/file"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
@@ -35,7 +35,7 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 			}
 
 			client := &client.GrpcClient{}
-			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
+			res, err := octaviusDaemon.Post(metadataFileIoReader, client)
 			if err != nil {
 				log.Error(err, "error in creating metadata")
 				printer.Println(fmt.Sprintf("error in creating metadata, %v", status.Convert(err).Message()), color.FgRed)

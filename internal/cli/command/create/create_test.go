@@ -2,10 +2,10 @@ package create
 
 import (
 	"errors"
-	"octavius/internal/cli/daemon"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/file"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	protobuf "octavius/internal/pkg/protofiles"
 	"strings"
 	"testing"
 

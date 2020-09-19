@@ -1,0 +1,7 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles";
+
+message ClientInfo {
+    string client_email=1;
+    string access_token=2;
+}

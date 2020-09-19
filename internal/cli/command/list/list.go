@@ -1,8 +1,8 @@
 package list
 
 import (
-	"octavius/internal/cli/client"
-	"octavius/internal/cli/daemon"
+	client "octavius/internal/cli/client/metadata"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 
@@ -19,7 +19,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Args:  cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			client := &client.GrpcClient{}
-			jobList, err := octaviusDaemon.GetJobList(client)
+			jobList, err := octaviusDaemon.List(client)
 			if err != nil {
 				log.Error(err, "error when getting job list")
 				printer.Println("error when getting job list", color.FgRed)
