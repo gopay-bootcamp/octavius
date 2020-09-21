@@ -31,11 +31,12 @@ func TestExecuteCmd(t *testing.T) {
 		Status: "success",
 	}
 
-	mockOctaviusDClient.On("ExecuteJob", "DemoJob", jobData).Return(executedResponse, nil).Once()
+	mockOctaviusDClient.On("Execute", "DemoJob", jobData).Return(executedResponse, nil).Once()
 
 	testExecutionCmd.SetArgs([]string{"--job-name", "DemoJob", "--args", "Namespace=default"})
 
-	testExecutionCmd.Execute()
+	err := testExecutionCmd.Execute()
+	assert.Nil(t, err)
 
 	mockOctaviusDClient.AssertExpectations(t)
 }

@@ -36,7 +36,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 	return lis.Dial()
 }
 
-func (s *server) Describe(ctx context.Context, describe *protofiles.RequestForDescribe) (*protofiles.Metadata, error) {
+func (s *server) Describe(ctx context.Context, describe *protofiles.RequestToDescribe) (*protofiles.Metadata, error) {
 	return &protofiles.Metadata{
 		Name: "test image",
 	}, nil
@@ -48,8 +48,19 @@ func (s *server) Post(context.Context, *protofiles.RequestToPostMetadata) (*prot
 	}, nil
 }
 
-// TestCreateMetadata used to test CreateMetadata
-func TestCreateMetadata(t *testing.T) {
+func (s *server) List(context.Context, *protofiles.RequestToGetJobList) (*protofiles.JobList, error) {
+	var jobList []string
+	jobList = append(jobList, "demo-image-name")
+	jobList = append(jobList, "demo-image-name-1")
+
+	response := &protofiles.JobList{
+		Jobs: jobList,
+	}
+	return response, nil
+}
+
+// TestPost used to test Post
+func TestPost(t *testing.T) {
 	createFakeServer()
 
 	ctx := context.Background()
@@ -69,7 +80,7 @@ func TestCreateMetadata(t *testing.T) {
 	assert.Equal(t, "name", res.Name)
 }
 
-func TestDescribeJob(t *testing.T) {
+func TestDescribe(t *testing.T) {
 
 	createFakeServer()
 	ctx := context.Background()
@@ -84,9 +95,55 @@ func TestDescribeJob(t *testing.T) {
 		connectionTimeoutSecs: 10 * time.Second,
 	}
 
-	testDescribeRequest := &protofiles.RequestForDescribe{}
+	testDescribeRequest := &protofiles.RequestToDescribe{}
 	actual, err := testClient.Describe(testDescribeRequest)
 	assert.Nil(t, err)
 	assert.Equal(t, "test image", actual.Name)
 
+}
+func TestList(t *testing.T) {
+	createFakeServer()
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	client := protofiles.NewMetadataServicesClient(conn)
+	testClient := GrpcClient{
+		client:                client,
+		connectionTimeoutSecs: 10 * time.Second,
+	}
+
+	testGetJobListRequest := &protofiles.RequestToGetJobList{}
+	res, err := testClient.List(testGetJobListRequest)
+	assert.Nil(t, err)
+	var actual [2]string
+	for index, value := range res.Jobs {
+		actual[index] = value
+	}
+	var expected [2]string
+	expected[0] = "demo-image-name"
+	expected[1] = "demo-image-name-1"
+
+	assert.Equal(t, actual, expected)
+
+}
+
+func TestConnectClient(t *testing.T) {
+	createFakeServer()
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	client := protofiles.NewMetadataServicesClient(conn)
+	testClient := GrpcClient{
+		client:                client,
+		connectionTimeoutSecs: 10 * time.Second,
+	}
+
+	err = testClient.ConnectClient(lis.Addr().String())
+	assert.Nil(t, err)
 }

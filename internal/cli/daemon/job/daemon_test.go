@@ -106,7 +106,7 @@ func TestLogs(t *testing.T) {
 	}
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("GetLogs", &testGetLogRequest).Return(&logResponse, nil).Once()
+	mockGrpcClient.On("Logs", &testGetLogRequest).Return(&logResponse, nil).Once()
 	res, err := testClient.Logs("DemoJob", &mockGrpcClient)
 
 	assert.Nil(t, err)
