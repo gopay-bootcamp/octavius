@@ -30,9 +30,9 @@ func TestListCmd(t *testing.T) {
 	response := &protobuf.JobList{
 		Jobs: jobList,
 	}
-	mockOctaviusDClient.On("GetJobList").Return(response, nil)
+	mockOctaviusDClient.On("List").Return(response, nil)
 	testListCmd.SetArgs([]string{})
-	testListCmd.Execute()
-
+	err := testListCmd.Execute()
+	assert.Nil(t, err)
 	mockOctaviusDClient.AssertExpectations(t)
 }
