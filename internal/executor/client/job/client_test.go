@@ -37,15 +37,11 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 }
 
 func (s *server) Logs(ctx context.Context, GetLogs *protofiles.RequestToGetLogs) (*protofiles.Log, error) {
-	return &protofiles.Log{
-		Log: "sample log 1",
-	}, nil
+	return nil, nil
 }
 
 func (s *server) Execute(ctx context.Context, execute *protofiles.RequestToExecute) (*protofiles.Response, error) {
-	return &protofiles.Response{
-		Status: "success",
-	}, nil
+	return nil, nil
 }
 
 func (s *server) Get(context.Context, *protofiles.ExecutorID) (*protofiles.Job, error) {
