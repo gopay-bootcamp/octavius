@@ -43,3 +43,7 @@ func (m *JobMock) GetLogs(ctx context.Context, jobID string) (string, error) {
 	args := m.Called(jobID)
 	return args.String(0), args.Error(1)
 }
+func (m *JobMock) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
+	args := m.Called(jobName)
+	return args.Get(0).(*protofiles.Metadata), args.Error(1)
+}

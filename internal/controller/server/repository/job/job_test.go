@@ -6,9 +6,7 @@ import (
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
-	clientCPproto "octavius/internal/pkg/protofiles"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
-
+	"octavius/internal/pkg/protofiles"
 	"testing"
 
 	"google.golang.org/grpc/codes"
@@ -26,7 +24,7 @@ func TestSave(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testExecutionData = &clientCPproto.RequestForExecute{
+	var testExecutionData = &protofiles.RequestToExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -46,7 +44,7 @@ func TestSaveForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testExecutionData = &clientCPproto.RequestForExecute{
+	var testExecutionData = &protofiles.RequestToExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -130,14 +128,14 @@ func TestFetchNextJob(t *testing.T) {
 
 	var values []string
 
-	executionData1 := &clientCPproto.RequestForExecute{
+	executionData1 := &protofiles.RequestToExecute{
 		JobName: "testJobName1",
 		JobData: map[string]string{
 			"env1": "envValue1",
 		},
 	}
 
-	executionData2 := &clientCPproto.RequestForExecute{
+	executionData2 := &protofiles.RequestToExecute{
 		JobName: "testJobName2",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -149,8 +147,8 @@ func TestFetchNextJob(t *testing.T) {
 
 	values = append(values, string(executionData1AsByte))
 	values = append(values, string(executionData2AsByte))
-	var nextExecutionData *clientCPproto.RequestForExecute
-	nextExecutionData = &clientCPproto.RequestForExecute{}
+	var nextExecutionData *protofiles.RequestToExecute
+	nextExecutionData = &protofiles.RequestToExecute{}
 	err = proto.Unmarshal([]byte(values[0]), nextExecutionData)
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
 	nextJobID, nextExecutionData, err := jobRepository.FetchNextJob(context.Background())
@@ -202,7 +200,7 @@ func TestValidateJobForSuccess(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testExecutionData = &clientCPproto.RequestForExecute{
+	var testExecutionData = &protofiles.RequestToExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -210,17 +208,17 @@ func TestValidateJobForSuccess(t *testing.T) {
 	}
 	jobName := testExecutionData.JobName
 	key := "metadata/" + jobName
-	var testArgsArray []*clientCPproto.Arg
-	var testArg = &clientCPproto.Arg{
+	var testArgsArray []*protofiles.Arg
+	var testArg = &protofiles.Arg{
 		Name:        "env1",
 		Description: "test env",
 		Required:    true,
 	}
 	testArgsArray = append(testArgsArray, testArg)
-	var testEnvVars = &clientCPproto.EnvVars{
+	var testEnvVars = &protofiles.EnvVars{
 		Args: testArgsArray,
 	}
-	var testMetadata = &clientCPproto.Metadata{
+	var testMetadata = &protofiles.Metadata{
 		Name:        "testJobName",
 		Description: "This is a test image",
 		ImageName:   "images/test-image",
@@ -241,7 +239,7 @@ func TestValidateJobForOptionalArgSuccess(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testExecutionData = &clientCPproto.RequestForExecute{
+	var testExecutionData = &protofiles.RequestToExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -250,30 +248,30 @@ func TestValidateJobForOptionalArgSuccess(t *testing.T) {
 	}
 	jobName := testExecutionData.JobName
 	key := "metadata/" + jobName
-	var testArgsArray []*clientCPproto.Arg
-	var testArg1 = &clientCPproto.Arg{
+	var testArgsArray []*protofiles.Arg
+	var testArg1 = &protofiles.Arg{
 		Name:        "env1",
 		Description: "test env1",
 		Required:    true,
 	}
 	testArgsArray = append(testArgsArray, testArg1)
-	var testArg2 = &clientCPproto.Arg{
+	var testArg2 = &protofiles.Arg{
 		Name:        "env2",
 		Description: "test env2",
 		Required:    false,
 	}
 	testArgsArray = append(testArgsArray, testArg2)
-	var testArg3 = &clientCPproto.Arg{
+	var testArg3 = &protofiles.Arg{
 		Name:        "env3",
 		Description: "test env3",
 		Required:    false,
 	}
 	testArgsArray = append(testArgsArray, testArg3)
 
-	var testEnvVars = &clientCPproto.EnvVars{
+	var testEnvVars = &protofiles.EnvVars{
 		Args: testArgsArray,
 	}
-	var testMetadata = &clientCPproto.Metadata{
+	var testMetadata = &protofiles.Metadata{
 		Name:        "testJobName",
 		Description: "This is a test image",
 		ImageName:   "images/test-image",
@@ -294,7 +292,7 @@ func TestValidateJobForArgMissingFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testExecutionData = &clientCPproto.RequestForExecute{
+	var testExecutionData = &protofiles.RequestToExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -303,23 +301,23 @@ func TestValidateJobForArgMissingFailure(t *testing.T) {
 	jobName := testExecutionData.JobName
 	key := "metadata/" + jobName
 
-	var testArgsArray []*clientCPproto.Arg
-	var testArg1 = &clientCPproto.Arg{
+	var testArgsArray []*protofiles.Arg
+	var testArg1 = &protofiles.Arg{
 		Name:        "env1",
 		Description: "test env1",
 		Required:    true,
 	}
 	testArgsArray = append(testArgsArray, testArg1)
-	var testArg2 = &clientCPproto.Arg{
+	var testArg2 = &protofiles.Arg{
 		Name:        "env2",
 		Description: "test env2",
 		Required:    true,
 	}
 	testArgsArray = append(testArgsArray, testArg2)
-	var testEnvVars = &clientCPproto.EnvVars{
+	var testEnvVars = &protofiles.EnvVars{
 		Args: testArgsArray,
 	}
-	var testMetadata = &clientCPproto.Metadata{
+	var testMetadata = &protofiles.Metadata{
 		Name:        "testJobName",
 		Description: "This is a test image",
 		ImageName:   "images/test-image",
@@ -341,7 +339,7 @@ func TestValidateJobForExtraArgFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
-	var testExecutionData = &clientCPproto.RequestForExecute{
+	var testExecutionData = &protofiles.RequestToExecute{
 		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
@@ -351,17 +349,17 @@ func TestValidateJobForExtraArgFailure(t *testing.T) {
 	jobName := testExecutionData.JobName
 	key := "metadata/" + jobName
 
-	var testArgsArray []*clientCPproto.Arg
-	var testArg1 = &clientCPproto.Arg{
+	var testArgsArray []*protofiles.Arg
+	var testArg1 = &protofiles.Arg{
 		Name:        "env1",
 		Description: "test env1",
 		Required:    true,
 	}
 	testArgsArray = append(testArgsArray, testArg1)
-	var testEnvVars = &clientCPproto.EnvVars{
+	var testEnvVars = &protofiles.EnvVars{
 		Args: testArgsArray,
 	}
-	var testMetadata = &clientCPproto.Metadata{
+	var testMetadata = &protofiles.Metadata{
 		Name:        "testJobName",
 		Description: "This is a test image",
 		ImageName:   "images/test-image",
@@ -383,7 +381,7 @@ func TestGetJobLogs(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 	testArgs := map[string]string{"data": "test data"}
-	testExecutionContext := &executorCPproto.ExecutionContext{
+	testExecutionContext := &protofiles.ExecutionContext{
 		JobK8SName: "test execution",
 		JobID:      "123",
 		ImageName:  "test image",

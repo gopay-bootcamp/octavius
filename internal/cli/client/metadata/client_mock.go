@@ -27,3 +27,9 @@ func (m *MockGrpcClient) ConnectClient(cpHost string) error {
 	args := m.Called(cpHost)
 	return args.Error(0)
 }
+
+// List Mock
+func (m *MockGrpcClient) List(metadataPostRequest *protobuf.RequestToGetJobList) (*protobuf.JobList, error) {
+	args := m.Called(metadataPostRequest)
+	return args.Get(0).(*protobuf.JobList), args.Error(1)
+}

@@ -33,10 +33,11 @@ func TestCreateCmd(t *testing.T) {
 		Name: "name",
 	}
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader("test-metadata-handler-string"), nil)
-	mockOctaviusDClient.On("CreateMetadata", strings.NewReader("test-metadata-handler-string")).Return(testMetadataName, nil).Once()
+	mockOctaviusDClient.On("Post", strings.NewReader("test-metadata-handler-string")).Return(testMetadataName, nil).Once()
 
 	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
-	testCreateCmd.Execute()
+	err := testCreateCmd.Execute()
+	assert.Nil(t, err)
 
 	mockFileUtil.AssertExpectations(t)
 	mockOctaviusDClient.AssertExpectations(t)
@@ -49,8 +50,8 @@ func TestCreateCmdForIoError(t *testing.T) {
 	mockFileUtil.On("GetIoReader", "testfile/test_metadata.json").Return(strings.NewReader(""), errors.New("test io error"))
 
 	testCreateCmd.SetArgs([]string{"--job-path", "testfile/test_metadata.json"})
-	testCreateCmd.Execute()
-
+	err := testCreateCmd.Execute()
+	assert.Nil(t, err)
 	mockFileUtil.AssertExpectations(t)
-	mockOctaviusDClient.AssertNotCalled(t, "CreateMetadata")
+	mockOctaviusDClient.AssertNotCalled(t, "Post")
 }

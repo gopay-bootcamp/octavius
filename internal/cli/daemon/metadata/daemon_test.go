@@ -23,20 +23,37 @@ func TestPost(t *testing.T) {
 		AccessToken:           "AllowMe",
 		ConnectionTimeoutSecs: time.Second,
 	}
-
-	metadataTestFileHandler := strings.NewReader(
-		`{
-			"name": "test-name",
-			"image_name": "test-image",
-			"author": "test-author",
-			"organization": "gopay-systems"
-	}`)
+	arg := protofiles.Arg{
+		Name:        "test",
+		Description: "test description",
+		Required:    false,
+	}
+	var args []*protofiles.Arg
+	args = append(args, &arg)
+	var testEnvVars = &protofiles.EnvVars{
+		Args: args,
+	}
+	metadataTestFileHandler := strings.NewReader(`{
+		"name": "test-name",
+		"image_name": "hello-world",
+		"author": "Gopay System Automation Team",
+		"organization": "gopay-systems",
+		"env_vars": {
+		"args": [{
+			"name": "test",
+			"description": "test description",
+			"required" : false
+			}]
+		}
+		}
+`)
 
 	testMetadata := protofiles.Metadata{
 		Name:         "test-name",
-		ImageName:    "test-image",
-		Author:       "test-author",
+		ImageName:    "hello-world",
+		Author:       "Gopay System Automation Team",
 		Organization: "gopay-systems",
+		EnvVars:      testEnvVars,
 	}
 
 	testRequestHeader := protofiles.ClientInfo{
@@ -55,7 +72,7 @@ func TestPost(t *testing.T) {
 
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("CreateMetadata", &testPostRequest).Return(&testPostMetadataName, nil).Once()
+	mockGrpcClient.On("Post", &testPostRequest).Return(&testPostMetadataName, nil).Once()
 	res, err := testClient.Post(metadataTestFileHandler, &mockGrpcClient)
 
 	assert.Nil(t, err)
@@ -79,7 +96,7 @@ func TestDescribe(t *testing.T) {
 		ClientEmail: "akshay.busa@go-jek.com",
 		AccessToken: "AllowMe",
 	}
-	testDescribeRequest := protofiles.RequestForDescribe{
+	testDescribeRequest := protofiles.RequestToDescribe{
 		ClientInfo: &testRequestHeader,
 		JobName:    "DemoJob",
 	}
@@ -124,7 +141,7 @@ func TestList(t *testing.T) {
 
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("GetJobList", &testGetJobListRequest).Return(response, nil).Once()
+	mockGrpcClient.On("List", &testGetJobListRequest).Return(response, nil).Once()
 	res, err := testClient.List(&mockGrpcClient)
 
 	assert.Nil(t, err)
@@ -154,7 +171,7 @@ func TestListForFailure(t *testing.T) {
 
 	mockConfigLoader.On("Load").Return(testConfig, config.ConfigError{}).Once()
 	mockGrpcClient.On("ConnectClient", "localhost:5050").Return(nil).Once()
-	mockGrpcClient.On("GetJobList", &testGetJobListRequest).Return(&protofiles.JobList{}, errors.New("error in getJobList function")).Once()
+	mockGrpcClient.On("List", &testGetJobListRequest).Return(&protofiles.JobList{}, errors.New("error in getJobList function")).Once()
 	_, err := testClient.List(&mockGrpcClient)
 
 	assert.Equal(t, "error in getJobList function", err.Error())

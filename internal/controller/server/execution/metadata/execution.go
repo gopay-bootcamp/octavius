@@ -4,7 +4,6 @@ import (
 	"context"
 
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
-	"octavius/internal/controller/server/scheduler"
 	"octavius/internal/pkg/protofiles"
 )
 
@@ -18,14 +17,12 @@ type MetadataExecution interface {
 
 type metadataExecution struct {
 	metadataRepo metadataRepo.Repository
-	scheduler    scheduler.Scheduler
 }
 
 // NewExec creates a new instance of metadata respository
-func NewMetadataExec(metadataRepo metadataRepo.Repository, scheduler scheduler.Scheduler) *metadataExecution {
+func NewMetadataExec(metadataRepo metadataRepo.Repository) *metadataExecution {
 	return &metadataExecution{
 		metadataRepo: metadataRepo,
-		scheduler:    scheduler,
 	}
 }
 

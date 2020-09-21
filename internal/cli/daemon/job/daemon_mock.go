@@ -17,12 +17,12 @@ func (m *MockClient) StartClient() error {
 	return args.Error(0)
 }
 
-func (m *MockClient) Logs(jobID string, grpcClient job.GrpcClient) (*protofiles.Log, error) {
+func (m *MockClient) Logs(jobID string, grpcClient job.Client) (*protofiles.Log, error) {
 	args := m.Called(jobID)
 	return args.Get(0).(*protofiles.Log), args.Error(1)
 }
 
-func (m *MockClient) Execute(jobName string, jobData map[string]string, grpcClient job.GrpcClient) (*protofiles.Response, error) {
+func (m *MockClient) Execute(jobName string, jobData map[string]string, grpcClient job.Client) (*protofiles.Response, error) {
 	args := m.Called(jobName, jobData)
 	return args.Get(0).(*protofiles.Response), args.Error(1)
 }
