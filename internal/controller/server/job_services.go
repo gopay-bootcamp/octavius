@@ -28,7 +28,7 @@ func (e *jobServicesServer) Get(ctx context.Context, executorData *protofiles.Ex
 	}
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 
-	res, err := e.procExec.GetJob(ctx, executorData)
+	res, err := e.procExec.GetJob(ctx)
 	if err != nil {
 		if err.Error() == status.Error(codes.NotFound, constant.Controller+"no pending job").Error() {
 			return &protofiles.Job{HasJob: false}, nil

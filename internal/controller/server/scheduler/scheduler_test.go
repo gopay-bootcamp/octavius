@@ -82,3 +82,41 @@ func TestRemoveFromPendingListForJobRepoFailure(t *testing.T) {
 	jobRepoMock.AssertExpectations(t)
 	mockRandomIdGenerator.AssertExpectations(t)
 }
+
+func TestFetchJob(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
+	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
+	expectedJobID := "demo-jobID"
+	envArg := map[string]string{
+		"name": "akshay",
+	}
+	testRequestToExecute := protofiles.RequestToExecute{
+		JobName: "octavius-job",
+		JobData: envArg,
+	}
+
+	jobRepoMock.On("FetchNextJob").Return(expectedJobID, &testRequestToExecute, nil).Once()
+	jobRepoMock.On("Delete", expectedJobID).Return(nil).Once()
+	actualJobID, jobData, err := scheduler.FetchJob(context.Background())
+	jobRepoMock.AssertExpectations(t)
+	assert.Nil(t, err)
+	assert.Equal(t, jobData, &testRequestToExecute)
+	assert.Equal(t, expectedJobID, actualJobID)
+}
+
+func TestFetchJobForJobRepoFailure(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	mockRandomIdGenerator := idgen.IdGeneratorMock{}
+	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
+	testRequestToExecute := protofiles.RequestToExecute{}
+
+	jobRepoMock.On("FetchNextJob").Return("", &testRequestToExecute, errors.New("job repository failure")).Once()
+	jobRepoMock.On("Delete", "").Return(nil).Once()
+	actualJobID, jobData, err := scheduler.FetchJob(context.Background())
+	jobRepoMock.AssertCalled(t, "FetchNextJob")
+	jobRepoMock.AssertNotCalled(t, "Delete")
+	assert.Equal(t, err.Error(), "job repository failure")
+	assert.Equal(t, (*protofiles.RequestToExecute)(nil), jobData)
+	assert.Equal(t, "", actualJobID)
+}
