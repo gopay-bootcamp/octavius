@@ -89,7 +89,7 @@ func TestFetchJob(t *testing.T) {
 	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 	expectedJobID := "demo-jobID"
 	envArg := map[string]string{
-		"name" : "akshay",
+		"name": "akshay",
 	}
 	testRequestToExecute := protofiles.RequestToExecute{
 		JobName: "octavius-job",
@@ -120,4 +120,3 @@ func TestFetchJobForJobRepoFailure(t *testing.T) {
 	assert.Equal(t, (*protofiles.RequestToExecute)(nil), jobData)
 	assert.Equal(t, "", actualJobID)
 }
-

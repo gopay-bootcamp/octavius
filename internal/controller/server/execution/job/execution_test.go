@@ -189,7 +189,7 @@ func TestGetJob(t *testing.T) {
 		Description: "sample test metadata",
 	}
 	envArg := map[string]string{
-		"name" : "akshay",
+		"name": "akshay",
 	}
 	testRequestToExecute := protofiles.RequestToExecute{
 		JobName: "demo-jobName",
