@@ -153,3 +153,60 @@ func TestGetJobLogs(t *testing.T) {
 	assert.Equal(t, res, string(val))
 	jobRepoMock.AssertExpectations(t)
 }
+
+func TestSaveJobExecutionData(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	testArgs := map[string]string{"data": "test data"}
+	testExecutionContext := &protofiles.ExecutionContext{
+		JobK8SName: "demo-jobID",
+		JobID:      "123",
+		ImageName:  "test image",
+		ExecutorID: "test id",
+		Status:     "CREATED",
+		EnvArgs:    testArgs,
+		Output:     "here are the logs",
+	}
+
+	testExec := NewJobExec(jobRepoMock, mockRandomIdGenerator, mockScheduler)
+	jobRepoMock.On("SaveJobExecutionData", "demo-jobID", testExecutionContext).Return(nil)
+	err := testExec.SaveJobExecutionData(context.Background(), testExecutionContext)
+	jobRepoMock.AssertExpectations(t)
+	assert.Nil(t, err)
+}
+
+func TestGetJob(t *testing.T) {
+	jobRepoMock := new(job.JobMock)
+	mockScheduler := new(scheduler.SchedulerMock)
+	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
+	testExec := NewJobExec(jobRepoMock, mockRandomIdGenerator, mockScheduler)
+
+	testMetadata := protofiles.Metadata{
+		Author:      "adbusa67",
+		ImageName:   "demo image",
+		Name:        "test data",
+		Description: "sample test metadata",
+	}
+	envArg := map[string]string{
+		"name" : "akshay",
+	}
+	testRequestToExecute := protofiles.RequestToExecute{
+		JobName: "demo-jobName",
+		JobData: envArg,
+	}
+
+	jobRepoMock.On("GetValue", "demo-jobName").Return(&testMetadata, nil).Once()
+	mockScheduler.On("FetchJob").Return("demo-jobID", &testRequestToExecute, nil).Once()
+	actualJob, err := testExec.GetJob(context.Background())
+	expectedJob := &protofiles.Job{
+		HasJob:    true,
+		JobID:     "demo-jobID",
+		ImageName: "demo image",
+		JobData:   envArg,
+	}
+	assert.Nil(t, err)
+	assert.Equal(t, expectedJob, actualJob)
+	jobRepoMock.AssertExpectations(t)
+	mockScheduler.AssertExpectations(t)
+}

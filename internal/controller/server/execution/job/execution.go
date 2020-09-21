@@ -15,7 +15,7 @@ import (
 
 // Execution interface for methods related to execution
 type JobExecution interface {
-	GetJob(ctx context.Context, start *protofiles.ExecutorID) (*protofiles.Job, error)
+	GetJob(ctx context.Context) (*protofiles.Job, error)
 	ExecuteJob(ctx context.Context, request *protofiles.RequestToExecute) (uint64, error)
 	GetJobLogs(ctx context.Context, jobk8sName string) (string, error)
 	SaveJobExecutionData(ctx context.Context, executionData *protofiles.ExecutionContext) error
@@ -70,7 +70,7 @@ func (e *jobExecution) SaveJobExecutionData(ctx context.Context, executionData *
 	return e.jobRepo.SaveJobExecutionData(ctx, executionData.JobK8SName, executionData)
 }
 
-func (e *jobExecution) GetJob(ctx context.Context, start *protofiles.ExecutorID) (*protofiles.Job, error) {
+func (e *jobExecution) GetJob(ctx context.Context) (*protofiles.Job, error) {
 	jobID, clientJob, err := e.scheduler.FetchJob(ctx)
 	if err != nil {
 		return nil, err
