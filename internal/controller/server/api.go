@@ -53,7 +53,7 @@ func Start() error {
 	jobExec := job.NewJobExec(jobRepository, randomIdGenerator, scheduler)
 	jobServicesGrpcServer := NewJobServiceServer(jobExec, randomIdGenerator)
 
-	metadataExec := metadata.NewMetadataExec(metadataRepository, scheduler)
+	metadataExec := metadata.NewMetadataExec(metadataRepository)
 	metadataServicesGrpcServer := NewMetadataServiceServer(metadataExec, randomIdGenerator)
 
 	healthExec := health.NewHealthExec(executorRepository)

@@ -2,261 +2,31 @@ package metadata
 
 import (
 	"context"
-	"ctavius/internal/controller/server/repository/executor"
 	"errors"
-	executorRepo "octavius/internal/controller/server/repository/executor"
-	"octavius/internal/controller/server/repository/job"
-	"octavius/internal/controller/server/repository/metadata"
-	metadataRepo "octavius/internal/controller/server/repository/metadata"
-	"octavius/internal/controller/server/scheduler"
-	"octavius/internal/pkg/constant"
-	"octavius/internal/pkg/idgen"
-	"octavius/internal/pkg/log"
-	"sync"
-	"testing"
-	"time"
-
-	"github.com/golang/protobuf/proto"
-
-	"github.com/golang/protobuf/proto"
-
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"octavius/internal/controller/server/repository/metadata"
+	"octavius/internal/pkg/log"
+	"octavius/internal/pkg/protofiles"
+	"testing"
 )
 
 func init() {
 	log.Init("info", "", true, 1)
 }
 
-func TestStartExecutorHealthCheck(t *testing.T) {
-	pingChan := make(chan string)
-	sessionID := uint64(1234)
-	newActiveExecutor := activeExecutor{
-		pingChan:  pingChan,
-		sessionID: sessionID,
-		timer:     time.NewTimer(1 * time.Second),
-	}
-
-	testExecutorMap := &activeExecutorMap{
-		execMap: new(sync.Map),
-	}
-	testExecutorMap.Put("exec 1", &newActiveExecutor)
-
-	testMetadataRepo := new(metadataRepo.MetadataMock)
-	testExecRepo := new(executorRepo.ExecutorMock)
-
-	testExecution := &execution{
-		metadataRepo:      testMetadataRepo,
-		executorRepo:      testExecRepo,
-		activeExecutorMap: testExecutorMap,
-	}
-
-	testExecRepo.On("UpdateStatus", "exec 1", "idle").Return(nil)
-	testExecRepo.On("UpdateStatus", "exec 1", "expired").Return(nil)
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		startExecutorHealthCheck(testExecution, testExecutorMap, "exec 1")
-		wg.Done()
-	}()
-
-	// Wait until the function completes
-	wg.Wait()
-
-	//assert exit condition
-	_, exists := testExecutorMap.Get("exec 1")
-	assert.Equal(t, false, exists)
-	testExecRepo.AssertExpectations(t)
-
-}
-
-func TestUpdateExecutorStatusNotRegistered(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
-	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
-
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-
-	ctx := context.Background()
-	request := executorCPproto.Ping{
-		ID:    "exec 1",
-		State: "healthy",
-	}
-	executorRepoMock.On("Get", "exec 1").Return(&executorCPproto.ExecutorInfo{}, status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound))
-	pingTimeOut := 20 * time.Second
-	res, err := testExec.UpdateExecutorStatus(ctx, &request, pingTimeOut)
-	executorRepoMock.AssertExpectations(t)
-	assert.Nil(t, res)
-	assert.Equal(t, err.Error(), status.Error(codes.PermissionDenied, "executor not registered").Error())
-}
-
-func TestUpdateExecutorStatus(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
-	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
-
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-
-	ctx := context.Background()
-	request := executorCPproto.Ping{
-		ID:    "exec 1",
-		State: "idle",
-	}
-	executorRepoMock.On("Get", "exec 1").Return(&executorCPproto.ExecutorInfo{}, nil)
-	executorRepoMock.On("UpdateStatus", "exec 1", "idle").Return(nil)
-	res, err := testExec.UpdateExecutorStatus(ctx, &request, 20*time.Second)
-	_, ok := getActiveExecutorMap(testExec.(*execution)).Get("exec 1")
-	assert.Equal(t, res.Recieved, true)
-	assert.Nil(t, err)
-	assert.Equal(t, true, ok)
-	pingTimeOut := 20 * time.Second
-	res, err = testExec.UpdateExecutorStatus(ctx, &request, pingTimeOut)
-	assert.Equal(t, res.Recieved, true)
-	assert.Nil(t, err)
-}
-
-func TestExecuteJob(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
-	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
-
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-
-	testExecutionData := &clientCPproto.RequestForExecute{
-		JobName: "testJobName1",
-		JobData: map[string]string{
-			"env1": "envValue1",
-		},
-	}
-	testJobID := uint64(12345)
-
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
-	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
-	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
-	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
-
-	jobID, err := testExec.ExecuteJob(context.Background(), testExecutionData)
-	assert.Nil(t, err)
-	assert.Equal(t, testJobID, jobID)
-	jobRepoMock.AssertExpectations(t)
-	mockScheduler.AssertExpectations(t)
-	mockRandomIdGenerator.AssertExpectations(t)
-}
-
-func TestExecuteJobForRandomIDGeneratorFailure(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
-	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
-
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-
-	testExecutionData := &clientCPproto.RequestForExecute{
-		JobName: "testJobName1",
-		JobData: map[string]string{
-			"env1": "envValue1",
-		},
-	}
-	testJobID := uint64(12345)
-
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
-	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
-	mockRandomIdGenerator.On("Generate").Return(testJobID, errors.New("failed to generate random ID"))
-	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
-
-	jobId, err := testExec.ExecuteJob(context.Background(), testExecutionData)
-	assert.Equal(t, "failed to generate random ID", err.Error())
-	assert.Equal(t, uint64(0), jobId)
-	jobRepoMock.AssertExpectations(t)
-	mockScheduler.AssertNotCalled(t, "AddToPendingList", testJobID, testExecutionData)
-	mockRandomIdGenerator.AssertExpectations(t)
-}
-
-func TestExecuteJobForJobRepoMockFailure(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
-	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
-
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-
-	testExecutionData := &clientCPproto.RequestForExecute{
-		JobName: "testJobName1",
-		JobData: map[string]string{
-			"env1": "envValue1",
-		},
-	}
-	testJobID := uint64(12345)
-
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(false, errors.New("failed to check jobMetadata in job repo"))
-	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
-	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
-
-	jobId, err := testExec.ExecuteJob(context.Background(), testExecutionData)
-	assert.Equal(t, "failed to check jobMetadata in job repo", err.Error())
-	assert.Equal(t, uint64(0), jobId)
-	jobRepoMock.AssertExpectations(t)
-	mockScheduler.AssertNotCalled(t, "AddToPendingList", testJobID, testExecutionData)
-	mockRandomIdGenerator.AssertNotCalled(t, "Generate")
-}
-
-func TestExecuteJobForSchedulerFailure(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
-	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
-
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-
-	testExecutionData := &clientCPproto.RequestForExecute{
-		JobName: "testJobName1",
-		JobData: map[string]string{
-			"env1": "envValue1",
-		},
-	}
-	testJobID := uint64(12345)
-
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
-	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
-	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
-	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(errors.New("failed to add job in pending list in scheduler"))
-
-	jobId, err := testExec.ExecuteJob(context.Background(), testExecutionData)
-	assert.Equal(t, "failed to add job in pending list in scheduler", err.Error())
-	assert.Equal(t, uint64(0), jobId)
-	jobRepoMock.AssertExpectations(t)
-	mockScheduler.AssertExpectations(t)
-	mockRandomIdGenerator.AssertExpectations(t)
-}
-
 func TestGetMetadata(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
 	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
 
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-	testClientInfo := &clientCPproto.ClientInfo{
+	testExec := NewMetadataExec(metadataRepoMock)
+	testClientInfo := &protofiles.ClientInfo{
 		ClientEmail: "test@gmail.com",
 		AccessToken: "random",
 	}
-	testRequestForDescribe := &clientCPproto.RequestForDescribe{
+	testRequestForDescribe := &protofiles.RequestToDescribe{
 		JobName:    "testJobName",
 		ClientInfo: testClientInfo,
 	}
-	var testMetadata = &clientCPproto.Metadata{
+	var testMetadata = &protofiles.Metadata{
 		Name:        "testJobName",
 		Description: "This is a test image",
 		ImageName:   "images/test-image",
@@ -270,19 +40,15 @@ func TestGetMetadata(t *testing.T) {
 }
 
 func TestGetJobList(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
 	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
 
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+	testExec := NewMetadataExec(metadataRepoMock)
 
 	var jobList []string
 	jobList = append(jobList, "demo-image-name")
 	jobList = append(jobList, "demo-image-name-1")
 
-	testResponse := &clientCPproto.JobList{
+	testResponse := &protofiles.JobList{
 		Jobs: jobList,
 	}
 
@@ -291,48 +57,15 @@ func TestGetJobList(t *testing.T) {
 	res, err := testExec.GetJobList(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, testResponse, res)
-	mockScheduler.AssertExpectations(t)
 }
 
 func TestGetJobListForGetAvailableJobListFunctionErr(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
 	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
 
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
+	testExec := NewMetadataExec(metadataRepoMock)
 
-	metadataRepoMock.On("GetAvailableJobList").Return(&clientCPproto.JobList{}, errors.New("error in GetAvailableJobList function"))
+	metadataRepoMock.On("GetAvailableJobList").Return(&protofiles.JobList{}, errors.New("error in GetAvailableJobList function"))
 
 	_, err := testExec.GetJobList(context.Background())
 	assert.Equal(t, "error in GetAvailableJobList function", err.Error())
-	mockScheduler.AssertExpectations(t)
-}
-
-func TestGetJobLogs(t *testing.T) {
-	jobRepoMock := new(job.JobMock)
-	metadataRepoMock := new(metadata.MetadataMock)
-	mockScheduler := new(scheduler.SchedulerMock)
-	mockRandomIdGenerator := new(idgen.IdGeneratorMock)
-	executorRepoMock := new(executor.ExecutorMock)
-	testArgs := map[string]string{"data": "test data"}
-	testExecutionContext := &executorCPproto.ExecutionContext{
-		JobK8SName: "test execution",
-		JobID:      "123",
-		ImageName:  "test image",
-		ExecutorID: "test id",
-		Status:     "CREATED",
-		EnvArgs:    testArgs,
-		Output:     "here are the logs",
-	}
-
-	val, err := proto.Marshal(testExecutionContext)
-	assert.Nil(t, err)
-	testExec := NewExec(metadataRepoMock, executorRepoMock, jobRepoMock, mockRandomIdGenerator, mockScheduler)
-	jobRepoMock.On("GetLogs", testExecutionContext.JobK8SName).Return(string(val), nil)
-	res, err := testExec.GetJobLogs(context.TODO(), testExecutionContext.JobK8SName)
-	assert.Nil(t, err)
-	assert.Equal(t, res, string(val))
-	jobRepoMock.AssertExpectations(t)
 }
