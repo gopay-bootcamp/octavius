@@ -18,7 +18,7 @@ type healthServicesServer struct {
 	idgen    idgen.RandomIdGenerator
 }
 
-// NewExecutorServiceServer used to create a new execution context
+// NewHealthServiceServer used to create a new health execution context
 func NewHealthServiceServer(exec health.HealthExecution, idgen idgen.RandomIdGenerator) protofiles.HealthServicesServer {
 	return &healthServicesServer{
 		procExec: exec,
@@ -26,6 +26,7 @@ func NewHealthServiceServer(exec health.HealthExecution, idgen idgen.RandomIdGen
 	}
 }
 
+// Check service is used to monitor the ping received from executor and update status of executor accordingly
 func (e *healthServicesServer) Check(ctx context.Context, ping *protofiles.Ping) (*protofiles.HealthResponse, error) {
 	controllerConfig, err := config.Loader()
 	if err != nil {

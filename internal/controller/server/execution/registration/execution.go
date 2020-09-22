@@ -1,3 +1,4 @@
+// Package registration implements executor registration related functions
 package registration
 
 import (
@@ -7,7 +8,7 @@ import (
 	executorRepo "octavius/internal/controller/server/repository/executor"
 )
 
-// Execution interface for methods related to execution
+// RegistrationExecution interface for methods related to executor registration
 type RegistrationExecution interface {
 	RegisterExecutor(ctx context.Context, request *protofiles.RegisterRequest) (*protofiles.RegisterResponse, error)
 }
@@ -22,7 +23,7 @@ func NewRegistrationExec(executorRepo executorRepo.Repository) RegistrationExecu
 	}
 }
 
-//RegisterExecutor saves executor information in DB
+// RegisterExecutor saves executor information in DB
 func (e *registrationExecution) RegisterExecutor(ctx context.Context, request *protofiles.RegisterRequest) (*protofiles.RegisterResponse, error) {
 	key := request.ID
 	value := request.ExecutorInfo

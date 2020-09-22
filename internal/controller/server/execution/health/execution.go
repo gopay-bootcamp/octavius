@@ -1,3 +1,4 @@
+// Package health implements functions related to executor health
 package health
 
 import (
@@ -16,10 +17,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// healthExecution interface for methods related to healthExecution
+// HealthExecution interface for methods related to healthExecution
 type HealthExecution interface {
 	UpdateExecutorStatus(ctx context.Context, request *protofiles.Ping, pingTimeOut time.Duration) (*protofiles.HealthResponse, error)
 }
+
 type healthExecution struct {
 	executorRepo      executorRepo.Repository
 	activeExecutorMap *activeExecutorMap
@@ -35,6 +37,7 @@ type activeExecutorMap struct {
 	execMap *sync.Map
 }
 
+// Get takes executor key as a argument and checks if executor is active or not
 func (m *activeExecutorMap) Get(key string) (*activeExecutor, bool) {
 	exec, ok := m.execMap.Load(key)
 	if ok {
@@ -42,14 +45,18 @@ func (m *activeExecutorMap) Get(key string) (*activeExecutor, bool) {
 	}
 	return nil, ok
 }
+
+// Put takes executor key as a argument and adds executor with that key to executor map
 func (m *activeExecutorMap) Put(key string, executor *activeExecutor) {
 	m.execMap.Store(key, executor)
 }
+
+// Delete takes executor key as a argument and deletes executor with that key from executor map
 func (m *activeExecutorMap) Delete(key string) {
 	m.execMap.Delete(key)
 }
 
-// NewExec creates a new instance of metadata respository
+// NewHealthExec creates a new instance of HealthRepository
 func NewHealthExec(executorRepo executorRepo.Repository) HealthExecution {
 	newActiveExecutorMap := &activeExecutorMap{
 		execMap: new(sync.Map),
@@ -66,7 +73,7 @@ func removeActiveExecutor(activeExecutorMap *activeExecutorMap, id string, execu
 	activeExecutorMap.Delete(id)
 }
 
-//StarthealthExecutionHealthCheck checks for executor ping at regular interval
+// StartExecutionHealthCheck checks for executor ping at regular interval
 func startExecutorHealthCheck(e *healthExecution, activeExecutorMap *activeExecutorMap, id string) {
 	executor, _ := activeExecutorMap.Get(id)
 	ctx := context.Background()
@@ -102,6 +109,8 @@ func startExecutorHealthCheck(e *healthExecution, activeExecutorMap *activeExecu
 		}
 	}
 }
+
+// UpdateExecutorStatus updates executor status after every ping by executor
 func (e *healthExecution) UpdateExecutorStatus(ctx context.Context, request *protofiles.Ping, pingTimeOut time.Duration) (*protofiles.HealthResponse, error) {
 	executorID := request.ID
 	// if executor is already active

@@ -1,3 +1,4 @@
+// Package registration implements executor registration related functions
 package registration
 
 import (

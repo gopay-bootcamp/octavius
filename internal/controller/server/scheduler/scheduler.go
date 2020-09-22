@@ -1,3 +1,4 @@
+// Package scheduler implements scheduling related functions
 package scheduler
 
 import (
@@ -8,6 +9,7 @@ import (
 	"sync"
 )
 
+// Scheduler interface contains all scheduler related functions
 type Scheduler interface {
 	AddToPendingList(context.Context, uint64, *protofiles.RequestToExecute) error
 	FetchJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)

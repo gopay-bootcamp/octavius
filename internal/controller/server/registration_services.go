@@ -18,7 +18,7 @@ type registrationServicesServer struct {
 	idgen    idgen.RandomIdGenerator
 }
 
-// NewExecutorServiceServer used to create a new execution context
+// NewRegistrationServiceServer used to create a new execution context
 func NewRegistrationServiceServer(exec registration.RegistrationExecution, idgen idgen.RandomIdGenerator) protofiles.RegistrationServiceServer {
 	return &registrationServicesServer{
 		procExec: exec,
@@ -26,6 +26,7 @@ func NewRegistrationServiceServer(exec registration.RegistrationExecution, idgen
 	}
 }
 
+// Register service is used to register new executor
 func (e *registrationServicesServer) Register(ctx context.Context, request *protofiles.RegisterRequest) (*protofiles.RegisterResponse, error) {
 	uuid, err := e.idgen.Generate()
 	if err != nil {
