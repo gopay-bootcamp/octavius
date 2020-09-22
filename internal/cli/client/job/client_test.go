@@ -48,17 +48,6 @@ func (s *server) Execute(ctx context.Context, execute *protofiles.RequestToExecu
 	}, nil
 }
 
-func (s *server) List(context.Context, *protofiles.RequestToGetJobList) (*protofiles.JobList, error) {
-	var jobList []string
-	jobList = append(jobList, "demo-image-name")
-	jobList = append(jobList, "demo-image-name-1")
-
-	response := &protofiles.JobList{
-		Jobs: jobList,
-	}
-	return response, nil
-}
-
 func (s *server) Get(context.Context, *protofiles.ExecutorID) (*protofiles.Job, error) {
 	return nil, nil
 }
@@ -105,7 +94,7 @@ func TestGetLogs(t *testing.T) {
 	assert.Equal(t, res.Log, "sample log 1")
 }
 
-func TestGetJobList(t *testing.T) {
+func TestConnectClient(t *testing.T) {
 	createFakeServer()
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
@@ -119,17 +108,6 @@ func TestGetJobList(t *testing.T) {
 		connectionTimeoutSecs: 10 * time.Second,
 	}
 
-	testGetJobListRequest := &protofiles.RequestToGetJobList{}
-	res, err := testClient.List(testGetJobListRequest)
+	err = testClient.ConnectClient(lis.Addr().String())
 	assert.Nil(t, err)
-	var actual [2]string
-	for index, value := range res.Jobs {
-		actual[index] = value
-	}
-	var expected [2]string
-	expected[0] = "demo-image-name"
-	expected[1] = "demo-image-name-1"
-
-	assert.Equal(t, actual, expected)
-
 }

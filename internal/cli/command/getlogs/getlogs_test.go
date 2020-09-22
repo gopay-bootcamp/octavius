@@ -27,11 +27,11 @@ func TestGetLogsCmd(t *testing.T) {
 		Log: "sample log 1",
 	}
 
-	mockOctaviusDClient.On("GetLogs", "DemoJob").Return(&logResponse, nil).Once()
+	mockOctaviusDClient.On("Logs", "DemoJob").Return(&logResponse, nil).Once()
 
 	testGetLogsCmd.SetArgs([]string{"--job-id", "DemoJob"})
 
-	testGetLogsCmd.Execute()
-
+	err := testGetLogsCmd.Execute()
+	assert.Nil(t, err)
 	mockOctaviusDClient.AssertExpectations(t)
 }

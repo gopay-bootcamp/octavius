@@ -105,7 +105,7 @@ func (c *octaviusClient) Post(metadataFileHandler io.Reader, grpcClient metadata
 	if err != nil {
 		return nil, err
 	}
-	if metadata.ImageName == "" || isImageExist == false {
+	if metadata.ImageName == "" || !isImageExist {
 		return nil, status.Error(codes.Internal, "image-name should be valid in metadata")
 	}
 	if metadata.EnvVars == nil {

@@ -40,7 +40,7 @@ func TestDescribeCmd(t *testing.T) {
 		EnvVars: testEnvVars,
 	}
 
-	mockOctaviusDClient.On("DescribeJob", "DemoJob").Return(describeResponse, nil).Once()
+	mockOctaviusDClient.On("Describe", "DemoJob").Return(describeResponse, nil).Once()
 	testDescribeCmd.SetArgs([]string{"--job-name", "DemoJob"})
 
 	err := testDescribeCmd.Execute()
