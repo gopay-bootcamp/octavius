@@ -19,7 +19,7 @@ type metadataServicesServer struct {
 	idgen    idgen.RandomIdGenerator
 }
 
-// MetadataServiceServer used to create a new execution context
+// NewMetadataServiceServer used to create a new execution context
 func NewMetadataServiceServer(exec metadata.MetadataExecution, idgen idgen.RandomIdGenerator) protofiles.MetadataServicesServer {
 	return &metadataServicesServer{
 		procExec: exec,
@@ -27,6 +27,7 @@ func NewMetadataServiceServer(exec metadata.MetadataExecution, idgen idgen.Rando
 	}
 }
 
+// Post service is used to save metadata to repository
 func (s *metadataServicesServer) Post(ctx context.Context, request *protofiles.RequestToPostMetadata) (*protofiles.MetadataName, error) {
 	uuid, err := s.idgen.Generate()
 	if err != nil {
@@ -45,6 +46,7 @@ func (s *metadataServicesServer) Post(ctx context.Context, request *protofiles.R
 	return name, nil
 }
 
+// Describe service is used to fetch metadata for given job
 func (s *metadataServicesServer) Describe(ctx context.Context, descriptionData *protofiles.RequestToDescribe) (*protofiles.Metadata, error) {
 	uuid, err := s.idgen.Generate()
 	if err != nil {
@@ -61,7 +63,7 @@ func (s *metadataServicesServer) Describe(ctx context.Context, descriptionData *
 	return metadata, err
 }
 
-// GetJobList will call GetJobList function of execution and return list of available jobs
+// List service is used to return list of available jobs
 func (s *metadataServicesServer) List(ctx context.Context, request *protofiles.RequestToGetJobList) (*protofiles.JobList, error) {
 	uuid, err := s.idgen.Generate()
 	if err != nil {

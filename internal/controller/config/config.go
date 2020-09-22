@@ -1,3 +1,4 @@
+// Package config implements functions to toggle the configurable elements of the controller
 package config
 
 import (
@@ -8,11 +9,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+// GetStringDefault extracts the string from config file and sets key to defaultValue if not found
 func GetStringDefault(viper *viper.Viper, key string, defaultValue string) string {
 	viper.SetDefault(key, defaultValue)
 	return viper.GetString(key)
 }
 
+// GetIntDefault extracts the integer from config file and sets key to defaultValue if not found
 func GetIntDefault(viper *viper.Viper, key string, defaultValue int) int {
 	viper.SetDefault(key, defaultValue)
 	return viper.GetInt(key)
@@ -22,6 +25,7 @@ var once sync.Once
 var config OctaviusConfig
 var err error
 
+// OctaviusConfig contains parameter of Controller configuration
 type OctaviusConfig struct {
 	viper                *viper.Viper
 	LogLevel             string
@@ -60,8 +64,10 @@ func load() (OctaviusConfig, error) {
 	return octaviusConfig, nil
 }
 
+// AtomBool contains flag for setting and resetting controller configuration
 type AtomBool struct{ flag int32 }
 
+// Set function sets AtomBool
 func (b *AtomBool) Set(value bool) {
 	var i int32 = 0
 	if value {
@@ -70,6 +76,7 @@ func (b *AtomBool) Set(value bool) {
 	atomic.StoreInt32(&(b.flag), int32(i))
 }
 
+// Get returns value of AtomBool
 func (b *AtomBool) Get() bool {
 	return atomic.LoadInt32(&(b.flag)) != 0
 }
@@ -80,10 +87,12 @@ func init() {
 	reset.Set(false)
 }
 
+// Reset function resets value
 func Reset() {
 	reset.Set(true)
 }
 
+// Loader loads controller configuration
 func Loader() (OctaviusConfig, error) {
 	once.Do(func() {
 		config, err = load()

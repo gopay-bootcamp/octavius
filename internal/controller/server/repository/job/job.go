@@ -1,3 +1,4 @@
+// Package job implements job repository related functions
 package job
 
 import (
@@ -18,6 +19,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// Repository interface for job repository functions
 type Repository interface {
 	GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error)
 	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
@@ -92,7 +94,7 @@ func (j *jobRepository) FetchNextJob(ctx context.Context) (string, *protofiles.R
 	return nextJobID, nextExecutionData, nil
 }
 
-//ValidateJob is used to validate the arguments of job when execution request is received
+// ValidateJob is used to validate the arguments of job when execution request is received
 func (j *jobRepository) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
 	jobName := executionData.JobName
 	jobData := executionData.JobData
@@ -134,6 +136,7 @@ func isPresentInArgs(jobKey string, args []*protofiles.Arg) bool {
 	return false
 }
 
+// GetLogs is used to fetch logs of job executing/executed
 func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string, error) {
 	jobKey := constant.ExecutionDataPrefix + constant.KubeOctaviusPrefix + jobName
 	res, err := j.etcdClient.GetValue(ctx, jobKey)
@@ -151,6 +154,7 @@ func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string, er
 
 }
 
+// SaveJobExecutionData  saves Execution data of given jobName in executor/logs
 func (j *jobRepository) SaveJobExecutionData(ctx context.Context, jobname string, executionData *protofiles.ExecutionContext) error {
 	key := constant.ExecutionDataPrefix + jobname
 	value, err := proto.Marshal(executionData)
@@ -162,9 +166,10 @@ func (j *jobRepository) SaveJobExecutionData(ctx context.Context, jobname string
 	return j.etcdClient.PutValue(ctx, key, string(value))
 }
 
-func (c *jobRepository) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
+// GetValue returns metadata of given jobName
+func (j *jobRepository) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
-	gr, err := c.etcdClient.GetValue(ctx, dbKey)
+	gr, err := j.etcdClient.GetValue(ctx, dbKey)
 
 	if err == errors.New(constant.NoValueFound) {
 		return &protofiles.Metadata{}, status.Error(codes.NotFound, err.Error())

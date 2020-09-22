@@ -1,8 +1,10 @@
+// Package command consists of all commands in controller
 package command
 
 import (
-	"github.com/spf13/cobra"
 	"octavius/internal/controller/command/start"
+
+	"github.com/spf13/cobra"
 )
 
 var cfgFile string

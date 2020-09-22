@@ -1,3 +1,4 @@
+// Package metadata implements metadata repository related functions
 package metadata
 
 import (
@@ -17,7 +18,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-//Repository interface for functions related to metadata repository
+// Repository interface for functions related to metadata repository
 type Repository interface {
 	Save(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error)
 	GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error)
@@ -29,14 +30,14 @@ type metadataRepository struct {
 	etcdClient etcd.Client
 }
 
-//NewMetadataRepository initializes metadataRepository with the given etcdClient
+// NewMetadataRepository initializes metadataRepository with the given etcdClient
 func NewMetadataRepository(client etcd.Client) Repository {
 	return &metadataRepository{
 		etcdClient: client,
 	}
 }
 
-//Save marshals metadata and saves the value in etcd database with the given key
+// Save marshals metadata and saves the value in etcd database with the given key
 func (c *metadataRepository) Save(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error) {
 
 	val, err := proto.Marshal(metadata)
@@ -67,7 +68,7 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	return res, nil
 }
 
-//GetAll returns array of metadata
+// GetAll returns array of metadata
 func (c *metadataRepository) GetAll(ctx context.Context) (*protofiles.MetadataArray, error) {
 	res, err := c.etcdClient.GetAllValues(ctx, constant.MetadataPrefix)
 	if err != nil {
@@ -103,6 +104,7 @@ func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*protofil
 	return &protofiles.JobList{Jobs: jobList}, nil
 }
 
+// GetValue returns metadata of given jobName
 func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
