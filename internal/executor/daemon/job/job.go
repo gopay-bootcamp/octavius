@@ -72,8 +72,17 @@ func (e *jobServicesClient) connectClient(executorConfig config.OctaviusExecutor
 	return err
 }
 
+func (e *jobServicesClient) postExecutorStatus(stat string)(*protofiles.Acknowledgement,error){
+	return e.grpcClient.PostExecutorStatus(&protofiles.Status{ID:e.id, Status:stat})
+}
+
 func (e *jobServicesClient) StartKubernetesService(executorConfig config.OctaviusExecutorConfig) {
+	
 	err := e.connectClient(executorConfig)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	_,err = e.postExecutorStatus(constant.IdleState)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -87,7 +96,10 @@ func (e *jobServicesClient) StartKubernetesService(executorConfig config.Octaviu
 			continue
 		}
 		e.statusLock.Lock()
-		e.state = constant.RunningState
+		_,err = e.postExecutorStatus(constant.RunningState)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 		e.statusLock.Unlock()
 		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
 
@@ -121,7 +133,10 @@ func (e *jobServicesClient) StartKubernetesService(executorConfig config.Octaviu
 		go e.startWatch(&jobContext)
 
 		e.statusLock.Lock()
-		e.state = constant.IdleState
+		_,err = e.postExecutorStatus(constant.IdleState)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 		e.statusLock.Unlock()
 	}
 }
@@ -188,6 +203,6 @@ func (e *jobServicesClient) startWatch(executionContext *protofiles.ExecutionCon
 }
 
 func (e *jobServicesClient) FetchJob() (*protofiles.Job, error) {
-	start := &protofiles.ExecutorID{Id: e.id}
+	start := &protofiles.ExecutorID{ID: e.id}
 	return e.grpcClient.FetchJob(start)
 }

@@ -45,5 +45,10 @@ message Job {
 }
 
 message ExecutorID {
-    string id = 1;
+    string ID = 1;
+}
+
+message Status {
+    string ID =1;
+    string status = 2;
 }

@@ -23,6 +23,7 @@ type Repository interface {
 	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
 	Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error
 	Delete(ctx context.Context, key string) error
+	UpdateStatus(ctx context.Context, key string, health string) error
 	FetchNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
 	ValidateJob(context.Context, *protofiles.RequestToExecute) (bool, error)
 	GetLogs(context.Context, string) (string, error)
@@ -51,6 +52,11 @@ func (j *jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string)
 
 	}
 	return true, nil
+}
+
+func (e *jobRepository) UpdateStatus(ctx context.Context, key string, health string) error {
+	dbKey := constant.ExecutorStatusPrefix + key
+	return e.etcdClient.PutValue(ctx, dbKey, health)
 }
 
 // Save takes jobID and executionData and save it in database as pendingList

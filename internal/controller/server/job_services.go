@@ -20,10 +20,18 @@ type jobServicesServer struct {
 	idgen    idgen.RandomIdGenerator
 }
 
+// JobServiceServer used to create a new execution context
+func NewJobServiceServer(exec job.JobExecution, idgen idgen.RandomIdGenerator) protofiles.JobServiceServer {
+	return &jobServicesServer{
+		procExec: exec,
+		idgen:    idgen,
+	}
+}
+
 func (e *jobServicesServer) Get(ctx context.Context, executorData *protofiles.ExecutorID) (*protofiles.Job, error) {
 	uuid, err := e.idgen.Generate()
 	if err != nil {
-		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning id to the request", executorData.Id))
+		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning id to the request", executorData.ID))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
@@ -33,18 +41,10 @@ func (e *jobServicesServer) Get(ctx context.Context, executorData *protofiles.Ex
 		if err.Error() == status.Error(codes.NotFound, constant.Controller+"no pending job").Error() {
 			return &protofiles.Job{HasJob: false}, nil
 		}
-		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while assigning job to executor", uuid, executorData.Id))
+		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while assigning job to executor", uuid, executorData.ID))
 		return nil, err
 	}
 	return res, err
-}
-
-// JobServiceServer used to create a new execution context
-func NewJobServiceServer(exec job.JobExecution, idgen idgen.RandomIdGenerator) protofiles.JobServiceServer {
-	return &jobServicesServer{
-		procExec: exec,
-		idgen:    idgen,
-	}
 }
 
 func (s *jobServicesServer) Logs(ctx context.Context, request *protofiles.RequestToGetLogs) (*protofiles.Log, error) {
@@ -98,6 +98,21 @@ func (e *jobServicesServer) PostExecutionData(ctx context.Context, executionData
 	err = e.procExec.SaveJobExecutionData(ctx, executionData)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while saving job execution logs", uuid, executionData.ExecutorID))
+		return &protofiles.Acknowledgement{Recieved: true}, err
+	}
+	return &protofiles.Acknowledgement{Recieved: true}, nil
+}
+
+func (e *jobServicesServer) PostExecutorStatus(ctx context.Context, stat *protofiles.Status) (*protofiles.Acknowledgement, error) {
+	uuid, err := e.idgen.Generate()
+	if err != nil {
+		log.Error(err, fmt.Sprintf("executor id: %s, error while assigning id to the request", stat.ID))
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
+	err = e.procExec.PostExecutorStatus(ctx, stat.ID, stat)
+	if err != nil {
+		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while saving executor status", uuid, stat.ID))
 		return &protofiles.Acknowledgement{Recieved: true}, err
 	}
 	return &protofiles.Acknowledgement{Recieved: true}, nil

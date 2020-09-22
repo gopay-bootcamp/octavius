@@ -58,7 +58,7 @@ func (e *heathServicesClient) StartPing(executorConfig config.OctaviusExecutorCo
 			select {
 			case <-ticker.C:
 				e.statusLock.RLock()
-				res, err := e.grpcClient.Ping(&protofiles.Ping{ID: e.id, State: "ping"})
+				res, err := e.grpcClient.Ping(&protofiles.Ping{ID: e.id})
 				e.statusLock.RUnlock()
 				if err != nil {
 					log.Fatal(err.Error())

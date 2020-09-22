@@ -19,6 +19,7 @@ type JobExecution interface {
 	ExecuteJob(ctx context.Context, request *protofiles.RequestToExecute) (uint64, error)
 	GetJobLogs(ctx context.Context, jobk8sName string) (string, error)
 	SaveJobExecutionData(ctx context.Context, executionData *protofiles.ExecutionContext) error
+	PostExecutorStatus(ctx context.Context, ID string, status *protofiles.Status) error
 }
 type jobExecution struct {
 	jobRepo     jobRepo.Repository
@@ -91,4 +92,8 @@ func (e *jobExecution) GetJob(ctx context.Context) (*protofiles.Job, error) {
 	}
 
 	return job, nil
+}
+
+func (e *jobExecution) PostExecutorStatus(ctx context.Context, ID string, status *protofiles.Status) error {
+	return e.jobRepo.UpdateStatus(ctx, ID, status.Status)
 }

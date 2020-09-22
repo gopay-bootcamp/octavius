@@ -32,7 +32,7 @@ func (e *healthServicesServer) Check(ctx context.Context, ping *protofiles.Ping)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	pingTimeOut := controllerConfig.ExecutorPingDeadline
-	res, err := e.procExec.UpdateExecutorStatus(ctx, ping, pingTimeOut)
+	res, err := e.procExec.UpdatePingStatus(ctx, ping, pingTimeOut)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("executor id: %s, error in running health check", ping.ID))
 		return nil, err
