@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+//MockGrpcClient represents mock for a gRPC client
 type MockGrpcClient struct {
 	mock.Mock
 }

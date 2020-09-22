@@ -1,3 +1,4 @@
+//Package job implements methods to perform job related operations
 package job
 
 import (
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+//Client interface defines job related methods
 type Client interface {
 	Logs(string, job.Client) (*protofiles.Log, error)
 	Execute(string, map[string]string, job.Client) (*protofiles.Response, error)
@@ -25,6 +27,7 @@ type octaviusClient struct {
 	connectionTimeoutSecs time.Duration
 }
 
+//NewClient returns instance of Client interface with given octaviusConfigLoader
 func NewClient(clientConfigLoader config.Loader) Client {
 	return &octaviusClient{
 		octaviusConfigLoader: clientConfigLoader,
@@ -50,6 +53,7 @@ func (c *octaviusClient) startOctaviusClient(jobGrpcClient job.Client) error {
 	return nil
 }
 
+//Logs returns string logs for the provided jobID
 func (c *octaviusClient) Logs(jobID string, jobGrpcClient job.Client) (*protofiles.Log, error) {
 	err := c.startOctaviusClient(jobGrpcClient)
 	if err != nil {
@@ -68,6 +72,7 @@ func (c *octaviusClient) Logs(jobID string, jobGrpcClient job.Client) (*protofil
 	return logResponse, err
 }
 
+//Execute returns the execution status for the provided jobName and jobData
 func (c *octaviusClient) Execute(jobName string, jobData map[string]string, jobGrpcClient job.Client) (*protofiles.Response, error) {
 	err := c.startOctaviusClient(jobGrpcClient)
 	if err != nil {

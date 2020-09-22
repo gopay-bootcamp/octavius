@@ -1,3 +1,4 @@
+//Package metadata implements methods to perform metadata related operations
 package metadata
 
 import (
@@ -15,6 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+//Client interface defines metadata related methods
 type Client interface {
 	Post(io.Reader, metadata.Client) (*protofiles.MetadataName, error)
 	Describe(string, metadata.Client) (*protofiles.Metadata, error)
@@ -25,17 +27,19 @@ type octaviusClient struct {
 	octaviusConfigLoader  config.Loader
 	grpcClient            metadata.Client
 	CPHost                string
-	emailId               string
+	emailID               string
 	accessToken           string
 	connectionTimeoutSecs time.Duration
 }
 
+//NewClient returns instance of Client interface with given octaviusConfigLoader
 func NewClient(clientConfigLoader config.Loader) Client {
 	return &octaviusClient{
 		octaviusConfigLoader: clientConfigLoader,
 	}
 }
 
+//startOctaviusClient initialises octaviusClient with the current configuration in config file
 func (c *octaviusClient) startOctaviusClient(grpcClient metadata.Client) error {
 	octaveConfig, configErr := c.octaviusConfigLoader.Load()
 	if configErr != (config.ConfigError{}) {
@@ -43,7 +47,7 @@ func (c *octaviusClient) startOctaviusClient(grpcClient metadata.Client) error {
 	}
 
 	c.CPHost = octaveConfig.Host
-	c.emailId = octaveConfig.Email
+	c.emailID = octaveConfig.Email
 	c.accessToken = octaveConfig.AccessToken
 	c.connectionTimeoutSecs = octaveConfig.ConnectionTimeoutSecs
 	c.grpcClient = grpcClient
@@ -90,7 +94,7 @@ func validateImageNameDocker(imageName string) (bool, error) {
 	return false, nil
 }
 
-// CreateMetadata take metadata file handler and grpc client
+//Post function sends metadata provided metadataFileHandler to gRPC client
 func (c *octaviusClient) Post(metadataFileHandler io.Reader, grpcClient metadata.Client) (*protofiles.MetadataName, error) {
 	metadata := protofiles.Metadata{}
 	err := jsonpb.Unmarshal(metadataFileHandler, &metadata)
@@ -118,7 +122,7 @@ func (c *octaviusClient) Post(metadataFileHandler io.Reader, grpcClient metadata
 	}
 
 	postRequestHeader := protofiles.ClientInfo{
-		ClientEmail: c.emailId,
+		ClientEmail: c.emailID,
 		AccessToken: c.accessToken,
 	}
 	metadataPostRequest := protofiles.RequestToPostMetadata{
@@ -130,13 +134,14 @@ func (c *octaviusClient) Post(metadataFileHandler io.Reader, grpcClient metadata
 	return res, err
 }
 
+//Describe returns metadata of provided jobName
 func (c *octaviusClient) Describe(jobName string, grpcClient metadata.Client) (*protofiles.Metadata, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	postRequestHeader := protofiles.ClientInfo{
-		ClientEmail: c.emailId,
+		ClientEmail: c.emailID,
 		AccessToken: c.accessToken,
 	}
 	descriptionPostRequest := protofiles.RequestToDescribe{
@@ -147,14 +152,14 @@ func (c *octaviusClient) Describe(jobName string, grpcClient metadata.Client) (*
 	return c.grpcClient.Describe(&descriptionPostRequest)
 }
 
-// GetJobList takes jobGrpcClient as argument and returns list of available jobs
+//List return list of all jobs available in octavius
 func (c *octaviusClient) List(grpcClient metadata.Client) (*protofiles.JobList, error) {
 	err := c.startOctaviusClient(grpcClient)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	postRequestHeader := protofiles.ClientInfo{
-		ClientEmail: c.emailId,
+		ClientEmail: c.emailID,
 		AccessToken: c.accessToken,
 	}
 	listJobPostRequest := protofiles.RequestToGetJobList{

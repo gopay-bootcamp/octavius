@@ -1,3 +1,4 @@
+// Package getlogs provides cli command to get logs of job
 package getlogs
 
 import (
