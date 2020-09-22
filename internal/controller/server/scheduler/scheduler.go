@@ -4,13 +4,13 @@ import (
 	"context"
 	jobRepo "octavius/internal/controller/server/repository/job"
 	"octavius/internal/pkg/idgen"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"octavius/internal/pkg/protofiles"
 	"sync"
 )
 
 type Scheduler interface {
-	AddToPendingList(context.Context, uint64, *clientCPproto.RequestForExecute) error
-	FetchJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error)
+	AddToPendingList(context.Context, uint64, *protofiles.RequestToExecute) error
+	FetchJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
 	RemoveFromPendingList(context.Context, string) error
 }
 type scheduler struct {
@@ -28,7 +28,7 @@ func NewScheduler(idGenerator idgen.RandomIdGenerator, schedulerRepo jobRepo.Rep
 }
 
 // AddToPendingList function add given job to pendingList
-func (s *scheduler) AddToPendingList(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
+func (s *scheduler) AddToPendingList(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
 	return s.jobRepo.Save(ctx, jobID, executionData)
 }
 
@@ -38,7 +38,7 @@ func (s *scheduler) RemoveFromPendingList(ctx context.Context, key string) error
 }
 
 // FetchJob returns jobID and executionData from pendingList
-func (s *scheduler) FetchJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
+func (s *scheduler) FetchJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	nextJobID, nextExecutionData, err := s.jobRepo.FetchNextJob(ctx)

@@ -2,13 +2,15 @@ package create
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
-	"octavius/internal/cli/client"
-	"octavius/internal/cli/daemon"
+	client "octavius/internal/cli/client/metadata"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/file"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc/status"
 )
 
 // NewCmd Returns an instance of Create command for registering Job Metadata in Octavius
@@ -20,6 +22,7 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 		Short:   "Create new octavius job metadata",
 		Long:    "This command helps create new job metadata to your CP host with proper metadata.json file",
 		Example: fmt.Sprintf("octavius create --job-path <filepath>/metadata.json"),
+		Args:    cobra.MaximumNArgs(0),
 
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -27,15 +30,15 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 			metadataFileIoReader, err := fileUtil.GetIoReader(metadataFilePath)
 			if err != nil {
 				log.Error(err, "error in reading file")
-				printer.Println("error in reading file", color.FgRed)
+				printer.Println(fmt.Sprintf("error in reading file %v", err.Error()), color.FgRed)
 				return
 			}
 
 			client := &client.GrpcClient{}
-			res, err := octaviusDaemon.CreateMetadata(metadataFileIoReader, client)
+			res, err := octaviusDaemon.Post(metadataFileIoReader, client)
 			if err != nil {
 				log.Error(err, "error in creating metadata")
-				printer.Println("error in creating metadata", color.FgRed)
+				printer.Println(fmt.Sprintf("error in creating metadata, %v", status.Convert(err).Message()), color.FgRed)
 				return
 			}
 
@@ -44,7 +47,11 @@ func NewCmd(octaviusDaemon daemon.Client, fileUtil file.File) *cobra.Command {
 		},
 	}
 	createCmd.Flags().StringVarP(&metadataFilePath, "job-path", "", "", "path to metadata.json(required)")
-	createCmd.MarkFlagRequired("job-path")
-
+	err := createCmd.MarkFlagRequired("job-path")
+	if err != nil {
+		log.Error(err, "error while setting the flag required")
+		printer.Println("error while setting the flag required", color.FgRed)
+		return nil
+	}
 	return createCmd
 }

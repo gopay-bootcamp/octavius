@@ -2,7 +2,7 @@ package scheduler
 
 import (
 	"context"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"octavius/internal/pkg/protofiles"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -11,7 +11,7 @@ type SchedulerMock struct {
 	mock.Mock
 }
 
-func (m *SchedulerMock) AddToPendingList(ctx context.Context, jobID uint64, executionData *clientCPproto.RequestForExecute) error {
+func (m *SchedulerMock) AddToPendingList(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
 	args := m.Called(jobID, executionData)
 	return args.Error(0)
 }
@@ -21,7 +21,7 @@ func (m *SchedulerMock) RemoveFromPendingList(ctx context.Context, key string) e
 	return args.Error(0)
 }
 
-func (m *SchedulerMock) FetchJob(ctx context.Context) (string, *clientCPproto.RequestForExecute, error) {
+func (m *SchedulerMock) FetchJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
 	args := m.Called()
-	return args.String(0), args.Get(1).(*clientCPproto.RequestForExecute), args.Error(2)
+	return args.String(0), args.Get(1).(*protofiles.RequestToExecute), args.Error(2)
 }

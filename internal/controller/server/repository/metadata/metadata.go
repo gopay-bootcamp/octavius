@@ -2,11 +2,12 @@ package metadata
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"octavius/internal/pkg/protofiles"
 	"octavius/internal/pkg/util"
 	"strings"
 
@@ -18,10 +19,10 @@ import (
 
 //Repository interface for functions related to metadata repository
 type Repository interface {
-	Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error)
-	GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error)
-	GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error)
-	GetAvailableJobList(ctx context.Context) (*clientCPproto.JobList, error)
+	Save(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error)
+	GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error)
+	GetAll(ctx context.Context) (*protofiles.MetadataArray, error)
+	GetAvailableJobList(ctx context.Context) (*protofiles.JobList, error)
 }
 
 type metadataRepository struct {
@@ -36,7 +37,7 @@ func NewMetadataRepository(client etcd.Client) Repository {
 }
 
 //Save marshals metadata and saves the value in etcd database with the given key
-func (c *metadataRepository) Save(ctx context.Context, key string, metadata *clientCPproto.Metadata) (*clientCPproto.MetadataName, error) {
+func (c *metadataRepository) Save(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error) {
 
 	val, err := proto.Marshal(metadata)
 
@@ -62,55 +63,61 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *cli
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	res := &clientCPproto.MetadataName{Name: key}
+	res := &protofiles.MetadataName{Name: key}
 	return res, nil
 }
 
 //GetAll returns array of metadata
-func (c *metadataRepository) GetAll(ctx context.Context) (*clientCPproto.MetadataArray, error) {
+func (c *metadataRepository) GetAll(ctx context.Context) (*protofiles.MetadataArray, error) {
 	res, err := c.etcdClient.GetAllValues(ctx, constant.MetadataPrefix)
 	if err != nil {
-		var arr []*clientCPproto.Metadata
-		res := &clientCPproto.MetadataArray{Values: arr}
+		var arr []*protofiles.Metadata
+		res := &protofiles.MetadataArray{Values: arr}
 		return res, status.Error(codes.Internal, err.Error())
 	}
 
-	var resArr []*clientCPproto.Metadata
+	var resArr []*protofiles.Metadata
 	for _, val := range res {
-		metadata := &clientCPproto.Metadata{}
+		metadata := &protofiles.Metadata{}
 		err := proto.Unmarshal([]byte(val), metadata)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		resArr = append(resArr, metadata)
 	}
-	resp := &clientCPproto.MetadataArray{Values: resArr}
+	resp := &protofiles.MetadataArray{Values: resArr}
 	return resp, nil
 }
 
 // GetAvailableJobList returns list of available jobs
-func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*clientCPproto.JobList, error) {
+func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*protofiles.JobList, error) {
 	keys, _, err := c.etcdClient.GetAllKeyAndValues(ctx, constant.MetadataPrefix)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
-
 	}
 	var jobList []string
 
 	for index := range keys {
 		jobList = append(jobList, strings.Split(keys[index], "/")[1])
 	}
-	return &clientCPproto.JobList{Jobs: jobList}, nil
+	return &protofiles.JobList{Jobs: jobList}, nil
 }
 
-func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*clientCPproto.Metadata, error) {
+func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
-	if err != nil {
-		return &clientCPproto.Metadata{}, err
-	}
-	metadata := &clientCPproto.Metadata{}
-	err = proto.Unmarshal([]byte(gr), metadata)
-	return metadata, err
 
+	if err == errors.New(constant.NoValueFound) {
+		return &protofiles.Metadata{}, status.Error(codes.NotFound, err.Error())
+	}
+	if err != nil {
+		return &protofiles.Metadata{}, status.Error(codes.Internal, err.Error())
+	}
+
+	metadata := &protofiles.Metadata{}
+	err = proto.Unmarshal([]byte(gr), metadata)
+	if err != nil {
+		return &protofiles.Metadata{}, status.Error(codes.Internal, err.Error())
+	}
+	return metadata, nil
 }

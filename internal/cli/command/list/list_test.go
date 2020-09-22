@@ -1,9 +1,9 @@
 package list
 
 import (
-	"octavius/internal/cli/daemon"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	protobuf "octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,9 +30,9 @@ func TestListCmd(t *testing.T) {
 	response := &protobuf.JobList{
 		Jobs: jobList,
 	}
-	mockOctaviusDClient.On("GetJobList").Return(response, nil)
-
-	testListCmd.Execute()
-
+	mockOctaviusDClient.On("List").Return(response, nil)
+	testListCmd.SetArgs([]string{})
+	err := testListCmd.Execute()
+	assert.Nil(t, err)
 	mockOctaviusDClient.AssertExpectations(t)
 }

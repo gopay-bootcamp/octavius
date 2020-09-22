@@ -1,9 +1,9 @@
 package describe
 
 import (
-	"octavius/internal/cli/daemon"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	protobuf "octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ func TestDescribeCmdHelp(t *testing.T) {
 	testDescribeCmd := NewCmd(mockOctaviusDClient)
 	assert.Equal(t, "Describe the existing job", testDescribeCmd.Short)
 	assert.Equal(t, "This command helps to describe the job which is already created in server", testDescribeCmd.Long)
-	assert.Equal(t, "octavius describe <job-name>", testDescribeCmd.Example)
+	assert.Equal(t, "octavius describe --job-name <job-name>", testDescribeCmd.Example)
 }
 
 func TestDescribeCmd(t *testing.T) {
@@ -40,8 +40,10 @@ func TestDescribeCmd(t *testing.T) {
 		EnvVars: testEnvVars,
 	}
 
-	mockOctaviusDClient.On("DescribeJob", "DemoJob").Return(describeResponse, nil).Once()
-	testDescribeCmd.SetArgs([]string{"DemoJob"})
-	testDescribeCmd.Execute()
+	mockOctaviusDClient.On("Describe", "DemoJob").Return(describeResponse, nil).Once()
+	testDescribeCmd.SetArgs([]string{"--job-name", "DemoJob"})
+
+	err := testDescribeCmd.Execute()
+	assert.Nil(t, err)
 	mockOctaviusDClient.AssertExpectations(t)
 }

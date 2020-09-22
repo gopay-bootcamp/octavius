@@ -1,0 +1,13 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles";
+
+import "internal/pkg/protofiles/metadata_messages.proto";
+import "internal/pkg/protofiles/metadata.proto";
+import "internal/pkg/protofiles/job_messages.proto";
+
+
+service MetadataServices{
+   rpc Post(RequestToPostMetadata) returns (MetadataName);
+   rpc Describe(RequestToDescribe) returns (Metadata);
+   rpc List(RequestToGetJobList) returns (JobList);
+}

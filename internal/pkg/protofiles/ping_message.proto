@@ -1,0 +1,10 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles";
+
+message Ping {
+    string ID = 1;
+}
+
+message HealthResponse {
+    bool recieved = 1;
+}

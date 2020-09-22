@@ -1,9 +1,9 @@
 package execution
 
 import (
-	"octavius/internal/cli/daemon"
+	daemon "octavius/internal/cli/daemon/job"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	protobuf "octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ func TestExecuteCmdHelp(t *testing.T) {
 	testExecutionCmd := NewCmd(mockOctaviusDClient)
 	assert.Equal(t, "Execute the existing job", testExecutionCmd.Short)
 	assert.Equal(t, "This command helps to execute the job which is already created in server", testExecutionCmd.Long)
-	assert.Equal(t, "octavius execute <job-name> arg1=argvalue1 arg2=argvalue2", testExecutionCmd.Example)
+	assert.Equal(t, "octavius execute --job-name <job-name> --args arg1=value1,arg2=value2", testExecutionCmd.Example)
 }
 
 func TestExecuteCmd(t *testing.T) {
@@ -31,10 +31,12 @@ func TestExecuteCmd(t *testing.T) {
 		Status: "success",
 	}
 
-	mockOctaviusDClient.On("ExecuteJob", "DemoJob", jobData).Return(executedResponse, nil).Once()
+	mockOctaviusDClient.On("Execute", "DemoJob", jobData).Return(executedResponse, nil).Once()
 
-	testExecutionCmd.SetArgs([]string{"DemoJob", "Namespace=default"})
-	testExecutionCmd.Execute()
+	testExecutionCmd.SetArgs([]string{"--job-name", "DemoJob", "--args", "Namespace=default"})
+
+	err := testExecutionCmd.Execute()
+	assert.Nil(t, err)
 
 	mockOctaviusDClient.AssertExpectations(t)
 }

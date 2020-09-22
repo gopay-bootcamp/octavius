@@ -1,0 +1,8 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles";
+
+import "internal/pkg/protofiles/ping_message.proto";
+
+service HealthServices{
+    rpc Check(Ping) returns (HealthResponse);
+}

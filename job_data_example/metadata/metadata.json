@@ -1,7 +1,7 @@
 {
-  "name": "demo-image-name-docker",
+  "name": "demo-image-name-docker-14",
   "description": "This is a cool demo image",
-  "image_name": "hello-world",
+  "image_name": "jaiminrathod98765/i1",
   "author": "Gopay System Automation Team",
   "contributors": "",
   "organization": "gopay-systems",
@@ -19,12 +19,12 @@
       }
     ],
     "args": [{
-        "name": "ENV",
+        "name": "name",
         "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
         "required" : false
       },
       {
-        "name": "RELEASE_NAME",
+        "name": "surname",
         "description": "[Mandatory] Helm release name to be migrated",
         "required": false
       },

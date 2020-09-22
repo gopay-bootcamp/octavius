@@ -3,10 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
-	"octavius/internal/executor/client"
+	healthClient "octavius/internal/executor/client/health"
+	jobClient "octavius/internal/executor/client/job"
+	registrationClient "octavius/internal/executor/client/registration"
 	"octavius/internal/executor/command"
 	"octavius/internal/executor/config"
-	"octavius/internal/executor/daemon"
+	"octavius/internal/executor/daemon/health"
+	"octavius/internal/executor/daemon/job"
+	"octavius/internal/executor/daemon/registration"
 	octlog "octavius/internal/pkg/log"
 )
 
@@ -22,8 +26,11 @@ func main() {
 		log.Fatal(fmt.Sprintf("failed to initialize logger %v", err))
 	}
 
-	executorDaemon := daemon.NewExecutorClient(&client.GrpcClient{})
-	err = command.Execute(executorDaemon, executorConfig)
+	jobDaemon := job.NewJobServicesClient(&jobClient.GrpcClient{})
+	registrationDaemon := registration.NewRegistrationServicesClient(&registrationClient.GrpcClient{})
+	healthDaemon := health.NewHealthServicesClient(&healthClient.GrpcClient{})
+
+	err = command.Execute(jobDaemon, registrationDaemon, healthDaemon, executorConfig)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("failed to execute command %v", err))
 	}
