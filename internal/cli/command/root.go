@@ -1,3 +1,4 @@
+//Package command provides execution for all the cli commands
 package command
 
 import (
@@ -20,7 +21,7 @@ var rootCmd = &cobra.Command{
 	Long:  `Easily automate your work using ocatvius' multi-processing capabilities`,
 }
 
-// Execute Executes the root command of Octavius Cli
+// Execute function executes the root command of Octavius Cli
 func Execute(jobDaemon jobDaemon.Client, metadataDaemon metadataDaemon.Client) error {
 
 	fileUtil := file.New()

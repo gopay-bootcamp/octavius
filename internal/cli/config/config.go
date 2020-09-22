@@ -1,3 +1,4 @@
+//Package config reads configurations for the client side
 package config
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+//Client configurations
 const (
 	Environment           = "ENVIRONMENT"
 	OctaviusCPHost        = "CP_HOST"
@@ -28,7 +30,7 @@ type OctaviusConfig struct {
 	ConnectionTimeoutSecs time.Duration
 }
 
-// ConfigError Struct containing error and Message to solve the Client Config Error
+//ConfigError Struct containing error and Message to solve the Client Config Error
 type ConfigError struct {
 	error
 	Message string
