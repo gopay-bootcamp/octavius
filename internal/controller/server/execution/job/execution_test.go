@@ -1,15 +1,17 @@
+// Package job implements job related functions
 package job
 
 import (
 	"context"
 	"errors"
-	"github.com/golang/protobuf/proto"
 	"octavius/internal/controller/server/repository/job"
 	"octavius/internal/controller/server/scheduler"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/protofiles"
 	"testing"
+
+	"github.com/golang/protobuf/proto"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -1,3 +1,4 @@
+// Package server serves as an entry point of the controller
 package server
 
 import (

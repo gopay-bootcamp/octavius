@@ -1,3 +1,4 @@
+//Package describe provides cli command to get the job description of a specific job
 package describe
 
 import (

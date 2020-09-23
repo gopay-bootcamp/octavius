@@ -1,3 +1,4 @@
+//Package metadata implements methods to send metadata related gRPC requests to controller
 package metadata
 
 import (
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+//Client interface defines metadata related methods
 type Client interface {
 	Post(*protofiles.RequestToPostMetadata) (*protofiles.MetadataName, error)
 	ConnectClient(cpHost string) error
@@ -18,11 +20,13 @@ type Client interface {
 	List(*protofiles.RequestToGetJobList) (*protofiles.JobList, error)
 }
 
+//GrpcClient structure represents metadata related gRPC client
 type GrpcClient struct {
 	client                protofiles.MetadataServicesClient
 	connectionTimeoutSecs time.Duration
 }
 
+//ConnectClient function dials a connection provided host between controller and client
 func (g *GrpcClient) ConnectClient(cpHost string) error {
 	conn, err := grpc.Dial(cpHost, grpc.WithInsecure())
 	if err != nil {
@@ -34,6 +38,7 @@ func (g *GrpcClient) ConnectClient(cpHost string) error {
 	return nil
 }
 
+//Post function sends metadata to controller and returns metadata name as response
 func (g *GrpcClient) Post(metadataPostRequest *protofiles.RequestToPostMetadata) (*protofiles.MetadataName, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
@@ -45,10 +50,12 @@ func (g *GrpcClient) Post(metadataPostRequest *protofiles.RequestToPostMetadata)
 	return res, nil
 }
 
+//Describe function sends request to controller to describe a specific job to controller and returns metadata of that job
 func (g *GrpcClient) Describe(requestForDescribe *protofiles.RequestToDescribe) (*protofiles.Metadata, error) {
 	return g.client.Describe(context.Background(), requestForDescribe)
 }
 
+//List function sends request to controller to get list of all available jobs and returns job list
 func (g *GrpcClient) List(requestForGetJobList *protofiles.RequestToGetJobList) (*protofiles.JobList, error) {
 	return g.client.List(context.Background(), requestForGetJobList)
 }

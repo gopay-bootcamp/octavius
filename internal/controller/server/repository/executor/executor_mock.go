@@ -1,3 +1,4 @@
+// Package executor implements executor repository related functions
 package executor
 
 import (
@@ -7,7 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-//ExecutorMock mock executor repository
+// ExecutorMock mock executor repository
 type ExecutorMock struct {
 	mock.Mock
 }
@@ -27,10 +28,5 @@ func (m *ExecutorMock) Get(ctx context.Context, key string) (*protofiles.Executo
 //UpdateStatus mocks update status functionality of repository
 func (m *ExecutorMock) UpdateStatus(ctx context.Context, key string, health string) error {
 	args := m.Called(key, health)
-	return args.Error(0)
-}
-
-func (m *ExecutorMock) SaveJobExecutionData(ctx context.Context, jobID string, executionData *protofiles.ExecutionContext) error {
-	args := m.Called(jobID, executionData)
 	return args.Error(0)
 }

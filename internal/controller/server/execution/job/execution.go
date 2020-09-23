@@ -1,3 +1,4 @@
+// Package job implements job related functions
 package job
 
 import (
@@ -13,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Execution interface for methods related to execution
+// JobExecution interface for methods related to execution
 type JobExecution interface {
 	GetJob(ctx context.Context) (*protofiles.Job, error)
 	ExecuteJob(ctx context.Context, request *protofiles.RequestToExecute) (uint64, error)
@@ -27,7 +28,7 @@ type jobExecution struct {
 	scheduler   scheduler.Scheduler
 }
 
-// NewExec creates a new instance of metadata respository
+// NewJobExec creates a new instance of job respository
 func NewJobExec(jobRepo jobRepo.Repository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) JobExecution {
 	return &jobExecution{
 		jobRepo:     jobRepo,
