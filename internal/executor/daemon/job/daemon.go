@@ -72,17 +72,17 @@ func (e *jobServicesClient) connectClient(executorConfig config.OctaviusExecutor
 	return err
 }
 
-func (e *jobServicesClient) postExecutorStatus(stat string)(*protofiles.Acknowledgement,error){
-	return e.grpcClient.PostExecutorStatus(&protofiles.Status{ID:e.id, Status:stat})
+func (e *jobServicesClient) postExecutorStatus(stat string) (*protofiles.Acknowledgement, error) {
+	return e.grpcClient.PostExecutorStatus(&protofiles.Status{ID: e.id, Status: stat})
 }
 
 func (e *jobServicesClient) StartKubernetesService(executorConfig config.OctaviusExecutorConfig) {
-	
+
 	err := e.connectClient(executorConfig)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	_,err = e.postExecutorStatus(constant.IdleState)
+	_, err = e.postExecutorStatus(constant.IdleState)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -96,7 +96,7 @@ func (e *jobServicesClient) StartKubernetesService(executorConfig config.Octaviu
 			continue
 		}
 		e.statusLock.Lock()
-		_,err = e.postExecutorStatus(constant.RunningState)
+		_, err = e.postExecutorStatus(constant.RunningState)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -133,7 +133,7 @@ func (e *jobServicesClient) StartKubernetesService(executorConfig config.Octaviu
 		go e.startWatch(&jobContext)
 
 		e.statusLock.Lock()
-		_,err = e.postExecutorStatus(constant.IdleState)
+		_, err = e.postExecutorStatus(constant.IdleState)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
