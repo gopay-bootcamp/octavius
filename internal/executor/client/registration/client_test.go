@@ -42,8 +42,12 @@ func (s *server) Register(ctx context.Context, registerRequest *protofiles.Regis
 	}, nil
 }
 
-func TestConnectClient(t *testing.T) {
+func init() {
 	createFakeServer()
+}
+
+func TestConnectClient(t *testing.T) {
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
@@ -61,7 +65,7 @@ func TestConnectClient(t *testing.T) {
 }
 
 func TestRegsiter(t *testing.T) {
-	createFakeServer()
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {

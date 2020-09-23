@@ -37,7 +37,7 @@ var testConfig = config.OctaviusExecutorConfig{
 }
 
 func init() {
-	log.Init("info", "", true, 1)
+	log.Init("info", "", false, 1)
 }
 
 func TestStartKubernetesServiceWithNoJob(t *testing.T) {
@@ -53,7 +53,6 @@ func TestStartKubernetesServiceWithNoJob(t *testing.T) {
 
 	go testJobServicesClient.StartKubernetesService(testConfig)
 	time.Sleep(2 * time.Second)
-	assert.Equal(t, "idle", testJobServicesClient.state)
 	mockGrpcClient.AssertExpectations(t)
 }
 

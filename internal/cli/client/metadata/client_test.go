@@ -59,9 +59,12 @@ func (s *server) List(context.Context, *protofiles.RequestToGetJobList) (*protof
 	return response, nil
 }
 
+func init() {
+	createFakeServer()
+}
+
 // TestPost used to test Post
 func TestPost(t *testing.T) {
-	createFakeServer()
 
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
@@ -82,7 +85,6 @@ func TestPost(t *testing.T) {
 
 func TestDescribe(t *testing.T) {
 
-	createFakeServer()
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
@@ -102,7 +104,7 @@ func TestDescribe(t *testing.T) {
 
 }
 func TestList(t *testing.T) {
-	createFakeServer()
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
@@ -131,7 +133,7 @@ func TestList(t *testing.T) {
 }
 
 func TestConnectClient(t *testing.T) {
-	createFakeServer()
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
