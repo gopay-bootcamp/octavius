@@ -22,7 +22,7 @@ func init() {
 }
 
 func TestStartExecutorHealthCheck(t *testing.T) {
-	pingChan := make(chan string)
+	pingChan := make(chan struct{})
 	sessionID := uint64(1234)
 	newActiveExecutor := activeExecutor{
 		pingChan:  pingChan,
@@ -58,8 +58,6 @@ func TestStartExecutorHealthCheck(t *testing.T) {
 	//assert exit condition
 	_, exists := testExecutorMap.Get("exec 1")
 	assert.Equal(t, false, exists)
-	testExecRepo.AssertExpectations(t)
-
 }
 
 func TestUpdateExecutorStatusNotRegistered(t *testing.T) {
@@ -70,12 +68,11 @@ func TestUpdateExecutorStatusNotRegistered(t *testing.T) {
 
 	ctx := context.Background()
 	request := protofiles.Ping{
-		ID:    "exec 1",
-		State: "healthy",
+		ID: "exec 1",
 	}
 	executorRepoMock.On("Get", "exec 1").Return(&protofiles.ExecutorInfo{}, status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound))
 	pingTimeOut := 20 * time.Second
-	res, err := testExec.UpdateExecutorStatus(ctx, &request, pingTimeOut)
+	res, err := testExec.UpdatePingStatus(ctx, &request, pingTimeOut)
 	executorRepoMock.AssertExpectations(t)
 	assert.Nil(t, res)
 	assert.Equal(t, err.Error(), status.Error(codes.PermissionDenied, "executor not registered").Error())
@@ -89,18 +86,17 @@ func TestUpdateExecutorStatus(t *testing.T) {
 
 	ctx := context.Background()
 	request := protofiles.Ping{
-		ID:    "exec 1",
-		State: "idle",
+		ID: "exec 1",
 	}
 	executorRepoMock.On("Get", "exec 1").Return(&protofiles.ExecutorInfo{}, nil)
 	executorRepoMock.On("UpdateStatus", "exec 1", "idle").Return(nil)
-	res, err := testExec.UpdateExecutorStatus(ctx, &request, 20*time.Second)
+	res, err := testExec.UpdatePingStatus(ctx, &request, 20*time.Second)
 	_, ok := getActiveExecutorMap(testExec.(*healthExecution)).Get("exec 1")
 	assert.Equal(t, res.Recieved, true)
 	assert.Nil(t, err)
 	assert.Equal(t, true, ok)
 	pingTimeOut := 20 * time.Second
-	res, err = testExec.UpdateExecutorStatus(ctx, &request, pingTimeOut)
+	res, err = testExec.UpdatePingStatus(ctx, &request, pingTimeOut)
 	assert.Equal(t, res.Recieved, true)
 	assert.Nil(t, err)
 }
