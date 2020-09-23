@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//NewCmd returns start command
+//NewCmd returns register command
 func NewCmd(executorDaemon daemon.RegistrationServicesClient, executorConfig config.OctaviusExecutorConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "register",

@@ -1,3 +1,4 @@
+// Package job implements job repository related functions
 package job
 
 import (

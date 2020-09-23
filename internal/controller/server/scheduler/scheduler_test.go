@@ -1,3 +1,4 @@
+// Package scheduler implements scheduling related functions
 package scheduler
 
 import (

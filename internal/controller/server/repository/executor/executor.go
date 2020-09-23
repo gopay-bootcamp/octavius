@@ -1,3 +1,4 @@
+// Package executor implements executor repository related functions
 package executor
 
 import (
@@ -14,7 +15,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-//Repository interface for functions related to metadata repository
+// Repository interface for functions related to executor repository
 type Repository interface {
 	Save(ctx context.Context, key string, executorInfo *protofiles.ExecutorInfo) (*protofiles.RegisterResponse, error)
 	Get(ctx context.Context, key string) (*protofiles.ExecutorInfo, error)
@@ -25,13 +26,14 @@ type executorRepository struct {
 	etcdClient etcd.Client
 }
 
-//NewExecutorRepository initializes metadataRepository with the given etcdClient
+// NewExecutorRepository initializes metadataRepository with the given etcdClient
 func NewExecutorRepository(client etcd.Client) Repository {
 	return &executorRepository{
 		etcdClient: client,
 	}
 }
 
+// Save takes exexcutorInfo and key as arguments and saves it to executor/register
 func (e *executorRepository) Save(ctx context.Context, key string, executorInfo *protofiles.ExecutorInfo) (*protofiles.RegisterResponse, error) {
 	dbKey := constant.ExecutorRegistrationPrefix + key
 
@@ -49,11 +51,13 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 	return &protofiles.RegisterResponse{Registered: true}, nil
 }
 
+// UpdateStatus takes executor key and health as arguments and updates status of executor in executor/status
 func (e *executorRepository) UpdateStatus(ctx context.Context, key string, health string) error {
 	dbKey := constant.ExecutorStatusPrefix + key
 	return e.etcdClient.PutValue(ctx, dbKey, health)
 }
 
+// Get takes executor key as an argument and returns information about that particular executor
 func (e *executorRepository) Get(ctx context.Context, key string) (*protofiles.ExecutorInfo, error) {
 	dbKey := constant.ExecutorRegistrationPrefix + key
 

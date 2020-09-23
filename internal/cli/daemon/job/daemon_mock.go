@@ -7,21 +7,24 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+//MockClient is a mock for Daemon
 type MockClient struct {
 	mock.Mock
 }
 
-// StartClient mock
+//StartClient mock
 func (m *MockClient) StartClient() error {
 	args := m.Called()
 	return args.Error(0)
 }
 
+//Logs mock
 func (m *MockClient) Logs(jobID string, grpcClient job.Client) (*protofiles.Log, error) {
 	args := m.Called(jobID)
 	return args.Get(0).(*protofiles.Log), args.Error(1)
 }
 
+//Execute mock
 func (m *MockClient) Execute(jobName string, jobData map[string]string, grpcClient job.Client) (*protofiles.Response, error) {
 	args := m.Called(jobName, jobData)
 	return args.Get(0).(*protofiles.Response), args.Error(1)

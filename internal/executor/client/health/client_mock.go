@@ -11,11 +11,13 @@ type MockGrpcClient struct {
 	mock.Mock
 }
 
+//Ping mock
 func (m *MockGrpcClient) Ping(ping *protofiles.Ping) (*protofiles.HealthResponse, error) {
 	args := m.Called(ping)
 	return args.Get(0).(*protofiles.HealthResponse), args.Error(1)
 }
 
+//ConnectClient mock
 func (m *MockGrpcClient) ConnectClient(cpHost string, connectionTimeOut time.Duration) error {
 	args := m.Called(cpHost, connectionTimeOut)
 	return args.Error(0)

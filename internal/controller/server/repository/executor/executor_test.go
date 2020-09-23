@@ -1,3 +1,4 @@
+// Package executor implements executor repository related functions
 package executor
 
 import (

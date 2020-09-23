@@ -1,3 +1,4 @@
+// Package metadata implements metadata repository related functions
 package metadata
 
 import (

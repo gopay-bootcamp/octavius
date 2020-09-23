@@ -47,8 +47,8 @@ func (e *jobServicesServer) Get(ctx context.Context, executorData *protofiles.Ex
 	return res, err
 }
 
-func (s *jobServicesServer) Logs(ctx context.Context, request *protofiles.RequestToGetLogs) (*protofiles.Log, error) {
-	uuid, err := s.idgen.Generate()
+func (e *jobServicesServer) Logs(ctx context.Context, request *protofiles.RequestToGetLogs) (*protofiles.Log, error) {
+	uuid, err := e.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
@@ -56,7 +56,7 @@ func (s *jobServicesServer) Logs(ctx context.Context, request *protofiles.Reques
 
 	log.Info(fmt.Sprintf("request id: %v, getlogs request received", uuid))
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	jobLogs, err := s.procExec.GetJobLogs(ctx, request.JobName)
+	jobLogs, err := e.procExec.GetJobLogs(ctx, request.JobName)
 	if err != nil {
 		log.Error(fmt.Errorf("request id: %v, error in fetching logs, error details: %v", uuid, err), "")
 		return nil, err
@@ -65,9 +65,9 @@ func (s *jobServicesServer) Logs(ctx context.Context, request *protofiles.Reques
 	return logString, nil
 }
 
-// ExecuteJob will call Execute function of execution and get jobId
-func (s *jobServicesServer) Execute(ctx context.Context, executionData *protofiles.RequestToExecute) (*protofiles.Response, error) {
-	uuid, err := s.idgen.Generate()
+// Execute service will call Execute function of execution and get jobId
+func (e *jobServicesServer) Execute(ctx context.Context, executionData *protofiles.RequestToExecute) (*protofiles.Response, error) {
+	uuid, err := e.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
@@ -76,7 +76,7 @@ func (s *jobServicesServer) Execute(ctx context.Context, executionData *protofil
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
 	log.Info(fmt.Sprintf("request id: %v, ExecuteJob request received with executionData %+v", uuid, executionData))
 
-	jobID, err := s.procExec.ExecuteJob(ctx, executionData)
+	jobID, err := e.procExec.ExecuteJob(ctx, executionData)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, error in job execution", uuid))
 		return &protofiles.Response{Status: "failure"}, err
@@ -86,6 +86,7 @@ func (s *jobServicesServer) Execute(ctx context.Context, executionData *protofil
 	return &protofiles.Response{Status: jobIDString}, err
 }
 
+// PostExecutionData service  is used to save execution data of job
 func (e *jobServicesServer) PostExecutionData(ctx context.Context, executionData *protofiles.ExecutionContext) (*protofiles.Acknowledgement, error) {
 	uuid, err := e.idgen.Generate()
 	if err != nil {
