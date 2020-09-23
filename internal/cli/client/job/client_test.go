@@ -55,6 +55,10 @@ func (s *server) PostExecutionData(context.Context, *protofiles.ExecutionContext
 	return nil, nil
 }
 
+func (s *server) PostExecutorStatus(context.Context, *protofiles.Status) (*protofiles.Acknowledgement, error) {
+	return nil, nil
+}
+
 func TestExecuteJob(t *testing.T) {
 	createFakeServer()
 	ctx := context.Background()

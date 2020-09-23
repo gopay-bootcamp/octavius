@@ -60,3 +60,8 @@ func (m *JobMock) GetValue(ctx context.Context, jobName string) (*protofiles.Met
 	args := m.Called(jobName)
 	return args.Get(0).(*protofiles.Metadata), args.Error(1)
 }
+
+func (m *JobMock) UpdateStatus(ctx context.Context, key string, health string) error {
+	args := m.Called(key, health)
+	return args.Error(1)
+}

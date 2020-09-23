@@ -57,6 +57,12 @@ func (s *server) PostExecutionData(context.Context, *protofiles.ExecutionContext
 	}, nil
 }
 
+func (s *server) PostExecutorStatus(context.Context, *protofiles.Status) (*protofiles.Acknowledgement, error) {
+	return &protofiles.Acknowledgement{
+		Recieved: true,
+	}, nil
+}
+
 func TestConnectClient(t *testing.T) {
 	createFakeServer()
 	ctx := context.Background()
