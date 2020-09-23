@@ -47,8 +47,8 @@ func (e *jobServicesServer) Get(ctx context.Context, executorData *protofiles.Ex
 	return res, err
 }
 
-func (s *jobServicesServer) Logs(ctx context.Context, request *protofiles.RequestToGetLogs) (*protofiles.Log, error) {
-	uuid, err := s.idgen.Generate()
+func (e *jobServicesServer) Logs(ctx context.Context, request *protofiles.RequestToGetLogs) (*protofiles.Log, error) {
+	uuid, err := e.idgen.Generate()
 	if err != nil {
 		log.Error(err, "error while assigning id to the request")
 		return nil, status.Error(codes.Internal, err.Error())
