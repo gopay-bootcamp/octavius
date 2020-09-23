@@ -14,7 +14,7 @@ type Client interface {
 	ConnectClient(cpHost string, connectionTimeOut time.Duration) error
 	FetchJob(start *protofiles.ExecutorID) (*protofiles.Job, error)
 	SendExecutionContext(executionData *protofiles.ExecutionContext) (*protofiles.Acknowledgement, error)
-	PostExecutorStatus(stat *protofiles.Status) (*protofiles.Acknowledgement,error)
+	PostExecutorStatus(stat *protofiles.Status) (*protofiles.Acknowledgement, error)
 }
 
 type GrpcClient struct {
@@ -45,8 +45,8 @@ func (g *GrpcClient) SendExecutionContext(executionData *protofiles.ExecutionCon
 	return g.client.PostExecutionData(ctx, executionData)
 }
 
-func (g *GrpcClient) PostExecutorStatus(stat *protofiles.Status) (*protofiles.Acknowledgement,error) {
+func (g *GrpcClient) PostExecutorStatus(stat *protofiles.Status) (*protofiles.Acknowledgement, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()
-	return g.client.PostExecutorStatus(ctx,stat)
+	return g.client.PostExecutorStatus(ctx, stat)
 }

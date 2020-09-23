@@ -23,6 +23,7 @@ type JobServicesClient interface {
 	FetchJob() (*protofiles.Job, error)
 	StartKubernetesService(executorConfig config.OctaviusExecutorConfig)
 	startWatch(executionContext *protofiles.ExecutionContext)
+	ConfigureKubernetesClient(executorConfig config.OctaviusExecutorConfig) error
 }
 
 type jobServicesClient struct {
@@ -45,19 +46,7 @@ func NewJobServicesClient(grpcClient client.Client) JobServicesClient {
 	}
 }
 
-func (e *jobServicesClient) connectClient(executorConfig config.OctaviusExecutorConfig) error {
-	e.id = executorConfig.ID
-	e.cpHost = executorConfig.CPHost
-	e.accessToken = executorConfig.AccessToken
-	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
-	e.pingInterval = executorConfig.PingInterval
-	e.kubeLogWaitTime = 5 * time.Minute
-	e.state = constant.IdleState
-	err := e.grpcClient.ConnectClient(e.cpHost, e.connectionTimeoutSecs)
-	if err != nil {
-		return err
-	}
-
+func (e *jobServicesClient) ConfigureKubernetesClient(executorConfig config.OctaviusExecutorConfig) error {
 	var kubeConfig = config.OctaviusExecutorConfig{
 		KubeConfig:                   executorConfig.KubeConfig,
 		KubeContext:                  executorConfig.KubeContext,
@@ -68,7 +57,25 @@ func (e *jobServicesClient) connectClient(executorConfig config.OctaviusExecutor
 		KubeJobRetries:               executorConfig.KubeJobRetries,
 		KubeWaitForResourcePollCount: executorConfig.KubeWaitForResourcePollCount,
 	}
-	e.kubernetesClient, err = kubernetes.NewKubernetesClient(kubeConfig)
+
+	kubernetesClient, err := kubernetes.NewKubernetesClient(kubeConfig)
+	if err != nil {
+		return err
+	}
+	e.kubernetesClient = kubernetesClient
+	return nil
+}
+
+func (e *jobServicesClient) connectClient(executorConfig config.OctaviusExecutorConfig) error {
+	e.id = executorConfig.ID
+	e.cpHost = executorConfig.CPHost
+	e.accessToken = executorConfig.AccessToken
+	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
+	e.pingInterval = executorConfig.PingInterval
+	e.kubeLogWaitTime = time.Duration(executorConfig.KubeJobActiveDeadlineSeconds) * time.Second
+	e.state = constant.IdleState
+	err := e.grpcClient.ConnectClient(e.cpHost, e.connectionTimeoutSecs)
+
 	return err
 }
 
@@ -116,6 +123,7 @@ func (e *jobServicesClient) StartKubernetesService(executorConfig config.Octaviu
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
+		log.Info("calling kubernets")
 		executionName, err := e.kubernetesClient.ExecuteJob(ctx, jobID, imageName, executionArgs)
 		log.Info(fmt.Sprintln("Executed Job on Kubernetes got ", executionName, " execution jobName and ", err, "errors"))
 		if err != nil {

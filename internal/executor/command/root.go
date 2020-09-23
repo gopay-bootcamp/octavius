@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute executes the root command of octavius control plane
-func Execute(jobDaemon job.JobServicesClient, registrationDaemon registration.RegistrationServicesClient, healthDaemon health.HeathServicesClient, executorConfig config.OctaviusExecutorConfig) error {
+func Execute(jobDaemon job.JobServicesClient, registrationDaemon registration.RegistrationServicesClient, healthDaemon health.HealthServicesClient, executorConfig config.OctaviusExecutorConfig) error {
 
 	registerCmd := register.NewCmd(registrationDaemon, executorConfig)
 	rootCmd.AddCommand(registerCmd)

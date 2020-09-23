@@ -11,7 +11,7 @@ import (
 )
 
 //NewCmd returns start command
-func NewCmd(jobDaemon job.JobServicesClient, healthDaemon health.HeathServicesClient, executorConfig config.OctaviusExecutorConfig) *cobra.Command {
+func NewCmd(jobDaemon job.JobServicesClient, healthDaemon health.HealthServicesClient, executorConfig config.OctaviusExecutorConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "start",
 		Short: "Start Executor",
@@ -19,6 +19,7 @@ func NewCmd(jobDaemon job.JobServicesClient, healthDaemon health.HeathServicesCl
 		Run: func(cmd *cobra.Command, args []string) {
 			log.Info(fmt.Sprintf("executor with id: %s started", executorConfig.ID))
 			healthDaemon.StartPing(executorConfig)
+			jobDaemon.ConfigureKubernetesClient(executorConfig)
 			jobDaemon.StartKubernetesService(executorConfig)
 		},
 	}

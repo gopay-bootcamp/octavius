@@ -1,21 +1,14 @@
 package health
 
 import (
-	"errors"
-	"io/ioutil"
-	"octavius/internal/executor/client"
+	"octavius/internal/executor/client/health"
 	"octavius/internal/executor/config"
-	"octavius/internal/pkg/constant"
-	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/log"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
-	"strings"
+	"octavius/internal/pkg/protofiles"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/core/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func init() {
@@ -23,10 +16,10 @@ func init() {
 }
 
 func TestStartClient(t *testing.T) {
-	mockGrpcClient := new(client.MockGrpcClient)
+	mockGrpcClient := new(health.MockGrpcClient)
 
-	testClient := NewExecutorClient(mockGrpcClient)
-	testExecutorClient := testClient.(*executorClient)
+	testClient := NewHealthServicesClient(mockGrpcClient)
+	testhealthServicesClient := testClient.(*healthServicesClient)
 
 	testConfig := config.OctaviusExecutorConfig{
 		CPHost:                       "test host",
@@ -44,24 +37,19 @@ func TestStartClient(t *testing.T) {
 		KubeWaitForResourcePollCount: 1,
 	}
 
-	testKubeClient, _ := kubernetes.NewKubernetesClient(testConfig)
-
-	finalExecutorClient := &executorClient{
+	finalhealthServicesClient := &healthServicesClient{
 		grpcClient:            mockGrpcClient,
 		cpHost:                "test host",
 		id:                    "test id",
 		accessToken:           "test access",
 		connectionTimeoutSecs: time.Second,
 		pingInterval:          time.Second,
-		kubeLogWaitTime:       5 * time.Minute,
-		kubernetesClient:      testKubeClient,
-		state:                 constant.IdleState,
 	}
 
 	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
 
-	testExecutorClient.StartClient(testConfig)
-	assert.Equal(t, finalExecutorClient, testExecutorClient)
+	testhealthServicesClient.connectClient(testConfig)
+	assert.Equal(t, finalhealthServicesClient, testhealthServicesClient)
 	mockGrpcClient.AssertExpectations(t)
 }
 
@@ -81,14 +69,13 @@ func TestStartPing(t *testing.T) {
 		KubeJobRetries:               1,
 		KubeWaitForResourcePollCount: 1,
 	}
-	mockGrpcClient := new(client.MockGrpcClient)
-	testClient := NewExecutorClient(mockGrpcClient)
-	testExecutorClient := testClient.(*executorClient)
-	testExecutorClient.id = "test id"
+	mockGrpcClient := new(health.MockGrpcClient)
+	testClient := NewHealthServicesClient(mockGrpcClient)
+	testhealthServicesClient := testClient.(*healthServicesClient)
+	testhealthServicesClient.id = "test id"
 	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
-	mockGrpcClient.On("Ping", &executorCPproto.Ping{ID: "test id", State: "idle"}).Return(&executorCPproto.HealthResponse{Recieved: true}, nil)
-	testExecutorClient.StartClient(testConfig)
-	testExecutorClient.StartPing()
-	time.Sleep(6 * time.Second)
+	mockGrpcClient.On("Ping", &protofiles.Ping{ID: "test id"}).Return(&protofiles.HealthResponse{Recieved: true}, nil)
+	testhealthServicesClient.StartPing(testConfig)
+	time.Sleep(2 * time.Second)
 	mockGrpcClient.AssertExpectations(t)
 }

@@ -11,12 +11,12 @@ import (
 )
 
 // Client executor client interface
-type HeathServicesClient interface {
+type HealthServicesClient interface {
 	connectClient(executorConfig config.OctaviusExecutorConfig) error
 	StartPing(executorConfig config.OctaviusExecutorConfig)
 }
 
-type heathServicesClient struct {
+type healthServicesClient struct {
 	id                    string
 	grpcClient            client.Client
 	cpHost                string
@@ -26,14 +26,14 @@ type heathServicesClient struct {
 	statusLock            sync.RWMutex
 }
 
-//NewExecutorClient returns new empty executor client
-func NewHealthServicesClient(grpcClient client.Client) HeathServicesClient {
-	return &heathServicesClient{
+//NewHealthServicesClient returns new empty executor client
+func NewHealthServicesClient(grpcClient client.Client) HealthServicesClient {
+	return &healthServicesClient{
 		grpcClient: grpcClient,
 	}
 }
 
-func (e *heathServicesClient) connectClient(executorConfig config.OctaviusExecutorConfig) error {
+func (e *healthServicesClient) connectClient(executorConfig config.OctaviusExecutorConfig) error {
 	e.id = executorConfig.ID
 	e.cpHost = executorConfig.CPHost
 	e.accessToken = executorConfig.AccessToken
@@ -46,7 +46,7 @@ func (e *heathServicesClient) connectClient(executorConfig config.OctaviusExecut
 	return err
 }
 
-func (e *heathServicesClient) StartPing(executorConfig config.OctaviusExecutorConfig) {
+func (e *healthServicesClient) StartPing(executorConfig config.OctaviusExecutorConfig) {
 	err := e.connectClient(executorConfig)
 	if err != nil {
 		log.Fatal(err.Error())
