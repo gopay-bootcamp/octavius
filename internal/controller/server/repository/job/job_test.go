@@ -61,42 +61,6 @@ func TestSaveForEtcdClientFailure(t *testing.T) {
 	mockClient.AssertExpectations(t)
 }
 
-func TestCheckJobIsAvailableForJobAvailable(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	mockClient.On("GetValue", "metadata/testJobName").Return("metadata of testJobName", nil)
-
-	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Nil(t, err)
-	assert.True(t, jobAvailabilityStatus)
-	mockClient.AssertExpectations(t)
-}
-
-func TestCheckJobIsAvailableForJobNotAvailable(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New(constant.NoValueFound))
-
-	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Equal(t, status.Error(codes.NotFound, constant.Etcd+"job with testJobName name not found").Error(), err.Error())
-	assert.False(t, jobAvailabilityStatus)
-	mockClient.AssertExpectations(t)
-}
-
-func TestCheckJobIsAvailableForEtcdClientFailure(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New("failed to get value from database"))
-
-	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Equal(t, status.Error(codes.Internal, "failed to get value from database").Error(), err.Error())
-	assert.False(t, jobAvailabilityStatus)
-	mockClient.AssertExpectations(t)
-}
-
 func TestDeleteJob(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
