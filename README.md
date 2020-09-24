@@ -27,7 +27,7 @@ The architecure uses `gRPC` as the messaging protocol and is entirely written in
 
 Lets discuss a bit about the major entities that are present in octavius-:
 
-1. Cli-client - The user-facing entity that will be used to make all the requests to octavius. It is a cli based application that accepts specific commands with or without arguments and should returns an output. The list of commands presently supported by the octavius client is-:
+1. cli-client - The user-facing entity that will be used to make all the requests to octavius. It is a cli based application that accepts specific commands with or without arguments and should returns an output. The list of commands presently supported by the octavius client is-:
 
     - `config` - It is used to configure the client so that all the subsequent requests are made to a proper host and with proper authentication parameters. The user is needed to create a yaml file. You can find a template `octavius_client.yaml` file [here](./job_data_example/config/octavius_client.yaml)
 
