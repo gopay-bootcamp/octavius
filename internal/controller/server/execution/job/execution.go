@@ -79,7 +79,7 @@ func (e *jobExecution) GetJob(ctx context.Context) (*protofiles.Job, error) {
 	}
 
 	metadataName := clientJob.JobName
-	metadata, err := e.jobRepo.GetValue(ctx, metadataName)
+	metadata, err := e.jobRepo.GetMetadata(ctx, metadataName)
 	if err != nil {
 		return nil, err
 	}

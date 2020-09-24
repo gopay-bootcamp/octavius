@@ -36,14 +36,14 @@ func (s *scheduler) AddToPendingList(ctx context.Context, jobID uint64, executio
 
 // RemoveFromPendigList function removes job with given key from pendingList
 func (s *scheduler) RemoveFromPendingList(ctx context.Context, key string) error {
-	return s.jobRepo.Delete(ctx, key)
+	return s.jobRepo.DeleteJob(ctx, key)
 }
 
 // FetchJob returns jobID and executionData from pendingList
 func (s *scheduler) FetchJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	nextJobID, nextExecutionData, err := s.jobRepo.FetchNextJob(ctx)
+	nextJobID, nextExecutionData, err := s.jobRepo.GetNextJob(ctx)
 	if err != nil {
 		return "", nil, err
 	}

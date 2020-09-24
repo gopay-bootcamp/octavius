@@ -19,14 +19,14 @@ func (m *JobMock) Save(ctx context.Context, jobID uint64, executionData *protofi
 	return args.Error(0)
 }
 
-// Delete mocks Delete functionality of repository
-func (m *JobMock) Delete(ctx context.Context, key string) error {
+// DeleteJob mocks DeleteJob functionality of repository
+func (m *JobMock) DeleteJob(ctx context.Context, key string) error {
 	args := m.Called(key)
 	return args.Error(0)
 }
 
-// FetchNextJob mocks FetchNextJob functionality of repository
-func (m *JobMock) FetchNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
+// GetNextJob mocks GetNextJob functionality of repository
+func (m *JobMock) GetNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
 	args := m.Called()
 	return args.String(0), args.Get(1).(*protofiles.RequestToExecute), args.Error(2)
 }
@@ -55,8 +55,8 @@ func (m *JobMock) GetLogs(ctx context.Context, jobID string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-// GetValue mocks GetValue functionality of repository
-func (m *JobMock) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
+// GetMetadata mocks GetMetadata functionality of repository
+func (m *JobMock) GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	args := m.Called(jobName)
 	return args.Get(0).(*protofiles.Metadata), args.Error(1)
 }

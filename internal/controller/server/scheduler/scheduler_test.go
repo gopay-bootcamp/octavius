@@ -61,7 +61,7 @@ func TestRemoveFromPendingList(t *testing.T) {
 
 	testJobID := "12345"
 
-	jobRepoMock.On("Delete", testJobID).Return(nil)
+	jobRepoMock.On("DeleteJob", testJobID).Return(nil)
 	err := scheduler.RemoveFromPendingList(context.Background(), testJobID)
 
 	assert.Nil(t, err)
@@ -76,7 +76,7 @@ func TestRemoveFromPendingListForJobRepoFailure(t *testing.T) {
 
 	testJobID := "12345"
 
-	jobRepoMock.On("Delete", testJobID).Return(errors.New("failed to delete job in jobRepo"))
+	jobRepoMock.On("DeleteJob", testJobID).Return(errors.New("failed to delete job in jobRepo"))
 	err := scheduler.RemoveFromPendingList(context.Background(), testJobID)
 
 	assert.Equal(t, "failed to delete job in jobRepo", err.Error())
@@ -97,8 +97,8 @@ func TestFetchJob(t *testing.T) {
 		JobData: envArg,
 	}
 
-	jobRepoMock.On("FetchNextJob").Return(expectedJobID, &testRequestToExecute, nil).Once()
-	jobRepoMock.On("Delete", expectedJobID).Return(nil).Once()
+	jobRepoMock.On("GetNextJob").Return(expectedJobID, &testRequestToExecute, nil).Once()
+	jobRepoMock.On("DeleteJob", expectedJobID).Return(nil).Once()
 	actualJobID, jobData, err := scheduler.FetchJob(context.Background())
 	jobRepoMock.AssertExpectations(t)
 	assert.Nil(t, err)
@@ -112,11 +112,11 @@ func TestFetchJobForJobRepoFailure(t *testing.T) {
 	scheduler := NewScheduler(&mockRandomIdGenerator, jobRepoMock)
 	testRequestToExecute := protofiles.RequestToExecute{}
 
-	jobRepoMock.On("FetchNextJob").Return("", &testRequestToExecute, errors.New("job repository failure")).Once()
-	jobRepoMock.On("Delete", "").Return(nil).Once()
+	jobRepoMock.On("GetNextJob").Return("", &testRequestToExecute, errors.New("job repository failure")).Once()
+	jobRepoMock.On("DeleteJob", "").Return(nil).Once()
 	actualJobID, jobData, err := scheduler.FetchJob(context.Background())
-	jobRepoMock.AssertCalled(t, "FetchNextJob")
-	jobRepoMock.AssertNotCalled(t, "Delete")
+	jobRepoMock.AssertCalled(t, "GetNextJob")
+	jobRepoMock.AssertNotCalled(t, "DeleteJob")
 	assert.Equal(t, err.Error(), "job repository failure")
 	assert.Equal(t, (*protofiles.RequestToExecute)(nil), jobData)
 	assert.Equal(t, "", actualJobID)

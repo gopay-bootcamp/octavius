@@ -198,7 +198,7 @@ func TestGetJob(t *testing.T) {
 		JobData: envArg,
 	}
 
-	jobRepoMock.On("GetValue", "demo-jobName").Return(&testMetadata, nil).Once()
+	jobRepoMock.On("GetMetadata", "demo-jobName").Return(&testMetadata, nil).Once()
 	mockScheduler.On("FetchJob").Return("demo-jobID", &testRequestToExecute, nil).Once()
 	actualJob, err := testExec.GetJob(context.Background())
 	expectedJob := &protofiles.Job{

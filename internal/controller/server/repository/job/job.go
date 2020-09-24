@@ -21,12 +21,12 @@ import (
 
 // Repository interface for job repository functions
 type Repository interface {
-	GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error)
+	GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error)
 	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
 	Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error
-	Delete(ctx context.Context, key string) error
+	DeleteJob(ctx context.Context, key string) error
 	UpdateStatus(ctx context.Context, key string, health string) error
-	FetchNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
+	GetNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
 	ValidateJob(context.Context, *protofiles.RequestToExecute) (bool, error)
 	GetLogs(context.Context, string) (string, error)
 	SaveJobExecutionData(ctx context.Context, jobID string, executionData *protofiles.ExecutionContext) error
@@ -73,8 +73,8 @@ func (j *jobRepository) Save(ctx context.Context, jobID uint64, executionData *p
 	return j.etcdClient.PutValue(ctx, key, string(value))
 }
 
-// Delete function delete the job of given key from pendingList in database
-func (j *jobRepository) Delete(ctx context.Context, key string) error {
+// DeleteJob function delete the job of given key from pendingList in database
+func (j *jobRepository) DeleteJob(ctx context.Context, key string) error {
 	_, err := j.etcdClient.DeleteKey(ctx, constant.JobPendingPrefix+key)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
@@ -82,8 +82,8 @@ func (j *jobRepository) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-// FetchNextJob returns jobID and executionData from pendingList
-func (j *jobRepository) FetchNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
+// GetNextJob returns jobID and executionData from pendingList
+func (j *jobRepository) GetNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
 	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, constant.JobPendingPrefix)
 	if err != nil {
 		return "", nil, status.Error(codes.Internal, err.Error())
@@ -172,8 +172,8 @@ func (j *jobRepository) SaveJobExecutionData(ctx context.Context, jobname string
 	return j.etcdClient.PutValue(ctx, key, string(value))
 }
 
-// GetValue returns metadata of given jobName
-func (j *jobRepository) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
+// GetMetadata returns metadata of given jobName
+func (j *jobRepository) GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := j.etcdClient.GetValue(ctx, dbKey)
 
