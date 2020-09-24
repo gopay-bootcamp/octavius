@@ -20,7 +20,7 @@ func init() {
 	log.Init("info", "", false, 1)
 }
 
-func Test_metadataRepository_Save(t *testing.T) {
+func Test_metadataRepository_SaveMetadata(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
@@ -37,7 +37,7 @@ func Test_metadataRepository_Save(t *testing.T) {
 
 	testMetadataRepo := NewMetadataRepository(mockClient)
 	ctx := context.Background()
-	sr, err := testMetadataRepo.Save(ctx, "test data", metadataVal)
+	sr, err := testMetadataRepo.SaveMetadata(ctx, "test data", metadataVal)
 
 	if err != nil {
 		t.Error(err, "saving metadata failed")
@@ -49,7 +49,7 @@ func Test_metadataRepository_Save(t *testing.T) {
 	mockClient.AssertExpectations(t)
 }
 
-func Test_metadataRepository_Save_KeyAlreadyPresent(t *testing.T) {
+func Test_metadataRepository_SaveMetadata_KeyAlreadyPresent(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
@@ -66,14 +66,14 @@ func Test_metadataRepository_Save_KeyAlreadyPresent(t *testing.T) {
 
 	testMetadataRepo := NewMetadataRepository(mockClient)
 	ctx := context.Background()
-	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
+	_, err = testMetadataRepo.SaveMetadata(ctx, "test data", metadataVal)
 
 	if err.Error() != status.Error(codes.AlreadyExists, constant.Etcd+constant.KeyAlreadyPresent).Error() {
 		t.Error("key already present error expected")
 	}
 }
 
-func Test_metadataRepository_Save_GetValueError(t *testing.T) {
+func Test_metadataRepository_SaveMetadata_GetValueError(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
@@ -90,14 +90,14 @@ func Test_metadataRepository_Save_GetValueError(t *testing.T) {
 
 	testMetadataRepo := NewMetadataRepository(mockClient)
 	ctx := context.Background()
-	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
+	_, err = testMetadataRepo.SaveMetadata(ctx, "test data", metadataVal)
 
 	if err.Error() != status.Error(codes.Internal, "some error").Error() {
 		t.Error("get value error expected")
 	}
 }
 
-func Test_metadataRepository_Save_PutValueError(t *testing.T) {
+func Test_metadataRepository_SaveMetadata_PutValueError(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
@@ -114,49 +114,14 @@ func Test_metadataRepository_Save_PutValueError(t *testing.T) {
 
 	testMetadataRepo := NewMetadataRepository(mockClient)
 	ctx := context.Background()
-	_, err = testMetadataRepo.Save(ctx, "test data", metadataVal)
+	_, err = testMetadataRepo.SaveMetadata(ctx, "test data", metadataVal)
 
 	if err.Error() != status.Error(codes.Internal, "some error").Error() {
 		t.Error("put value error expected")
 	}
 }
 
-func Test_metadataRepository_GetAll(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	metadataArr := make([]string, 3)
-
-	metadataVal1 := &protofiles.Metadata{
-		Author:      "littlestar642",
-		ImageName:   "demo image",
-		Name:        "test data",
-		Description: "sample test metadata",
-	}
-	val1, err := proto.Marshal(metadataVal1)
-	metadataArr = append(metadataArr, string(val1))
-
-	metadataVal2 := &protofiles.Metadata{
-		Author:      "littlestar642",
-		ImageName:   "demo image",
-		Name:        "test data",
-		Description: "sample test metadata",
-	}
-	val2, err := proto.Marshal(metadataVal2)
-	metadataArr = append(metadataArr, string(val2))
-
-	mockClient.On("GetAllValues").Return(metadataArr, nil)
-
-	testMetadataRepo := NewMetadataRepository(mockClient)
-	ctx := context.Background()
-	_, err = testMetadataRepo.GetAll(ctx)
-
-	if err != nil {
-		t.Error(err, "saving metadata failed")
-	}
-
-	mockClient.AssertExpectations(t)
-}
-
-func TestGetValue(t *testing.T) {
+func TestGetMetadata(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	testMetadataRepo := NewMetadataRepository(mockClient)
 	jobName := "testJobName"
@@ -173,7 +138,7 @@ func TestGetValue(t *testing.T) {
 		log.Error(err, "error in test data marshalling")
 	}
 	mockClient.On("GetValue", key).Return(string(str), nil)
-	resultMetadata, getValueErr := testMetadataRepo.GetValue(context.Background(), jobName)
+	resultMetadata, getValueErr := testMetadataRepo.GetMetadata(context.Background(), jobName)
 	assert.Equal(t, resultMetadata.Name, testMetadata.Name)
 	assert.Equal(t, resultMetadata.ImageName, testMetadata.ImageName)
 	assert.Equal(t, resultMetadata.Description, testMetadata.Description)
@@ -181,7 +146,7 @@ func TestGetValue(t *testing.T) {
 	mockClient.AssertExpectations(t)
 }
 
-func Test_metadataRepository_GetAvailableJobList(t *testing.T) {
+func Test_metadataRepository_GetAvailableJobs(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	var jobList []string
 	jobList = append(jobList, "demo-image-name")
@@ -201,13 +166,13 @@ func Test_metadataRepository_GetAvailableJobList(t *testing.T) {
 
 	testMetadataRepo := NewMetadataRepository(mockClient)
 	ctx := context.Background()
-	res, err := testMetadataRepo.GetAvailableJobList(ctx)
+	res, err := testMetadataRepo.GetAvailableJobs(ctx)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, res, testResponse)
 	mockClient.AssertExpectations(t)
 }
 
-func Test_metadataRepository_GetAvailableJobList_ForEtcdClientFailure(t *testing.T) {
+func Test_metadataRepository_GetAvailableJobs_ForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 
 	var keys []string
@@ -217,7 +182,7 @@ func Test_metadataRepository_GetAvailableJobList_ForEtcdClientFailure(t *testing
 
 	testMetadataRepo := NewMetadataRepository(mockClient)
 	ctx := context.Background()
-	_, err := testMetadataRepo.GetAvailableJobList(ctx)
+	_, err := testMetadataRepo.GetAvailableJobs(ctx)
 	assert.Equal(t, status.Error(codes.Internal, "error in etcd").Error(), err.Error())
 
 	mockClient.AssertExpectations(t)

@@ -79,7 +79,8 @@ func startExecutorHealthCheck(e *healthExecution, activeExecutorMap *activeExecu
 	for {
 		select {
 		case <-executor.timer.C:
-			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
+			dbKey := constant.ExecutorStatusPrefix + id
+			err := e.executorRepo.UpdateExecutorHealth(ctx, dbKey, "expired")
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
 				removeActiveExecutor(activeExecutorMap, id, executor)
@@ -104,7 +105,7 @@ func (e *healthExecution) UpdatePingStatus(ctx context.Context, request *protofi
 		return &protofiles.HealthResponse{Recieved: true}, nil
 	}
 	//if executor is not registered in database
-	_, err := e.executorRepo.Get(ctx, request.ID)
+	_, err := e.executorRepo.GetExecutorInfo(ctx, request.ID)
 	if err != nil {
 		if err.Error() == status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound).Error() {
 			return nil, status.Error(codes.PermissionDenied, "executor not registered")
