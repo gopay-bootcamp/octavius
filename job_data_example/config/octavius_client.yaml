@@ -1,4 +1,11 @@
+# CP_HOST - The server address on which contoller is hosted
 CP_HOST: localhost:3000
+
+# EMAIL_ID - The user email ID. Can be used for authentication
 EMAIL_ID: jaimin.rathod@go-jek.com
+
+# ACCESS_TOKEN - The JSON Web Token that will be used to create a valid session for a client
 ACCESS_TOKEN: MyToken
+
+# CONNECTION_TIMEOUT_SECS - The deadline for which the client will wait for every request made to the controller.
 CONNECTION_TIMEOUT_SECS: 0

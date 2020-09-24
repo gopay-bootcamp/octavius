@@ -95,7 +95,7 @@ func startExecutorHealthCheck(e *healthExecution, activeExecutorMap *activeExecu
 	}
 }
 
-// UpdatePingStatus updates the executor alive status 
+// UpdatePingStatus updates the executor alive status
 func (e *healthExecution) UpdatePingStatus(ctx context.Context, request *protofiles.Ping, pingTimeOut time.Duration) (*protofiles.HealthResponse, error) {
 	executorID := request.ID
 	// if executor is already active
