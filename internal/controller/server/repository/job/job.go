@@ -85,48 +85,6 @@ func (j *jobRepository) GetNextJob(ctx context.Context) (string, *protofiles.Req
 	return nextJobID, nextExecutionData, nil
 }
 
-// ValidateJob is used to validate the arguments of job when execution request is received
-/*func (j *jobRepository) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
-	jobName := executionData.JobName
-	jobData := executionData.JobData
-	key := constant.MetadataPrefix + jobName
-	res, err := j.etcdClient.GetValue(ctx, key)
-	if err != nil {
-		return false, status.Error(codes.Internal, err.Error())
-	}
-
-	metadata := &protofiles.Metadata{}
-	err = proto.Unmarshal([]byte(res), metadata)
-	if err != nil {
-		return false, status.Error(codes.Internal, err.Error())
-	}
-
-	args := metadata.EnvVars.Args
-
-	for _, arg := range args {
-		if arg.Required {
-			if _, ok := jobData[arg.Name]; !ok {
-				return false, nil
-			}
-		}
-	}
-	for jobKey := range jobData {
-		if !isPresentInArgs(jobKey, args) {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
-func isPresentInArgs(jobKey string, args []*protofiles.Arg) bool {
-	for _, arg := range args {
-		if arg.Name == jobKey {
-			return true
-		}
-	}
-	return false
-}*/
-
 // GetLogs is used to fetch logs of job executing/executed
 func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string, error) {
 	jobKey := constant.ExecutionDataPrefix + constant.KubeOctaviusPrefix + jobName

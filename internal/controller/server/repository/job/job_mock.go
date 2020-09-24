@@ -31,12 +31,6 @@ func (m *JobMock) GetNextJob(ctx context.Context) (string, *protofiles.RequestTo
 	return args.String(0), args.Get(1).(*protofiles.RequestToExecute), args.Error(2)
 }
 
-// ValidateJob mocks ValidateJob functionality of repository
-func (m *JobMock) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
-	args := m.Called(executionData)
-	return args.Bool(0), args.Error(1)
-}
-
 // SaveJobExecutionData mocks SaveJobExecutionData functionality of repository
 func (m *JobMock) SaveJobExecutionData(ctx context.Context, jobID string, executionData *protofiles.ExecutionContext) error {
 	args := m.Called(jobID, executionData)
