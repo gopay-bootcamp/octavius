@@ -8,8 +8,8 @@ import (
 	"octavius/internal/cli/command/execution"
 	"octavius/internal/cli/command/getlogs"
 	"octavius/internal/cli/command/list"
-	jobDaemon "octavius/internal/cli/daemon/job"
-	metadataDaemon "octavius/internal/cli/daemon/metadata"
+	"octavius/internal/cli/daemon/job"
+	"octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/file"
 
 	"github.com/spf13/cobra"
@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute function executes the root command of Octavius Cli
-func Execute(jobDaemon jobDaemon.Client, metadataDaemon metadataDaemon.Client) error {
+func Execute(job job.Client, metadata metadata.Client) error {
 
 	fileUtil := file.New()
 
@@ -31,25 +31,25 @@ func Execute(jobDaemon jobDaemon.Client, metadataDaemon metadataDaemon.Client) e
 		rootCmd.AddCommand(configCmd)
 	}
 
-	createCmd := create.NewCmd(metadataDaemon, fileUtil)
+	createCmd := create.NewCmd(metadata, fileUtil)
 	if createCmd != nil {
 		rootCmd.AddCommand(createCmd)
 	}
 
-	getLogsCmd := getlogs.NewCmd(jobDaemon)
+	getLogsCmd := getlogs.NewCmd(job)
 	if getLogsCmd != nil {
 		rootCmd.AddCommand(getLogsCmd)
 	}
 
-	executeCmd := execution.NewCmd(jobDaemon)
+	executeCmd := execution.NewCmd(job)
 	if executeCmd != nil {
 		rootCmd.AddCommand(executeCmd)
 	}
 
-	listCmd := list.NewCmd(metadataDaemon)
+	listCmd := list.NewCmd(metadata)
 	rootCmd.AddCommand(listCmd)
 
-	describeCmd := describe.NewCmd(metadataDaemon)
+	describeCmd := describe.NewCmd(metadata)
 	if describeCmd != nil {
 		rootCmd.AddCommand(describeCmd)
 	}

@@ -5,8 +5,8 @@ import (
 	"log"
 	"octavius/internal/cli/command"
 	"octavius/internal/cli/config"
-	job_daemon "octavius/internal/cli/daemon/job"
-	metadata_daemon "octavius/internal/cli/daemon/metadata"
+	"octavius/internal/cli/daemon/job"
+	"octavius/internal/cli/daemon/metadata"
 	octlog "octavius/internal/pkg/log"
 )
 
@@ -18,8 +18,8 @@ func main() {
 	}
 
 	clientConfigLoader := config.NewLoader()
-	metadataDaemon := metadata_daemon.NewClient(clientConfigLoader)
-	jobDaemon := job_daemon.NewClient(clientConfigLoader)
+	metadataDaemon := metadata.NewClient(clientConfigLoader)
+	jobDaemon := job.NewClient(clientConfigLoader)
 
 	err := command.Execute(jobDaemon, metadataDaemon)
 	if err != nil {

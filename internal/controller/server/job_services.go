@@ -20,7 +20,7 @@ type jobServicesServer struct {
 	idgen    idgen.RandomIdGenerator
 }
 
-// JobServiceServer used to create a new execution context
+// JobServiceServer used to create a new job service
 func NewJobServiceServer(exec job.JobExecution, idgen idgen.RandomIdGenerator) protofiles.JobServiceServer {
 	return &jobServicesServer{
 		procExec: exec,
