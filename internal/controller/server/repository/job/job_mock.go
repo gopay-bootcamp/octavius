@@ -31,12 +31,6 @@ func (m *JobMock) GetNextJob(ctx context.Context) (string, *protofiles.RequestTo
 	return args.String(0), args.Get(1).(*protofiles.RequestToExecute), args.Error(2)
 }
 
-// CheckJobIsAvailable mocks CheckJobIsAvailable functionality of repository
-func (m *JobMock) CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
-	args := m.Called(jobName)
-	return args.Bool(0), args.Error(1)
-}
-
 // ValidateJob mocks ValidateJob functionality of repository
 func (m *JobMock) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
 	args := m.Called(executionData)
@@ -61,6 +55,7 @@ func (m *JobMock) GetMetadata(ctx context.Context, jobName string) (*protofiles.
 	return args.Get(0).(*protofiles.Metadata), args.Error(1)
 }
 
+//UpdateStatus mocks UpdateStatus functionality of repository
 func (m *JobMock) UpdateStatus(ctx context.Context, key string, health string) error {
 	args := m.Called(key, health)
 	return args.Error(1)

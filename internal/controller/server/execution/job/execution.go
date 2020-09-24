@@ -23,7 +23,7 @@ type JobExecution interface {
 	GetJobLogs(ctx context.Context, jobk8sName string) (string, error)
 	SaveJobExecutionData(ctx context.Context, executionData *protofiles.ExecutionContext) error
 	PostExecutorStatus(ctx context.Context, ID string, status *protofiles.Status) error
-	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
+	checkJobIsAvailable(ctx context.Context, jobName string) (bool, error)
 }
 type jobExecution struct {
 	jobRepo     jobRepo.Repository
@@ -41,7 +41,7 @@ func NewJobExec(jobRepo jobRepo.Repository, idGenerator idgen.RandomIdGenerator,
 }
 
 // checkJobIsAvailable returns true if given job is available otherwise returns false
-func (e *jobExecution) CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
+func (e *jobExecution) checkJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
 	_, err := e.jobRepo.GetMetadata(ctx, jobName)
 	if err != nil {
 		if err.Error() == status.Error(codes.NotFound, constant.NoValueFound).Error() {
@@ -55,7 +55,7 @@ func (e *jobExecution) CheckJobIsAvailable(ctx context.Context, jobName string) 
 
 // ExecuteJob function will call job repository and get jobId
 func (e *jobExecution) ExecuteJob(ctx context.Context, executionData *protofiles.RequestToExecute) (uint64, error) {
-	isAvailable, err := e.CheckJobIsAvailable(ctx, executionData.JobName)
+	isAvailable, err := e.checkJobIsAvailable(ctx, executionData.JobName)
 	if err != nil {
 		return uint64(0), err
 	}
