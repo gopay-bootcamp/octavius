@@ -22,7 +22,7 @@ The architecure uses `gRPC` as the messaging protocol and is entirely written in
 
 ### Architecture Diagram -:
 
-![architecuture diagram](./docs/octavius_concept.png)
+![architecuture diagram](./docs/imgs/octavius_concept.png)
 
 
 Lets discuss a bit about the major entities that are present in octavius-:
@@ -46,7 +46,7 @@ Lets discuss a bit about the major entities that are present in octavius-:
 
 
 ### Data Flow Diagram (level 1) -:
-![data flow diagram](./docs/octavius_arch.png)
+![data flow diagram](./docs/imgs/octavius_arch.png)
 
 When we start the contoller the controller_config.json is read and the environment variables are taken to intialise the present execution. Head over the [controller_config.json](./controller_config.json) to know more.
 
@@ -63,31 +63,31 @@ When we start the contoller the controller_config.json is read and the environme
 
 ### create command
 
-<p align="center"><img src="./docs/create.png" width="600"></p>
+<p align="center"><img src="./docs/imgs/create.png" width="600"></p>
 
 ### describe command
 
-<p align="center"><img src="./docs/describe.png" width="600"></p>
+<p align="center"><img src="./docs/imgs/describe.png" width="600"></p>
 
 ### execute command
 
-<p align="center"><img src="./docs/execute.png" width="600"></p>
+<p align="center"><img src="./docs/imgs/execute.png" width="600"></p>
 
 ### getlogs command
 
-<p align="center"><img src="./docs/getlogs.png" width="600"></p>
+<p align="center"><img src="./docs/imgs/getlogs.png" width="600"></p>
 
 ### list command
 
-<p align="center"><img src="./docs/list.png" width="600"></p>
+<p align="center"><img src="./docs/imgs/list.png" width="600"></p>
 
 ### starting executor
 
-<p align="center"><img src="./docs/start-executor.png" width="600"></p>
+<p align="center"><img src="./docs/imgs/start-executor.png" width="600"></p>
 
 ### kubernetes job execution
 
-<p align="center"><img src="./docs/k8s-job-exec.png" width="600"></p>
+<p align="center"><img src="./docs/imgs/k8s-job-exec.png" width="600"></p>
 
 
 ## Prerequisites
@@ -148,11 +148,11 @@ go test -race ./...
 
 ## TODO
 
-While building the decentralised architecture for octavius we know some of the areas that can be improved and should be worked upon to make the application do what it should do, only better. We have added a list of TODO tasks into [laundrylist.md](./docs/laundrylist.md) to keep them organised.
+While building the decentralised architecture for octavius we know some of the areas that can be improved and should be worked upon to make the application do what it should do, only better. We have added a list of TODO tasks into [laundrylist.md](./docs/imgs//laundrylist.md) to keep them organised.
 
 ## Contribution Guidelines
 
-Contributions are welcomed! Please read the [contributing.md](./docs/contributing.md) before making one.
+Contributions are welcomed! Please read the [contributing.md](./docs/imgs//contributing.md) before making one.
 
 ## Troubleshoot
 
