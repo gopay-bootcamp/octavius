@@ -63,8 +63,12 @@ func (s *server) PostExecutorStatus(context.Context, *protofiles.Status) (*proto
 	}, nil
 }
 
-func TestConnectClient(t *testing.T) {
+func init() {
 	createFakeServer()
+}
+
+func TestConnectClient(t *testing.T) {
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
@@ -81,7 +85,7 @@ func TestConnectClient(t *testing.T) {
 	assert.Nil(t, err)
 }
 func TestFetchJob(t *testing.T) {
-	createFakeServer()
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
@@ -101,7 +105,7 @@ func TestFetchJob(t *testing.T) {
 }
 
 func TestSendExecutionContext(t *testing.T) {
-	createFakeServer()
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
