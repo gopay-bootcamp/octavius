@@ -121,7 +121,6 @@ func Test_metadataRepository_SaveMetadata_PutValueError(t *testing.T) {
 	}
 }
 
-
 func TestGetMetadata(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	testMetadataRepo := NewMetadataRepository(mockClient)
