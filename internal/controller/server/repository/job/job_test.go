@@ -36,7 +36,7 @@ func TestSave(t *testing.T) {
 
 	mockClient.On("PutValue", "jobs/pending/12345678", string(testExecutionDataAsByte)).Return(nil)
 
-	err = jobRepository.Save(context.Background(), uint64(12345678), testExecutionData)
+	err = jobRepository.SaveJobArgs(context.Background(), uint64(12345678), testExecutionData)
 	assert.Nil(t, err)
 	mockClient.AssertExpectations(t)
 }
@@ -56,70 +56,34 @@ func TestSaveForEtcdClientFailure(t *testing.T) {
 
 	mockClient.On("PutValue", "jobs/pending/12345678", string(testExecutionDataAsByte)).Return(errors.New("failed to put value in database"))
 
-	err = jobRepository.Save(context.Background(), uint64(12345678), testExecutionData)
+	err = jobRepository.SaveJobArgs(context.Background(), uint64(12345678), testExecutionData)
 	assert.Equal(t, "failed to put value in database", err.Error())
 	mockClient.AssertExpectations(t)
 }
 
-func TestCheckJobIsAvailableForJobAvailable(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	mockClient.On("GetValue", "metadata/testJobName").Return("metadata of testJobName", nil)
-
-	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Nil(t, err)
-	assert.True(t, jobAvailabilityStatus)
-	mockClient.AssertExpectations(t)
-}
-
-func TestCheckJobIsAvailableForJobNotAvailable(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New(constant.NoValueFound))
-
-	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Equal(t, status.Error(codes.NotFound, constant.Etcd+"job with testJobName name not found").Error(), err.Error())
-	assert.False(t, jobAvailabilityStatus)
-	mockClient.AssertExpectations(t)
-}
-
-func TestCheckJobIsAvailableForEtcdClientFailure(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	mockClient.On("GetValue", "metadata/testJobName").Return("", errors.New("failed to get value from database"))
-
-	jobAvailabilityStatus, err := jobRepository.CheckJobIsAvailable(context.Background(), "testJobName")
-	assert.Equal(t, status.Error(codes.Internal, "failed to get value from database").Error(), err.Error())
-	assert.False(t, jobAvailabilityStatus)
-	mockClient.AssertExpectations(t)
-}
-
-func TestDelete(t *testing.T) {
+func TestDeleteJob(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
 	mockClient.On("DeleteKey").Return(true, nil)
-	err := jobRepository.Delete(context.Background(), "12345")
+	err := jobRepository.DeleteJob(context.Background(), "12345")
 	assert.Nil(t, err)
 	mockClient.AssertExpectations(t)
 
 }
 
-func TestDeleteForEtcdClientFailure(t *testing.T) {
+func TestDeleteJobForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
 	mockClient.On("DeleteKey").Return(false, errors.New("failed to delete key from database"))
-	err := jobRepository.Delete(context.Background(), "12345")
+	err := jobRepository.DeleteJob(context.Background(), "12345")
 	assert.Equal(t, status.Error(codes.Internal, "failed to delete key from database").Error(), err.Error())
 	mockClient.AssertExpectations(t)
 
 }
 
-func TestFetchNextJob(t *testing.T) {
+func TestGetNextJob(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
@@ -152,7 +116,7 @@ func TestFetchNextJob(t *testing.T) {
 	nextExecutionData = &protofiles.RequestToExecute{}
 	err = proto.Unmarshal([]byte(values[0]), nextExecutionData)
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
-	nextJobID, nextExecutionData, err := jobRepository.FetchNextJob(context.Background())
+	nextJobID, nextExecutionData, err := jobRepository.GetNextJob(context.Background())
 	assert.Equal(t, "123", nextJobID)
 	assert.Equal(t, executionData1.JobName, nextExecutionData.JobName)
 	assert.Equal(t, executionData1.JobData, nextExecutionData.JobData)
@@ -161,7 +125,7 @@ func TestFetchNextJob(t *testing.T) {
 
 }
 
-func TestFetchNextJobForEtcdClientFailure(t *testing.T) {
+func TestGetNextJobForEtcdClientFailure(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
@@ -170,7 +134,7 @@ func TestFetchNextJobForEtcdClientFailure(t *testing.T) {
 	var values []string
 
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, errors.New("failed to get keys and values from database"))
-	nextJobID, nextExecutionData, err := jobRepository.FetchNextJob(context.Background())
+	nextJobID, nextExecutionData, err := jobRepository.GetNextJob(context.Background())
 
 	assert.Nil(t, nextExecutionData)
 	assert.Equal(t, "", nextJobID)
@@ -179,7 +143,7 @@ func TestFetchNextJobForEtcdClientFailure(t *testing.T) {
 
 }
 
-func TestFetchNextJobForJobNotAvailable(t *testing.T) {
+func TestGetNextJobForJobNotAvailable(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	jobRepository := NewJobRepository(mockClient)
 
@@ -188,194 +152,13 @@ func TestFetchNextJobForJobNotAvailable(t *testing.T) {
 	var values []string
 
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
-	nextJobID, nextExecutionData, err := jobRepository.FetchNextJob(context.Background())
+	nextJobID, nextExecutionData, err := jobRepository.GetNextJob(context.Background())
 
 	assert.Nil(t, nextExecutionData)
 	assert.Equal(t, "", nextJobID)
 	assert.Equal(t, err.Error(), status.Error(codes.NotFound, constant.Controller+"no pending job").Error())
 	mockClient.AssertExpectations(t)
 
-}
-
-func TestValidateJobForSuccess(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	var testExecutionData = &protofiles.RequestToExecute{
-		JobName: "testJobName",
-		JobData: map[string]string{
-			"env1": "envValue1",
-		},
-	}
-	jobName := testExecutionData.JobName
-	key := "metadata/" + jobName
-	var testArgsArray []*protofiles.Arg
-	var testArg = &protofiles.Arg{
-		Name:        "env1",
-		Description: "test env",
-		Required:    true,
-	}
-	testArgsArray = append(testArgsArray, testArg)
-	var testEnvVars = &protofiles.EnvVars{
-		Args: testArgsArray,
-	}
-	var testMetadata = &protofiles.Metadata{
-		Name:        "testJobName",
-		Description: "This is a test image",
-		ImageName:   "images/test-image",
-		EnvVars:     testEnvVars,
-	}
-	str, err := proto.Marshal(testMetadata)
-	if err != nil {
-		log.Error(err, "error in test data marshalling")
-	}
-	mockClient.On("GetValue", key).Return(string(str), nil)
-	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
-	assert.Equal(t, flag, true)
-	assert.Nil(t, err)
-	mockClient.AssertExpectations(t)
-}
-
-func TestValidateJobForOptionalArgSuccess(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	var testExecutionData = &protofiles.RequestToExecute{
-		JobName: "testJobName",
-		JobData: map[string]string{
-			"env1": "envValue1",
-			"env2": "envValue2",
-		},
-	}
-	jobName := testExecutionData.JobName
-	key := "metadata/" + jobName
-	var testArgsArray []*protofiles.Arg
-	var testArg1 = &protofiles.Arg{
-		Name:        "env1",
-		Description: "test env1",
-		Required:    true,
-	}
-	testArgsArray = append(testArgsArray, testArg1)
-	var testArg2 = &protofiles.Arg{
-		Name:        "env2",
-		Description: "test env2",
-		Required:    false,
-	}
-	testArgsArray = append(testArgsArray, testArg2)
-	var testArg3 = &protofiles.Arg{
-		Name:        "env3",
-		Description: "test env3",
-		Required:    false,
-	}
-	testArgsArray = append(testArgsArray, testArg3)
-
-	var testEnvVars = &protofiles.EnvVars{
-		Args: testArgsArray,
-	}
-	var testMetadata = &protofiles.Metadata{
-		Name:        "testJobName",
-		Description: "This is a test image",
-		ImageName:   "images/test-image",
-		EnvVars:     testEnvVars,
-	}
-	str, err := proto.Marshal(testMetadata)
-	if err != nil {
-		log.Error(err, "error in test data marshalling")
-	}
-	mockClient.On("GetValue", key).Return(string(str), nil)
-	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
-	assert.Equal(t, flag, true)
-	assert.Nil(t, err)
-	mockClient.AssertExpectations(t)
-}
-
-func TestValidateJobForArgMissingFailure(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	var testExecutionData = &protofiles.RequestToExecute{
-		JobName: "testJobName",
-		JobData: map[string]string{
-			"env1": "envValue1",
-		},
-	}
-	jobName := testExecutionData.JobName
-	key := "metadata/" + jobName
-
-	var testArgsArray []*protofiles.Arg
-	var testArg1 = &protofiles.Arg{
-		Name:        "env1",
-		Description: "test env1",
-		Required:    true,
-	}
-	testArgsArray = append(testArgsArray, testArg1)
-	var testArg2 = &protofiles.Arg{
-		Name:        "env2",
-		Description: "test env2",
-		Required:    true,
-	}
-	testArgsArray = append(testArgsArray, testArg2)
-	var testEnvVars = &protofiles.EnvVars{
-		Args: testArgsArray,
-	}
-	var testMetadata = &protofiles.Metadata{
-		Name:        "testJobName",
-		Description: "This is a test image",
-		ImageName:   "images/test-image",
-		EnvVars:     testEnvVars,
-	}
-
-	str, err := proto.Marshal(testMetadata)
-	if err != nil {
-		log.Error(err, "error in test data marshalling")
-	}
-	mockClient.On("GetValue", key).Return(string(str), nil)
-	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
-	assert.Equal(t, flag, false)
-	assert.Nil(t, err)
-	mockClient.AssertExpectations(t)
-}
-
-func TestValidateJobForExtraArgFailure(t *testing.T) {
-	mockClient := new(etcd.ClientMock)
-	jobRepository := NewJobRepository(mockClient)
-
-	var testExecutionData = &protofiles.RequestToExecute{
-		JobName: "testJobName",
-		JobData: map[string]string{
-			"env1": "envValue1",
-			"env2": "envValue2",
-		},
-	}
-	jobName := testExecutionData.JobName
-	key := "metadata/" + jobName
-
-	var testArgsArray []*protofiles.Arg
-	var testArg1 = &protofiles.Arg{
-		Name:        "env1",
-		Description: "test env1",
-		Required:    true,
-	}
-	testArgsArray = append(testArgsArray, testArg1)
-	var testEnvVars = &protofiles.EnvVars{
-		Args: testArgsArray,
-	}
-	var testMetadata = &protofiles.Metadata{
-		Name:        "testJobName",
-		Description: "This is a test image",
-		ImageName:   "images/test-image",
-		EnvVars:     testEnvVars,
-	}
-
-	str, err := proto.Marshal(testMetadata)
-	if err != nil {
-		log.Error(err, "error in test data marshalling")
-	}
-	mockClient.On("GetValue", key).Return(string(str), nil)
-	flag, err := jobRepository.ValidateJob(context.Background(), testExecutionData)
-	assert.Equal(t, flag, false)
-	assert.Nil(t, err)
-	mockClient.AssertExpectations(t)
 }
 
 func TestGetJobLogs(t *testing.T) {

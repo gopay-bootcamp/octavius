@@ -21,13 +21,11 @@ import (
 
 // Repository interface for job repository functions
 type Repository interface {
-	GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error)
-	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
-	Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error
-	Delete(ctx context.Context, key string) error
+	GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error)
+	SaveJobArgs(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error
+	DeleteJob(ctx context.Context, key string) error
 	UpdateStatus(ctx context.Context, key string, health string) error
-	FetchNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
-	ValidateJob(context.Context, *protofiles.RequestToExecute) (bool, error)
+	GetNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
 	GetLogs(context.Context, string) (string, error)
 	SaveJobExecutionData(ctx context.Context, jobID string, executionData *protofiles.ExecutionContext) error
 }
@@ -43,26 +41,13 @@ func NewJobRepository(client etcd.Client) Repository {
 	}
 }
 
-// CheckJobIsAvailable returns true if given job is available otherwise returns false
-func (j *jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
-	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
-	if err != nil {
-		if err.Error() == constant.NoValueFound {
-			return false, status.Error(codes.NotFound, constant.Etcd+fmt.Sprintf("job with %v name not found", jobName))
-		}
-		return false, status.Error(codes.Internal, err.Error())
-
-	}
-	return true, nil
-}
-
-func (e *jobRepository) UpdateStatus(ctx context.Context, key string, health string) error {
+func (j *jobRepository) UpdateStatus(ctx context.Context, key string, health string) error {
 	dbKey := constant.ExecutorStatusPrefix + key
-	return e.etcdClient.PutValue(ctx, dbKey, health)
+	return j.etcdClient.PutValue(ctx, dbKey, health)
 }
 
-// Save takes jobID and executionData and save it in database as pendingList
-func (j *jobRepository) Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
+// SaveJobArgs takes jobID and executionData and save it in database as pendingList
+func (j *jobRepository) SaveJobArgs(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
 	key := constant.JobPendingPrefix + strconv.FormatUint(jobID, 10)
 	value, err := proto.Marshal(executionData)
 	if err != nil {
@@ -73,8 +58,8 @@ func (j *jobRepository) Save(ctx context.Context, jobID uint64, executionData *p
 	return j.etcdClient.PutValue(ctx, key, string(value))
 }
 
-// Delete function delete the job of given key from pendingList in database
-func (j *jobRepository) Delete(ctx context.Context, key string) error {
+// DeleteJob function delete the job of given key from pendingList in database
+func (j *jobRepository) DeleteJob(ctx context.Context, key string) error {
 	_, err := j.etcdClient.DeleteKey(ctx, constant.JobPendingPrefix+key)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
@@ -82,8 +67,8 @@ func (j *jobRepository) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-// FetchNextJob returns jobID and executionData from pendingList
-func (j *jobRepository) FetchNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
+// GetNextJob returns jobID and executionData from pendingList
+func (j *jobRepository) GetNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error) {
 	keys, values, err := j.etcdClient.GetAllKeyAndValues(ctx, constant.JobPendingPrefix)
 	if err != nil {
 		return "", nil, status.Error(codes.Internal, err.Error())
@@ -98,48 +83,6 @@ func (j *jobRepository) FetchNextJob(ctx context.Context) (string, *protofiles.R
 		return "", nil, status.Error(codes.Internal, err.Error())
 	}
 	return nextJobID, nextExecutionData, nil
-}
-
-// ValidateJob is used to validate the arguments of job when execution request is received
-func (j *jobRepository) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
-	jobName := executionData.JobName
-	jobData := executionData.JobData
-	key := constant.MetadataPrefix + jobName
-	res, err := j.etcdClient.GetValue(ctx, key)
-	if err != nil {
-		return false, status.Error(codes.Internal, err.Error())
-	}
-
-	metadata := &protofiles.Metadata{}
-	err = proto.Unmarshal([]byte(res), metadata)
-	if err != nil {
-		return false, status.Error(codes.Internal, err.Error())
-	}
-
-	args := metadata.EnvVars.Args
-
-	for _, arg := range args {
-		if arg.Required {
-			if _, ok := jobData[arg.Name]; !ok {
-				return false, nil
-			}
-		}
-	}
-	for jobKey := range jobData {
-		if !isPresentInArgs(jobKey, args) {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
-func isPresentInArgs(jobKey string, args []*protofiles.Arg) bool {
-	for _, arg := range args {
-		if arg.Name == jobKey {
-			return true
-		}
-	}
-	return false
 }
 
 // GetLogs is used to fetch logs of job executing/executed
@@ -172,15 +115,14 @@ func (j *jobRepository) SaveJobExecutionData(ctx context.Context, jobname string
 	return j.etcdClient.PutValue(ctx, key, string(value))
 }
 
-// GetValue returns metadata of given jobName
-func (j *jobRepository) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
+// GetMetadata returns metadata of given jobName
+func (j *jobRepository) GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := j.etcdClient.GetValue(ctx, dbKey)
-
-	if err == errors.New(constant.NoValueFound) {
-		return &protofiles.Metadata{}, status.Error(codes.NotFound, err.Error())
-	}
 	if err != nil {
+		if err.Error() == errors.New(constant.NoValueFound).Error() {
+			return &protofiles.Metadata{}, status.Error(codes.NotFound, err.Error())
+		}
 		return &protofiles.Metadata{}, status.Error(codes.Internal, err.Error())
 	}
 

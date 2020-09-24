@@ -6,12 +6,15 @@ import (
 	"errors"
 	"octavius/internal/controller/server/repository/job"
 	"octavius/internal/controller/server/scheduler"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -28,15 +31,29 @@ func TestExecuteJob(t *testing.T) {
 	testExec := NewJobExec(jobRepoMock, mockRandomIdGenerator, mockScheduler)
 
 	testExecutionData := &protofiles.RequestToExecute{
-		JobName: "testJobName1",
+		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
 		},
 	}
 	testJobID := uint64(12345)
-
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
-	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
+	var testArgsArray []*protofiles.Arg
+	var testArg = &protofiles.Arg{
+		Name:        "env1",
+		Description: "test env",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg)
+	var testEnvVars = &protofiles.EnvVars{
+		Args: testArgsArray,
+	}
+	var testMetadata = protofiles.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+	jobRepoMock.On("GetMetadata", "testJobName").Return(&testMetadata, nil)
 	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
 	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
 
@@ -56,15 +73,30 @@ func TestExecuteJobForRandomIDGeneratorFailure(t *testing.T) {
 	testExec := NewJobExec(jobRepoMock, mockRandomIdGenerator, mockScheduler)
 
 	testExecutionData := &protofiles.RequestToExecute{
-		JobName: "testJobName1",
+		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
 		},
 	}
 	testJobID := uint64(12345)
 
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
-	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
+	var testArgsArray []*protofiles.Arg
+	var testArg = &protofiles.Arg{
+		Name:        "env1",
+		Description: "test env",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg)
+	var testEnvVars = &protofiles.EnvVars{
+		Args: testArgsArray,
+	}
+	var testMetadata = protofiles.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+	jobRepoMock.On("GetMetadata", "testJobName").Return(&testMetadata, nil)
 	mockRandomIdGenerator.On("Generate").Return(testJobID, errors.New("failed to generate random ID"))
 	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
 
@@ -84,19 +116,24 @@ func TestExecuteJobForJobRepoMockFailure(t *testing.T) {
 	testExec := NewJobExec(jobRepoMock, mockRandomIdGenerator, mockScheduler)
 
 	testExecutionData := &protofiles.RequestToExecute{
-		JobName: "testJobName1",
+		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
 		},
 	}
 	testJobID := uint64(12345)
-
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(false, errors.New("failed to check jobMetadata in job repo"))
+	testMetadata := protofiles.Metadata{
+		Author:      "adbusa67",
+		ImageName:   "demo image",
+		Name:        "test data",
+		Description: "sample test metadata",
+	}
+	jobRepoMock.On("GetMetadata", "testJobName").Return(&testMetadata, status.Error(codes.NotFound, constant.NoValueFound)).Once()
 	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
 	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(nil)
 
 	jobId, err := testExec.ExecuteJob(context.Background(), testExecutionData)
-	assert.Equal(t, "failed to check jobMetadata in job repo", err.Error())
+	assert.Equal(t, status.Error(codes.NotFound, constant.Etcd+"job with testJobName name not found").Error(), err.Error())
 	assert.Equal(t, uint64(0), jobId)
 	jobRepoMock.AssertExpectations(t)
 	mockScheduler.AssertNotCalled(t, "AddToPendingList", testJobID, testExecutionData)
@@ -111,15 +148,30 @@ func TestExecuteJobForSchedulerFailure(t *testing.T) {
 	testExec := NewJobExec(jobRepoMock, mockRandomIdGenerator, mockScheduler)
 
 	testExecutionData := &protofiles.RequestToExecute{
-		JobName: "testJobName1",
+		JobName: "testJobName",
 		JobData: map[string]string{
 			"env1": "envValue1",
 		},
 	}
 	testJobID := uint64(12345)
 
-	jobRepoMock.On("CheckJobIsAvailable", testExecutionData.JobName).Return(true, nil)
-	jobRepoMock.On("ValidateJob", testExecutionData).Return(true, nil)
+	var testArgsArray []*protofiles.Arg
+	var testArg = &protofiles.Arg{
+		Name:        "env1",
+		Description: "test env",
+		Required:    true,
+	}
+	testArgsArray = append(testArgsArray, testArg)
+	var testEnvVars = &protofiles.EnvVars{
+		Args: testArgsArray,
+	}
+	var testMetadata = protofiles.Metadata{
+		Name:        "testJobName",
+		Description: "This is a test image",
+		ImageName:   "images/test-image",
+		EnvVars:     testEnvVars,
+	}
+	jobRepoMock.On("GetMetadata", "testJobName").Return(&testMetadata, nil)
 	mockRandomIdGenerator.On("Generate").Return(testJobID, nil)
 	mockScheduler.On("AddToPendingList", testJobID, testExecutionData).Return(errors.New("failed to add job in pending list in scheduler"))
 
@@ -198,7 +250,7 @@ func TestGetJob(t *testing.T) {
 		JobData: envArg,
 	}
 
-	jobRepoMock.On("GetValue", "demo-jobName").Return(&testMetadata, nil).Once()
+	jobRepoMock.On("GetMetadata", "demo-jobName").Return(&testMetadata, nil).Once()
 	mockScheduler.On("FetchJob").Return("demo-jobID", &testRequestToExecute, nil).Once()
 	actualJob, err := testExec.GetJob(context.Background())
 	expectedJob := &protofiles.Job{

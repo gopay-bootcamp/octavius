@@ -4,12 +4,11 @@ package health
 import (
 	"context"
 	"fmt"
+	executorRepo "octavius/internal/controller/server/repository/executor"
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
-	"octavius/internal/pkg/protofiles"
-
-	executorRepo "octavius/internal/controller/server/repository/executor"
 	"octavius/internal/pkg/log"
+	"octavius/internal/pkg/protofiles"
 	"sync"
 	"time"
 
