@@ -27,5 +27,5 @@ func NewRegistrationExec(executorRepo executorRepo.Repository) RegistrationExecu
 func (e *registrationExecution) RegisterExecutor(ctx context.Context, request *protofiles.RegisterRequest) (*protofiles.RegisterResponse, error) {
 	key := request.ID
 	value := request.ExecutorInfo
-	return e.executorRepo.Save(ctx, key, value)
+	return e.executorRepo.SaveExecutorInfo(ctx, key, value)
 }

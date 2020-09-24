@@ -30,7 +30,7 @@ func TestRegistration(t *testing.T) {
 	}
 	key := testRegisterRequest.ID
 	value := testRegisterRequest.ExecutorInfo
-	executorRepoMock.On("Save", key, value).Return(&testRegisterResponse, nil).Once()
+	executorRepoMock.On("SaveExecutorInfo", key, value).Return(&testRegisterResponse, nil).Once()
 	res, err := testExec.RegisterExecutor(context.Background(), &testRegisterRequest)
 	executorRepoMock.AssertExpectations(t)
 	assert.Nil(t, err)

@@ -42,8 +42,8 @@ func TestStartExecutorHealthCheck(t *testing.T) {
 		activeExecutorMap: testExecutorMap,
 	}
 
-	testExecRepo.On("UpdateStatus", "exec 1", "idle").Return(nil)
-	testExecRepo.On("UpdateStatus", "exec 1", "expired").Return(nil)
+	testExecRepo.On("UpdateExecutorHealth", "executor/status/exec 1", "idle").Return(nil)
+	testExecRepo.On("UpdateExecutorHealth", "executor/status/exec 1", "expired").Return(nil)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -70,7 +70,7 @@ func TestUpdateExecutorStatusNotRegistered(t *testing.T) {
 	request := protofiles.Ping{
 		ID: "exec 1",
 	}
-	executorRepoMock.On("Get", "exec 1").Return(&protofiles.ExecutorInfo{}, status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound))
+	executorRepoMock.On("GetExecutorInfo", "exec 1").Return(&protofiles.ExecutorInfo{}, status.Error(codes.NotFound, constant.Etcd+constant.NoValueFound))
 	pingTimeOut := 20 * time.Second
 	res, err := testExec.UpdatePingStatus(ctx, &request, pingTimeOut)
 	executorRepoMock.AssertExpectations(t)
@@ -88,8 +88,8 @@ func TestUpdateExecutorStatus(t *testing.T) {
 	request := protofiles.Ping{
 		ID: "exec 1",
 	}
-	executorRepoMock.On("Get", "exec 1").Return(&protofiles.ExecutorInfo{}, nil)
-	executorRepoMock.On("UpdateStatus", "exec 1", "idle").Return(nil)
+	executorRepoMock.On("GetExecutorInfo", "exec 1").Return(&protofiles.ExecutorInfo{}, nil)
+	executorRepoMock.On("UpdateExecutorHealth", "executor/status/exec 1", "idle").Return(nil)
 	res, err := testExec.UpdatePingStatus(ctx, &request, 20*time.Second)
 	_, ok := getActiveExecutorMap(testExec.(*healthExecution)).Get("exec 1")
 	assert.Equal(t, res.Recieved, true)
