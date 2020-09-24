@@ -21,12 +21,12 @@
     "args": [{
         "name": "name",
         "description": "[Mandatory] Cluster Environment to Migrate [staging,production]",
-        "required" : false
+        "required" : true
       },
       {
         "name": "surname",
         "description": "[Mandatory] Helm release name to be migrated",
-        "required": false
+        "required": true
       },
       {
         "name": "EXECUTOR",

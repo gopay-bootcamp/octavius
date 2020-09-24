@@ -24,6 +24,7 @@ type JobExecution interface {
 	SaveJobExecutionData(ctx context.Context, executionData *protofiles.ExecutionContext) error
 	PostExecutorStatus(ctx context.Context, ID string, status *protofiles.Status) error
 	checkJobIsAvailable(ctx context.Context, jobName string) (bool, error)
+	validateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error)
 }
 type jobExecution struct {
 	jobRepo     jobRepo.Repository
@@ -52,6 +53,38 @@ func (e *jobExecution) checkJobIsAvailable(ctx context.Context, jobName string) 
 	}
 	return true, nil
 }
+func (e *jobExecution) validateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
+	jobName := executionData.JobName
+	jobData := executionData.JobData
+	metadata, err := e.jobRepo.GetMetadata(ctx, jobName)
+	if err != nil {
+		return false, status.Error(codes.Internal, err.Error())
+	}
+	args := metadata.EnvVars.Args
+
+	for _, arg := range args {
+		if arg.Required {
+			if _, ok := jobData[arg.Name]; !ok {
+				return false, nil
+			}
+		}
+	}
+	for jobKey := range jobData {
+		if !isPresentInArgs(jobKey, args) {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func isPresentInArgs(jobKey string, args []*protofiles.Arg) bool {
+	for _, arg := range args {
+		if arg.Name == jobKey {
+			return true
+		}
+	}
+	return false
+}
 
 // ExecuteJob function will call job repository and get jobId
 func (e *jobExecution) ExecuteJob(ctx context.Context, executionData *protofiles.RequestToExecute) (uint64, error) {
@@ -62,7 +95,7 @@ func (e *jobExecution) ExecuteJob(ctx context.Context, executionData *protofiles
 	if !isAvailable {
 		return uint64(0), status.Errorf(codes.Internal, "job with name %s not available", executionData.JobName)
 	}
-	valid, err := e.jobRepo.ValidateJob(ctx, executionData)
+	valid, err := e.validateJob(ctx, executionData)
 	if err != nil {
 		return 0, err
 	}

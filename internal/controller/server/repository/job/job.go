@@ -26,7 +26,6 @@ type Repository interface {
 	DeleteJob(ctx context.Context, key string) error
 	UpdateStatus(ctx context.Context, key string, health string) error
 	GetNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
-	ValidateJob(context.Context, *protofiles.RequestToExecute) (bool, error)
 	GetLogs(context.Context, string) (string, error)
 	SaveJobExecutionData(ctx context.Context, jobID string, executionData *protofiles.ExecutionContext) error
 }
@@ -87,7 +86,7 @@ func (j *jobRepository) GetNextJob(ctx context.Context) (string, *protofiles.Req
 }
 
 // ValidateJob is used to validate the arguments of job when execution request is received
-func (j *jobRepository) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
+/*func (j *jobRepository) ValidateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
 	jobName := executionData.JobName
 	jobData := executionData.JobData
 	key := constant.MetadataPrefix + jobName
@@ -126,7 +125,7 @@ func isPresentInArgs(jobKey string, args []*protofiles.Arg) bool {
 		}
 	}
 	return false
-}
+}*/
 
 // GetLogs is used to fetch logs of job executing/executed
 func (j *jobRepository) GetLogs(ctx context.Context, jobName string) (string, error) {
