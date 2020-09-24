@@ -52,6 +52,7 @@ func (e *jobExecution) checkJobIsAvailable(ctx context.Context, jobName string) 
 	}
 	return true, nil
 }
+
 func (e *jobExecution) validateJob(ctx context.Context, executionData *protofiles.RequestToExecute) (bool, error) {
 	jobName := executionData.JobName
 	jobData := executionData.JobData
