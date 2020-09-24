@@ -36,7 +36,7 @@ func TestSave(t *testing.T) {
 
 	mockClient.On("PutValue", "jobs/pending/12345678", string(testExecutionDataAsByte)).Return(nil)
 
-	err = jobRepository.Save(context.Background(), uint64(12345678), testExecutionData)
+	err = jobRepository.SaveJobArgs(context.Background(), uint64(12345678), testExecutionData)
 	assert.Nil(t, err)
 	mockClient.AssertExpectations(t)
 }
@@ -56,7 +56,7 @@ func TestSaveForEtcdClientFailure(t *testing.T) {
 
 	mockClient.On("PutValue", "jobs/pending/12345678", string(testExecutionDataAsByte)).Return(errors.New("failed to put value in database"))
 
-	err = jobRepository.Save(context.Background(), uint64(12345678), testExecutionData)
+	err = jobRepository.SaveJobArgs(context.Background(), uint64(12345678), testExecutionData)
 	assert.Equal(t, "failed to put value in database", err.Error())
 	mockClient.AssertExpectations(t)
 }

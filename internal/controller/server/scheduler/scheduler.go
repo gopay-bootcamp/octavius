@@ -31,7 +31,7 @@ func NewScheduler(idGenerator idgen.RandomIdGenerator, schedulerRepo jobRepo.Rep
 
 // AddToPendingList function add given job to pendingList
 func (s *scheduler) AddToPendingList(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
-	return s.jobRepo.Save(ctx, jobID, executionData)
+	return s.jobRepo.SaveJobArgs(ctx, jobID, executionData)
 }
 
 // RemoveFromPendigList function removes job with given key from pendingList

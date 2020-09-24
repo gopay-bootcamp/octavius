@@ -22,7 +22,7 @@ import (
 // Repository interface for job repository functions
 type Repository interface {
 	GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error)
-	Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error
+	SaveJobArgs(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error
 	DeleteJob(ctx context.Context, key string) error
 	UpdateStatus(ctx context.Context, key string, health string) error
 	GetNextJob(ctx context.Context) (string, *protofiles.RequestToExecute, error)
@@ -46,8 +46,8 @@ func (j *jobRepository) UpdateStatus(ctx context.Context, key string, health str
 	return j.etcdClient.PutValue(ctx, dbKey, health)
 }
 
-// Save takes jobID and executionData and save it in database as pendingList
-func (j *jobRepository) Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
+// SaveJobArgs takes jobID and executionData and save it in database as pendingList
+func (j *jobRepository) SaveJobArgs(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
 	key := constant.JobPendingPrefix + strconv.FormatUint(jobID, 10)
 	value, err := proto.Marshal(executionData)
 	if err != nil {

@@ -13,8 +13,8 @@ type JobMock struct {
 	mock.Mock
 }
 
-// Save mocks Save functionality of repository
-func (m *JobMock) Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
+// SaveJobArgs mocks SaveJobArgs functionality of repository
+func (m *JobMock) SaveJobArgs(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error {
 	args := m.Called(jobID, executionData)
 	return args.Error(0)
 }

@@ -25,7 +25,7 @@ func TestAddToPendingList(t *testing.T) {
 	}
 	testJobID := uint64(12345)
 
-	jobRepoMock.On("Save", testJobID, testExecutionData).Return(nil)
+	jobRepoMock.On("SaveJobArgs", testJobID, testExecutionData).Return(nil)
 	err := scheduler.AddToPendingList(context.Background(), testJobID, testExecutionData)
 
 	assert.Nil(t, err)
@@ -46,7 +46,7 @@ func TestAddToPendingListForJobRepoFailure(t *testing.T) {
 	}
 	testJobID := uint64(12345)
 
-	jobRepoMock.On("Save", testJobID, testExecutionData).Return(errors.New("failed to save job in jobRepo"))
+	jobRepoMock.On("SaveJobArgs", testJobID, testExecutionData).Return(errors.New("failed to save job in jobRepo"))
 	err := scheduler.AddToPendingList(context.Background(), testJobID, testExecutionData)
 
 	assert.Equal(t, "failed to save job in jobRepo", err.Error())

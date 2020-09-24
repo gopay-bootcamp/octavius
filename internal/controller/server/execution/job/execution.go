@@ -49,7 +49,6 @@ func (e *jobExecution) checkJobIsAvailable(ctx context.Context, jobName string) 
 			return false, status.Error(codes.NotFound, constant.Etcd+fmt.Sprintf("job with %v name not found", jobName))
 		}
 		return false, err
-
 	}
 	return true, nil
 }
