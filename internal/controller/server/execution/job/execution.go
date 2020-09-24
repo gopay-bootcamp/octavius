@@ -4,9 +4,11 @@ package job
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	jobRepo "octavius/internal/controller/server/repository/job"
 	"octavius/internal/controller/server/scheduler"
+	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/protofiles"
 
@@ -21,6 +23,7 @@ type JobExecution interface {
 	GetJobLogs(ctx context.Context, jobk8sName string) (string, error)
 	SaveJobExecutionData(ctx context.Context, executionData *protofiles.ExecutionContext) error
 	PostExecutorStatus(ctx context.Context, ID string, status *protofiles.Status) error
+	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
 }
 type jobExecution struct {
 	jobRepo     jobRepo.Repository
@@ -37,9 +40,22 @@ func NewJobExec(jobRepo jobRepo.Repository, idGenerator idgen.RandomIdGenerator,
 	}
 }
 
+// checkJobIsAvailable returns true if given job is available otherwise returns false
+func (e *jobExecution) CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
+	_, err := e.jobRepo.GetMetadata(ctx, jobName)
+	if err != nil {
+		if err.Error() == status.Error(codes.NotFound, constant.NoValueFound).Error() {
+			return false, status.Error(codes.NotFound, constant.Etcd+fmt.Sprintf("job with %v name not found", jobName))
+		}
+		return false, err
+
+	}
+	return true, nil
+}
+
 // ExecuteJob function will call job repository and get jobId
 func (e *jobExecution) ExecuteJob(ctx context.Context, executionData *protofiles.RequestToExecute) (uint64, error) {
-	isAvailable, err := e.jobRepo.CheckJobIsAvailable(ctx, executionData.JobName)
+	isAvailable, err := e.CheckJobIsAvailable(ctx, executionData.JobName)
 	if err != nil {
 		return uint64(0), err
 	}

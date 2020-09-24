@@ -22,7 +22,6 @@ import (
 // Repository interface for job repository functions
 type Repository interface {
 	GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error)
-	CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error)
 	Save(ctx context.Context, jobID uint64, executionData *protofiles.RequestToExecute) error
 	DeleteJob(ctx context.Context, key string) error
 	UpdateStatus(ctx context.Context, key string, health string) error
@@ -43,22 +42,9 @@ func NewJobRepository(client etcd.Client) Repository {
 	}
 }
 
-// CheckJobIsAvailable returns true if given job is available otherwise returns false
-func (j *jobRepository) CheckJobIsAvailable(ctx context.Context, jobName string) (bool, error) {
-	_, err := j.etcdClient.GetValue(ctx, "metadata/"+jobName)
-	if err != nil {
-		if err.Error() == constant.NoValueFound {
-			return false, status.Error(codes.NotFound, constant.Etcd+fmt.Sprintf("job with %v name not found", jobName))
-		}
-		return false, status.Error(codes.Internal, err.Error())
-
-	}
-	return true, nil
-}
-
-func (e *jobRepository) UpdateStatus(ctx context.Context, key string, health string) error {
+func (j *jobRepository) UpdateStatus(ctx context.Context, key string, health string) error {
 	dbKey := constant.ExecutorStatusPrefix + key
-	return e.etcdClient.PutValue(ctx, dbKey, health)
+	return j.etcdClient.PutValue(ctx, dbKey, health)
 }
 
 // Save takes jobID and executionData and save it in database as pendingList
@@ -176,11 +162,10 @@ func (j *jobRepository) SaveJobExecutionData(ctx context.Context, jobname string
 func (j *jobRepository) GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := j.etcdClient.GetValue(ctx, dbKey)
-
-	if err == errors.New(constant.NoValueFound) {
-		return &protofiles.Metadata{}, status.Error(codes.NotFound, err.Error())
-	}
 	if err != nil {
+		if err.Error() == errors.New(constant.NoValueFound).Error() {
+			return &protofiles.Metadata{}, status.Error(codes.NotFound, err.Error())
+		}
 		return &protofiles.Metadata{}, status.Error(codes.Internal, err.Error())
 	}
 
