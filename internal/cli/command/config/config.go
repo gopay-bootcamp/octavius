@@ -1,3 +1,4 @@
+//Package config provides cli command to set client side configurations
 package config
 
 import (

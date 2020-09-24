@@ -1,9 +1,10 @@
+// Package getlogs provides cli command to get logs of job
 package getlogs
 
 import (
 	"fmt"
-	"octavius/internal/cli/client"
-	"octavius/internal/cli/daemon"
+	client "octavius/internal/cli/client/job"
+	daemon "octavius/internal/cli/daemon/job"
 	"octavius/internal/pkg/log"
 	"octavius/internal/pkg/printer"
 
@@ -24,7 +25,7 @@ func NewCmd(octaviusDaemon daemon.Client) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 
 			client := &client.GrpcClient{}
-			logResponse, err := octaviusDaemon.GetLogs(jobID, client)
+			logResponse, err := octaviusDaemon.Logs(jobID, client)
 			if err != nil {
 				log.Error(err, "error while getting the logs")
 				printer.Println(fmt.Sprintf("error while getting the logs, %v", status.Convert(err).Message()), color.FgRed)

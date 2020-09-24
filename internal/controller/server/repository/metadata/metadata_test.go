@@ -1,3 +1,4 @@
+// Package metadata implements metadata repository related functions
 package metadata
 
 import (
@@ -6,7 +7,7 @@ import (
 	"octavius/internal/pkg/constant"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
+	"octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
@@ -21,7 +22,7 @@ func init() {
 
 func Test_metadataRepository_Save(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	metadataVal := &clientCPproto.Metadata{
+	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
 		ImageName:   "demo image",
 		Name:        "test data",
@@ -50,7 +51,7 @@ func Test_metadataRepository_Save(t *testing.T) {
 
 func Test_metadataRepository_Save_KeyAlreadyPresent(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	metadataVal := &clientCPproto.Metadata{
+	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
 		ImageName:   "demo image",
 		Name:        "test data",
@@ -74,7 +75,7 @@ func Test_metadataRepository_Save_KeyAlreadyPresent(t *testing.T) {
 
 func Test_metadataRepository_Save_GetValueError(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	metadataVal := &clientCPproto.Metadata{
+	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
 		ImageName:   "demo image",
 		Name:        "test data",
@@ -98,7 +99,7 @@ func Test_metadataRepository_Save_GetValueError(t *testing.T) {
 
 func Test_metadataRepository_Save_PutValueError(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	metadataVal := &clientCPproto.Metadata{
+	metadataVal := &protofiles.Metadata{
 		Author:      "littlestar642",
 		ImageName:   "demo image",
 		Name:        "test data",
@@ -124,7 +125,7 @@ func Test_metadataRepository_GetAll(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	metadataArr := make([]string, 3)
 
-	metadataVal1 := &clientCPproto.Metadata{
+	metadataVal1 := &protofiles.Metadata{
 		Author:      "littlestar642",
 		ImageName:   "demo image",
 		Name:        "test data",
@@ -133,7 +134,7 @@ func Test_metadataRepository_GetAll(t *testing.T) {
 	val1, err := proto.Marshal(metadataVal1)
 	metadataArr = append(metadataArr, string(val1))
 
-	metadataVal2 := &clientCPproto.Metadata{
+	metadataVal2 := &protofiles.Metadata{
 		Author:      "littlestar642",
 		ImageName:   "demo image",
 		Name:        "test data",
@@ -161,7 +162,7 @@ func TestGetValue(t *testing.T) {
 	jobName := "testJobName"
 	key := "metadata/" + jobName
 
-	var testMetadata = &clientCPproto.Metadata{
+	var testMetadata = &protofiles.Metadata{
 		Name:        "testJobName",
 		Description: "This is a test image",
 		ImageName:   "images/test-image",
@@ -186,7 +187,7 @@ func Test_metadataRepository_GetAvailableJobList(t *testing.T) {
 	jobList = append(jobList, "demo-image-name")
 	jobList = append(jobList, "demo-image-name-1")
 
-	testResponse := &clientCPproto.JobList{
+	testResponse := &protofiles.JobList{
 		Jobs: jobList,
 	}
 

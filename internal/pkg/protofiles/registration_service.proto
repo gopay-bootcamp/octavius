@@ -1,0 +1,8 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles";
+
+import "internal/pkg/protofiles/register_message.proto";
+
+service RegistrationService{
+    rpc Register(RegisterRequest) returns(RegisterResponse);
+}

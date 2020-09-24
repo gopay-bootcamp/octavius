@@ -1,10 +1,12 @@
+// Package executor implements executor repository related functions
 package executor
 
 import (
 	"context"
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/log"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"octavius/internal/pkg/protofiles"
+
 	"testing"
 
 	"github.com/golang/protobuf/proto"
@@ -17,7 +19,7 @@ func init() {
 
 func Test_ExecutorRepo_Save(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	executorInfo := &executorCPproto.ExecutorInfo{
+	executorInfo := &protofiles.ExecutorInfo{
 		Info: "values here about info",
 	}
 
@@ -45,7 +47,7 @@ func Test_ExecutorRepo_Save(t *testing.T) {
 
 func Test_ExecutorRepo_Save_PutValueError(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	executorInfo := &executorCPproto.ExecutorInfo{
+	executorInfo := &protofiles.ExecutorInfo{
 		Info: "values here about info",
 	}
 
@@ -68,7 +70,7 @@ func Test_ExecutorRepo_Save_PutValueError(t *testing.T) {
 
 func Test_ExecutorRepo_Get(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
-	executorInfo := &executorCPproto.ExecutorInfo{
+	executorInfo := &protofiles.ExecutorInfo{
 		Info: "values here about info",
 	}
 

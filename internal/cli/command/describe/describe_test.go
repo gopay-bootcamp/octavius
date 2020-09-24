@@ -1,9 +1,9 @@
 package describe
 
 import (
-	"octavius/internal/cli/daemon"
+	daemon "octavius/internal/cli/daemon/metadata"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	protobuf "octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,7 +40,7 @@ func TestDescribeCmd(t *testing.T) {
 		EnvVars: testEnvVars,
 	}
 
-	mockOctaviusDClient.On("DescribeJob", "DemoJob").Return(describeResponse, nil).Once()
+	mockOctaviusDClient.On("Describe", "DemoJob").Return(describeResponse, nil).Once()
 	testDescribeCmd.SetArgs([]string{"--job-name", "DemoJob"})
 
 	err := testDescribeCmd.Execute()

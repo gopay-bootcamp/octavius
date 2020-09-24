@@ -4,24 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"octavius/internal/executor/config"
-	"octavius/internal/executor/daemon"
+	daemon "octavius/internal/executor/daemon/registration"
 	"octavius/internal/pkg/log"
 
 	"github.com/spf13/cobra"
 )
 
-//NewCmd returns start command
-func NewCmd(executorDaemon daemon.Client, executorConfig config.OctaviusExecutorConfig) *cobra.Command {
+//NewCmd returns register command
+func NewCmd(executorDaemon daemon.RegistrationServicesClient, executorConfig config.OctaviusExecutorConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "register",
 		Short: "register Executor",
 		Long:  `Registers Executor in Control Plane`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := executorDaemon.StartClient(executorConfig)
-			if err != nil {
-				log.Error(fmt.Errorf("executor configuration failed, error details: %v", err.Error()), "")
-			}
-			registered, err := executorDaemon.RegisterClient()
+			registered, err := executorDaemon.RegisterClient(executorConfig)
 			if err != nil {
 				log.Error(fmt.Errorf("registration failed, error details: %v", err.Error()), "")
 				return

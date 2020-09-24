@@ -1,10 +1,14 @@
+// Package server serves as an entry point of the controller
 package server
 
 import (
 	"fmt"
 	"net"
 	"octavius/internal/controller/config"
-	"octavius/internal/controller/server/execution"
+	"octavius/internal/controller/server/execution/health"
+	"octavius/internal/controller/server/execution/job"
+	"octavius/internal/controller/server/execution/metadata"
+	"octavius/internal/controller/server/execution/registration"
 	executorRepo "octavius/internal/controller/server/repository/executor"
 	jobRepo "octavius/internal/controller/server/repository/job"
 	metadataRepo "octavius/internal/controller/server/repository/metadata"
@@ -12,8 +16,7 @@ import (
 	"octavius/internal/pkg/db/etcd"
 	"octavius/internal/pkg/idgen"
 	"octavius/internal/pkg/log"
-	clientCPproto "octavius/internal/pkg/protofiles/client_cp"
-	executorCPproto "octavius/internal/pkg/protofiles/executor_cp"
+	"octavius/internal/pkg/protofiles"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -42,15 +45,26 @@ func Start() error {
 	jobRepository := jobRepo.NewJobRepository(etcdClient)
 
 	randomIdGenerator := idgen.NewRandomIdGenerator()
+
 	scheduler := scheduler.NewScheduler(randomIdGenerator, jobRepository)
-	exec := execution.NewExec(metadataRepository, executorRepository, jobRepository, randomIdGenerator, scheduler)
-	clientCPGrpcServer := NewClientServiceServer(exec, randomIdGenerator)
-	executorCPGrpcServer := NewExecutorServiceServer(exec, randomIdGenerator)
+
+	registrationExec := registration.NewRegistrationExec(executorRepository)
+	registrationServicesGrpcServer := NewRegistrationServiceServer(registrationExec, randomIdGenerator)
+
+	jobExec := job.NewJobExec(jobRepository, randomIdGenerator, scheduler)
+	jobServicesGrpcServer := NewJobServiceServer(jobExec, randomIdGenerator)
+
+	metadataExec := metadata.NewMetadataExec(metadataRepository)
+	metadataServicesGrpcServer := NewMetadataServiceServer(metadataExec, randomIdGenerator)
+
+	healthExec := health.NewHealthExec(executorRepository)
+	healthServicesGrpcServer := NewHealthServiceServer(healthExec, randomIdGenerator)
 
 	server := grpc.NewServer()
-	clientCPproto.RegisterClientCPServicesServer(server, clientCPGrpcServer)
-	executorCPproto.RegisterExecutorCPServicesServer(server, executorCPGrpcServer)
-
+	protofiles.RegisterHealthServicesServer(server, healthServicesGrpcServer)
+	protofiles.RegisterJobServiceServer(server, jobServicesGrpcServer)
+	protofiles.RegisterMetadataServicesServer(server, metadataServicesGrpcServer)
+	protofiles.RegisterRegistrationServiceServer(server, registrationServicesGrpcServer)
 	listener, err := net.Listen("tcp", "localhost:"+appPort)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())

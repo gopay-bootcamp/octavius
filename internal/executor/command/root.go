@@ -4,7 +4,9 @@ import (
 	"octavius/internal/executor/command/register"
 	"octavius/internal/executor/command/start"
 	"octavius/internal/executor/config"
-	"octavius/internal/executor/daemon"
+	"octavius/internal/executor/daemon/health"
+	"octavius/internal/executor/daemon/job"
+	"octavius/internal/executor/daemon/registration"
 
 	"github.com/spf13/cobra"
 )
@@ -16,12 +18,12 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute executes the root command of octavius control plane
-func Execute(executorDaemon daemon.Client, executorConfig config.OctaviusExecutorConfig) error {
+func Execute(jobDaemon job.JobServicesClient, registrationDaemon registration.RegistrationServicesClient, healthDaemon health.HealthServicesClient, executorConfig config.OctaviusExecutorConfig) error {
 
-	registerCmd := register.NewCmd(executorDaemon, executorConfig)
+	registerCmd := register.NewCmd(registrationDaemon, executorConfig)
 	rootCmd.AddCommand(registerCmd)
 
-	startCmd := start.NewCmd(executorDaemon, executorConfig)
+	startCmd := start.NewCmd(jobDaemon, healthDaemon, executorConfig)
 	rootCmd.AddCommand(startCmd)
 
 	err := rootCmd.Execute()

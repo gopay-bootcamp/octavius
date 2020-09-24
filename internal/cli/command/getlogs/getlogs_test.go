@@ -1,9 +1,9 @@
 package getlogs
 
 import (
-	"octavius/internal/cli/daemon"
+	daemon "octavius/internal/cli/daemon/job"
 	"octavius/internal/pkg/log"
-	protobuf "octavius/internal/pkg/protofiles/client_cp"
+	protobuf "octavius/internal/pkg/protofiles"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,11 +27,11 @@ func TestGetLogsCmd(t *testing.T) {
 		Log: "sample log 1",
 	}
 
-	mockOctaviusDClient.On("GetLogs", "DemoJob").Return(&logResponse, nil).Once()
+	mockOctaviusDClient.On("Logs", "DemoJob").Return(&logResponse, nil).Once()
 
 	testGetLogsCmd.SetArgs([]string{"--job-id", "DemoJob"})
 
-	testGetLogsCmd.Execute()
-
+	err := testGetLogsCmd.Execute()
+	assert.Nil(t, err)
 	mockOctaviusDClient.AssertExpectations(t)
 }

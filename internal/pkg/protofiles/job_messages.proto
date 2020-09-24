@@ -1,0 +1,54 @@
+syntax = "proto3";
+option go_package = "octavius/internal/pkg/protofiles";
+
+import "internal/pkg/protofiles/client_info.proto";
+
+// Logs service
+message RequestToGetLogs {
+    ClientInfo client_info=1;
+    string job_name=2;
+}
+
+message RequestToGetJobList {
+    ClientInfo client_info=1;
+}
+
+message JobList {
+    repeated string jobs=1;
+
+}
+
+message Log{
+    string log=2;
+}
+
+
+// Execute service
+message RequestToExecute{
+    ClientInfo client_info=1;
+    string job_name=2;
+    map<string,string> job_data=3;
+}
+
+
+
+message Response {
+    string status = 1;
+}
+
+// Get Service
+message Job {
+    bool has_job = 1;
+    string jobID = 2;
+    string image_name = 3;
+    map<string,string> job_data = 4;
+}
+
+message ExecutorID {
+    string ID = 1;
+}
+
+message Status {
+    string ID =1;
+    string status = 2;
+}
