@@ -17,9 +17,9 @@ import (
 
 // Repository interface for functions related to executor repository
 type Repository interface {
-	Save(ctx context.Context, key string, executorInfo *protofiles.ExecutorInfo) (*protofiles.RegisterResponse, error)
-	Get(ctx context.Context, key string) (*protofiles.ExecutorInfo, error)
-	Update(ctx context.Context, key string, value string) error
+	SaveExecutorInfo(ctx context.Context, key string, executorInfo *protofiles.ExecutorInfo) (*protofiles.RegisterResponse, error)
+	GetExecutorInfo(ctx context.Context, key string) (*protofiles.ExecutorInfo, error)
+	UpdateExecutorHealth(ctx context.Context, key string, health string) error
 }
 
 type executorRepository struct {
@@ -33,8 +33,8 @@ func NewExecutorRepository(client etcd.Client) Repository {
 	}
 }
 
-// Save takes exexcutorInfo and key as arguments and saves it to executor/register
-func (e *executorRepository) Save(ctx context.Context, key string, executorInfo *protofiles.ExecutorInfo) (*protofiles.RegisterResponse, error) {
+// SaveExecutorInfo takes exexcutorInfo and key as arguments and saves it to executor/register
+func (e *executorRepository) SaveExecutorInfo(ctx context.Context, key string, executorInfo *protofiles.ExecutorInfo) (*protofiles.RegisterResponse, error) {
 	dbKey := constant.ExecutorRegistrationPrefix + key
 
 	val, err := proto.Marshal(executorInfo)
@@ -51,13 +51,13 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 	return &protofiles.RegisterResponse{Registered: true}, nil
 }
 
-// Update takes executor key and value as arguments and updates value of the provided key
-func (e *executorRepository) Update(ctx context.Context, key string, value string) error {
+// UpdateExecutorHealth takes executor key and health as arguments and updates health of the provided key
+func (e *executorRepository) UpdateExecutorHealth(ctx context.Context, key string, value string) error {
 	return e.etcdClient.PutValue(ctx, key, value)
 }
 
-// Get takes executor key as an argument and returns information about that particular executor
-func (e *executorRepository) Get(ctx context.Context, key string) (*protofiles.ExecutorInfo, error) {
+// GetExecutorInfo takes executor key as an argument and returns information about that particular executor
+func (e *executorRepository) GetExecutorInfo(ctx context.Context, key string) (*protofiles.ExecutorInfo, error) {
 	dbKey := constant.ExecutorRegistrationPrefix + key
 
 	infoString, err := e.etcdClient.GetValue(ctx, dbKey)

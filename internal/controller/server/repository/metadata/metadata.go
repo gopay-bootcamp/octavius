@@ -20,10 +20,9 @@ import (
 
 // Repository interface for functions related to metadata repository
 type Repository interface {
-	Save(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error)
-	GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error)
-	GetAll(ctx context.Context) (*protofiles.MetadataArray, error)
-	GetAllKeys(ctx context.Context) (*protofiles.JobList, error)
+	SaveMetadata(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error)
+	GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error)
+	GetAvailableJobs(ctx context.Context) (*protofiles.JobList, error)
 }
 
 type metadataRepository struct {
@@ -37,8 +36,8 @@ func NewMetadataRepository(client etcd.Client) Repository {
 	}
 }
 
-// Save marshals metadata and saves the value in etcd database with the given key
-func (c *metadataRepository) Save(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error) {
+// SaveMetadata marshals metadata and saves the value in etcd database with the given key
+func (c *metadataRepository) SaveMetadata(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error) {
 
 	val, err := proto.Marshal(metadata)
 
@@ -68,30 +67,8 @@ func (c *metadataRepository) Save(ctx context.Context, key string, metadata *pro
 	return res, nil
 }
 
-// GetAll returns array of metadata
-func (c *metadataRepository) GetAll(ctx context.Context) (*protofiles.MetadataArray, error) {
-	res, err := c.etcdClient.GetAllValues(ctx, constant.MetadataPrefix)
-	if err != nil {
-		var arr []*protofiles.Metadata
-		res := &protofiles.MetadataArray{Values: arr}
-		return res, status.Error(codes.Internal, err.Error())
-	}
-
-	var resArr []*protofiles.Metadata
-	for _, val := range res {
-		metadata := &protofiles.Metadata{}
-		err := proto.Unmarshal([]byte(val), metadata)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		resArr = append(resArr, metadata)
-	}
-	resp := &protofiles.MetadataArray{Values: resArr}
-	return resp, nil
-}
-
-// GetAllKeys returns list of available job keys
-func (c *metadataRepository) GetAllKeys(ctx context.Context) (*protofiles.JobList, error) {
+// GetAvailableJobs returns list of available job keys
+func (c *metadataRepository) GetAvailableJobs(ctx context.Context) (*protofiles.JobList, error) {
 	keys, _, err := c.etcdClient.GetAllKeyAndValues(ctx, constant.MetadataPrefix)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -104,8 +81,8 @@ func (c *metadataRepository) GetAllKeys(ctx context.Context) (*protofiles.JobLis
 	return &protofiles.JobList{Jobs: jobList}, nil
 }
 
-// GetValue returns metadata of given jobName
-func (c *metadataRepository) GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
+// GetMetadata returns metadata of given jobName
+func (c *metadataRepository) GetMetadata(ctx context.Context, jobName string) (*protofiles.Metadata, error) {
 	dbKey := constant.MetadataPrefix + jobName
 	gr, err := c.etcdClient.GetValue(ctx, dbKey)
 

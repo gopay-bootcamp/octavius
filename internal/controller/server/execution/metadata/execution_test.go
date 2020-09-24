@@ -32,7 +32,7 @@ func TestGetMetadata(t *testing.T) {
 		Description: "This is a test image",
 		ImageName:   "images/test-image",
 	}
-	metadataRepoMock.On("GetValue", testRequestForDescribe.JobName).Return(testMetadata, nil)
+	metadataRepoMock.On("GetMetadata", testRequestForDescribe.JobName).Return(testMetadata, nil)
 	resultMetadata, getMetadataErr := testExec.GetMetadata(context.Background(), testRequestForDescribe)
 	assert.Equal(t, testMetadata, resultMetadata)
 	assert.Nil(t, getMetadataErr)
@@ -53,7 +53,7 @@ func TestGetJobList(t *testing.T) {
 		Jobs: jobList,
 	}
 
-	metadataRepoMock.On("GetAllKeys").Return(testResponse, nil)
+	metadataRepoMock.On("GetAvailableJobs").Return(testResponse, nil)
 
 	res, err := testExec.GetJobList(context.Background())
 	assert.Nil(t, err)
@@ -65,7 +65,7 @@ func TestGetJobListForGetAllKeysFunctionErr(t *testing.T) {
 
 	testExec := NewMetadataExec(metadataRepoMock)
 
-	metadataRepoMock.On("GetAllKeys").Return(&protofiles.JobList{}, errors.New("error in GetAllKeys function"))
+	metadataRepoMock.On("GetAvailableJobs").Return(&protofiles.JobList{}, errors.New("error in GetAllKeys function"))
 
 	_, err := testExec.GetJobList(context.Background())
 	assert.Equal(t, "error in GetAllKeys function", err.Error())
@@ -83,37 +83,9 @@ func TestSaveMetadata(t *testing.T) {
 	testMetadataName := protofiles.MetadataName{
 		Name: "testJobName",
 	}
-	metadataRepoMock.On("Save", "testJobName", &testMetadata).Return(&testMetadataName, nil).Once()
+	metadataRepoMock.On("SaveMetadata", "testJobName", &testMetadata).Return(&testMetadataName, nil).Once()
 	res, err := testExec.SaveMetadata(context.Background(), &testMetadata)
 	assert.Nil(t, err)
 	assert.Equal(t, &testMetadataName, res)
-	metadataRepoMock.AssertExpectations(t)
-}
-
-func TestReadAllMetadata(t *testing.T) {
-	metadataRepoMock := new(metadata.MetadataMock)
-
-	testExec := NewMetadataExec(metadataRepoMock)
-	testMetadata1 := protofiles.Metadata{
-		Name:        "testJobName1",
-		Description: "This is a test image1",
-		ImageName:   "images/test-image1",
-	}
-	testMetadata2 := protofiles.Metadata{
-		Name:        "testJobName2",
-		Description: "This is a test image2",
-		ImageName:   "images/test-image2",
-	}
-	var metadataArray []*protofiles.Metadata
-	metadataArray = append(metadataArray, &testMetadata1)
-	metadataArray = append(metadataArray, &testMetadata2)
-	testMetadataArray := protofiles.MetadataArray{
-		Values: metadataArray,
-	}
-
-	metadataRepoMock.On("GetAll").Return(&testMetadataArray, nil).Once()
-	res, err := testExec.ReadAllMetadata(context.Background())
-	assert.Nil(t, err)
-	assert.Equal(t, &testMetadataArray, res)
 	metadataRepoMock.AssertExpectations(t)
 }
