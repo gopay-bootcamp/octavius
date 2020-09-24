@@ -19,14 +19,14 @@ func (m *ExecutorMock) Save(ctx context.Context, key string, executorInfo *proto
 	return args.Get(0).(*protofiles.RegisterResponse), args.Error(1)
 }
 
-// Get mocks the get fucntionality of repository
+// Get mocks the get functionality of repository
 func (m *ExecutorMock) Get(ctx context.Context, key string) (*protofiles.ExecutorInfo, error) {
 	args := m.Called(key)
 	return args.Get(0).(*protofiles.ExecutorInfo), args.Error(1)
 }
 
-//UpdateStatus mocks update status functionality of repository
-func (m *ExecutorMock) UpdateStatus(ctx context.Context, key string, health string) error {
-	args := m.Called(key, health)
+//Update mocks update functionality of repository
+func (m *ExecutorMock) Update(ctx context.Context, key string, value string) error {
+	args := m.Called(key, value)
 	return args.Error(0)
 }

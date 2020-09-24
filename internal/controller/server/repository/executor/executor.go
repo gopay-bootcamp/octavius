@@ -19,7 +19,7 @@ import (
 type Repository interface {
 	Save(ctx context.Context, key string, executorInfo *protofiles.ExecutorInfo) (*protofiles.RegisterResponse, error)
 	Get(ctx context.Context, key string) (*protofiles.ExecutorInfo, error)
-	UpdateStatus(ctx context.Context, key string, health string) error
+	Update(ctx context.Context, key string, value string) error
 }
 
 type executorRepository struct {
@@ -51,10 +51,9 @@ func (e *executorRepository) Save(ctx context.Context, key string, executorInfo 
 	return &protofiles.RegisterResponse{Registered: true}, nil
 }
 
-// UpdateStatus takes executor key and health as arguments and updates status of executor in executor/status
-func (e *executorRepository) UpdateStatus(ctx context.Context, key string, health string) error {
-	dbKey := constant.ExecutorStatusPrefix + key
-	return e.etcdClient.PutValue(ctx, dbKey, health)
+// Update takes executor key and value as arguments and updates value of the provided key
+func (e *executorRepository) Update(ctx context.Context, key string, value string) error {
+	return e.etcdClient.PutValue(ctx, key, value)
 }
 
 // Get takes executor key as an argument and returns information about that particular executor

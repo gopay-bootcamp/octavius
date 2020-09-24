@@ -23,7 +23,7 @@ type Repository interface {
 	Save(ctx context.Context, key string, metadata *protofiles.Metadata) (*protofiles.MetadataName, error)
 	GetValue(ctx context.Context, jobName string) (*protofiles.Metadata, error)
 	GetAll(ctx context.Context) (*protofiles.MetadataArray, error)
-	GetAvailableJobList(ctx context.Context) (*protofiles.JobList, error)
+	GetAllKeys(ctx context.Context) (*protofiles.JobList, error)
 }
 
 type metadataRepository struct {
@@ -90,8 +90,8 @@ func (c *metadataRepository) GetAll(ctx context.Context) (*protofiles.MetadataAr
 	return resp, nil
 }
 
-// GetAvailableJobList returns list of available jobs
-func (c *metadataRepository) GetAvailableJobList(ctx context.Context) (*protofiles.JobList, error) {
+// GetAllKeys returns list of available job keys
+func (c *metadataRepository) GetAllKeys(ctx context.Context) (*protofiles.JobList, error) {
 	keys, _, err := c.etcdClient.GetAllKeyAndValues(ctx, constant.MetadataPrefix)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

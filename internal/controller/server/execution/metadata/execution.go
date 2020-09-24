@@ -44,5 +44,5 @@ func (e *metadataExecution) ReadAllMetadata(ctx context.Context) (*protofiles.Me
 
 // GetJobList function will call metadata repository and return list of available jobs
 func (e *metadataExecution) GetJobList(ctx context.Context) (*protofiles.JobList, error) {
-	return e.metadataRepo.GetAvailableJobList(ctx)
+	return e.metadataRepo.GetAllKeys(ctx)
 }

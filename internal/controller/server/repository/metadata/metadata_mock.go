@@ -31,8 +31,8 @@ func (m *MetadataMock) GetAll(ctx context.Context) (*protofiles.MetadataArray, e
 	return args.Get(0).(*protofiles.MetadataArray), args.Error(1)
 }
 
-// GetAvailableJobList mocks GetAvailableJobList functionality of repository
-func (m *MetadataMock) GetAvailableJobList(ctx context.Context) (*protofiles.JobList, error) {
+// GetAllKeys mocks GetAllKeys functionality of repository
+func (m *MetadataMock) GetAllKeys(ctx context.Context) (*protofiles.JobList, error) {
 	args := m.Called()
 	return args.Get(0).(*protofiles.JobList), args.Error(1)
 }

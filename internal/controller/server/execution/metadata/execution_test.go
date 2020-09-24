@@ -53,22 +53,22 @@ func TestGetJobList(t *testing.T) {
 		Jobs: jobList,
 	}
 
-	metadataRepoMock.On("GetAvailableJobList").Return(testResponse, nil)
+	metadataRepoMock.On("GetAllKeys").Return(testResponse, nil)
 
 	res, err := testExec.GetJobList(context.Background())
 	assert.Nil(t, err)
 	assert.Equal(t, testResponse, res)
 }
 
-func TestGetJobListForGetAvailableJobListFunctionErr(t *testing.T) {
+func TestGetJobListForGetAllKeysFunctionErr(t *testing.T) {
 	metadataRepoMock := new(metadata.MetadataMock)
 
 	testExec := NewMetadataExec(metadataRepoMock)
 
-	metadataRepoMock.On("GetAvailableJobList").Return(&protofiles.JobList{}, errors.New("error in GetAvailableJobList function"))
+	metadataRepoMock.On("GetAllKeys").Return(&protofiles.JobList{}, errors.New("error in GetAllKeys function"))
 
 	_, err := testExec.GetJobList(context.Background())
-	assert.Equal(t, "error in GetAvailableJobList function", err.Error())
+	assert.Equal(t, "error in GetAllKeys function", err.Error())
 }
 
 func TestSaveMetadata(t *testing.T) {

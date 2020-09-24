@@ -80,7 +80,8 @@ func startExecutorHealthCheck(e *healthExecution, activeExecutorMap *activeExecu
 	for {
 		select {
 		case <-executor.timer.C:
-			err := e.executorRepo.UpdateStatus(ctx, id, "expired")
+			dbKey := constant.ExecutorStatusPrefix + id
+			err := e.executorRepo.Update(ctx, dbKey, "expired")
 			if err != nil {
 				log.Error(err, fmt.Sprintf("session ID: %d, fail to write update status of executor with id: %s", executor.sessionID, id))
 				removeActiveExecutor(activeExecutorMap, id, executor)

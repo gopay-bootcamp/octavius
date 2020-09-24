@@ -107,7 +107,7 @@ func Test_ExecutorRepo_Get_GetValueError(t *testing.T) {
 	}
 }
 
-func Test_ExecutorRepo_UpdateStatus(t *testing.T) {
+func Test_ExecutorRepo_Update(t *testing.T) {
 	mockClient := new(etcd.ClientMock)
 	testExecutorRepo := NewExecutorRepository(mockClient)
 
@@ -115,7 +115,7 @@ func Test_ExecutorRepo_UpdateStatus(t *testing.T) {
 	mockClient.On("PutValue", "executor/status/random ID", status).Return(nil)
 	ctx := context.Background()
 
-	err := testExecutorRepo.UpdateStatus(ctx, "random ID", status)
+	err := testExecutorRepo.Update(ctx, "executor/status/random ID", status)
 
 	if err != nil {
 		t.Errorf("error in saving executor info, %v", err)
