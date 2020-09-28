@@ -1,6 +1,6 @@
 # OCTAVIUS
 
-<p align="center"><img src="docs/some-logo.png" width="360"></p>
+<p align="center"><img src="docs/imgs/logo.png" width="300"></p>
 
 - [Description](#description)
 - [Sequence Diagrams](#sequence-diagrams)
@@ -119,7 +119,7 @@ When we start the contoller the controller_config.json is read and the environme
 Clone the package from github and generate the executable binaries.
 
 ```zsh
-git clone https://github.com/gopay-bootcamp/octavius.git`
+git clone https://github.com/gopay-bootcamp/octavius.git
 
 cd octavius
 
@@ -148,11 +148,11 @@ go test -race ./...
 
 ## TODO
 
-While building the decentralised architecture for octavius we know some of the areas that can be improved and should be worked upon to make the application do what it should do, only better. We have added a list of TODO tasks into [laundrylist.md](./docs/imgs//laundrylist.md) to keep them organised.
+While building the decentralised architecture for octavius we know some of the areas that can be improved and should be worked upon to make the application do what it should do, only better. We have added a list of TODO tasks into [laundrylist.md](./docs/imgs/laundrylist.md) to keep them organised.
 
 ## Contribution Guidelines
 
-Contributions are welcomed! Please read the [contributing.md](./docs/imgs//contributing.md) before making one.
+Contributions are welcomed! Please read the [contributing.md](./docs/imgs/contributing.md) before making one.
 
 ## Troubleshoot
 
