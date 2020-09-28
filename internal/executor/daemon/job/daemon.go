@@ -197,9 +197,7 @@ func (e *jobServicesClient) startWatch(executionContext *protofiles.ExecutionCon
 	for scanner.Scan() {
 		buffer.WriteString(scanner.Text() + "\n")
 		output := buffer.String()
-
 		executionContext.Output = output
-
 		if executionContext.Status == constant.PodReady {
 			executionContext.Status = constant.RunningState
 		}
