@@ -57,7 +57,6 @@ func (e *jobServicesClient) ConfigureKubernetesClient(executorConfig config.Octa
 		KubeJobRetries:               executorConfig.KubeJobRetries,
 		KubeWaitForResourcePollCount: executorConfig.KubeWaitForResourcePollCount,
 	}
-
 	kubernetesClient, err := kubernetes.NewKubernetesClient(kubeConfig)
 	if err != nil {
 		return err
@@ -169,6 +168,7 @@ func (e *jobServicesClient) startWatch(executionContext *protofiles.ExecutionCon
 	log.Info(fmt.Sprintf("Job Ready for %s", executionContext.JobK8SName))
 
 	pod, err := e.kubernetesClient.WaitForReadyPod(ctx, executionContext.JobK8SName, e.kubeLogWaitTime)
+
 	if err != nil {
 		log.Error(err, fmt.Sprintf("wait for ready pod %s", pod.Name))
 		executionContext.Status = constant.PodCreationFailed
@@ -183,6 +183,7 @@ func (e *jobServicesClient) startWatch(executionContext *protofiles.ExecutionCon
 	}
 
 	podLog, err := e.kubernetesClient.GetPodLogs(ctx, pod)
+
 	if err != nil {
 		executionContext.Status = constant.FetchPodLogFailed
 		return
@@ -195,12 +196,22 @@ func (e *jobServicesClient) startWatch(executionContext *protofiles.ExecutionCon
 	var buffer bytes.Buffer
 	for scanner.Scan() {
 		buffer.WriteString(scanner.Text() + "\n")
+		output := buffer.String()
+		executionContext.Output = output
+		if executionContext.Status == constant.PodReady {
+			executionContext.Status = constant.RunningState
+		}
+
+		_, err = e.sendResponse(executionContext)
+		if err != nil {
+			log.Error(err, "error in sending execution context")
+			return
+		}
 	}
-
 	output := buffer.String()
-
 	executionContext.Output = output
-	if executionContext.Status == constant.PodReady {
+
+	if executionContext.Status == constant.PodReady || executionContext.Status == constant.RunningState {
 		executionContext.Status = constant.Finished
 	}
 	_, err = e.sendResponse(executionContext)
