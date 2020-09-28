@@ -2,6 +2,10 @@
 
 <p align="center"><img src="docs/imgs/logo.png" width="300"></p>
 
+<p align="center">
+  <a href="https://goreportcard.com/report/github.com/gopay-bootcamp/octavius"><img src="https://goreportcard.com/badge/github.com/gopay-bootcamp/octavius"></img></a>
+</p>
+
 - [Description](#description)
 - [Sequence Diagrams](#sequence-diagrams)
 - [Prerequisites](#prerequisites)
@@ -10,6 +14,7 @@
 - [TODO](#todo)
 - [Contributing](#contribution-guidelines)
 - [Troubleshoot](#troubleshoot)
+- [License](#license)
 
 ---
 
@@ -161,3 +166,20 @@ Contributions are welcomed! Please read the [contributing.md](./docs/imgs/contri
 2. gRPC version `>=1.30.x` has a name conflict with etcd. As a result it is better to stick to grpc `1.27.0` for the foreseeable future unless the upstream resolve their conflicts.
 
 
+## License
+
+```
+Copyright 2018-2020, GO-JEK Tech (http://gojek.tech)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
