@@ -53,13 +53,13 @@ func (s *server) Get(context.Context, *protofiles.ExecutorID) (*protofiles.Job, 
 }
 func (s *server) PostExecutionData(context.Context, *protofiles.ExecutionContext) (*protofiles.Acknowledgement, error) {
 	return &protofiles.Acknowledgement{
-		Recieved: true,
+		Received: true,
 	}, nil
 }
 
 func (s *server) PostExecutorStatus(context.Context, *protofiles.Status) (*protofiles.Acknowledgement, error) {
 	return &protofiles.Acknowledgement{
-		Recieved: true,
+		Received: true,
 	}, nil
 }
 
@@ -120,5 +120,5 @@ func TestSendExecutionContext(t *testing.T) {
 	testExecutionContext := &protofiles.ExecutionContext{}
 	res, err := testClient.SendExecutionContext(testExecutionContext)
 	assert.Nil(t, err)
-	assert.Equal(t, res.Recieved, true)
+	assert.Equal(t, res.Received, true)
 }

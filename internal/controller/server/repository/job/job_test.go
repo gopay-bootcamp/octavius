@@ -33,7 +33,7 @@ func TestSave(t *testing.T) {
 	}
 
 	testExecutionDataAsByte, err := proto.Marshal(testExecutionData)
-
+	assert.Nil(t, err)
 	mockClient.On("PutValue", "jobs/pending/12345678", string(testExecutionDataAsByte)).Return(nil)
 
 	err = jobRepository.SaveJobArgs(context.Background(), uint64(12345678), testExecutionData)
@@ -53,7 +53,7 @@ func TestSaveForEtcdClientFailure(t *testing.T) {
 	}
 
 	testExecutionDataAsByte, err := proto.Marshal(testExecutionData)
-
+	assert.Nil(t, err)
 	mockClient.On("PutValue", "jobs/pending/12345678", string(testExecutionDataAsByte)).Return(errors.New("failed to put value in database"))
 
 	err = jobRepository.SaveJobArgs(context.Background(), uint64(12345678), testExecutionData)
@@ -108,13 +108,16 @@ func TestGetNextJob(t *testing.T) {
 	}
 
 	executionData1AsByte, err := proto.Marshal(executionData1)
+	assert.Nil(t, err)
 	executionData2AsByte, err := proto.Marshal(executionData2)
+	assert.Nil(t, err)
 
 	values = append(values, string(executionData1AsByte))
 	values = append(values, string(executionData2AsByte))
 	var nextExecutionData *protofiles.RequestToExecute
 	nextExecutionData = &protofiles.RequestToExecute{}
 	err = proto.Unmarshal([]byte(values[0]), nextExecutionData)
+	assert.Nil(t, err)
 	mockClient.On("GetAllKeyAndValues", "jobs/pending/").Return(keys, values, nil)
 	nextJobID, nextExecutionData, err := jobRepository.GetNextJob(context.Background())
 	assert.Equal(t, "123", nextJobID)

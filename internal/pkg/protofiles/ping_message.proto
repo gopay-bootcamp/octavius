@@ -6,5 +6,5 @@ message Ping {
 }
 
 message HealthResponse {
-    bool recieved = 1;
+    bool received = 1;
 }

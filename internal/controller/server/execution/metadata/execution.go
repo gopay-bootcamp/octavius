@@ -19,7 +19,7 @@ type metadataExecution struct {
 	metadataRepo metadataRepo.Repository
 }
 
-// NewMetadataExec creates a new instance of metadata respository
+// NewMetadataExec creates a new instance of metadata repository
 func NewMetadataExec(metadataRepo metadataRepo.Repository) *metadataExecution {
 	return &metadataExecution{
 		metadataRepo: metadataRepo,

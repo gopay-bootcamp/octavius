@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// Client executor client interface
+// HealthServiceClient interface
 type HealthServicesClient interface {
 	connectClient(executorConfig config.OctaviusExecutorConfig) error
 	StartPing(executorConfig config.OctaviusExecutorConfig)
@@ -26,7 +26,7 @@ type healthServicesClient struct {
 	statusLock            sync.RWMutex
 }
 
-//NewHealthServicesClient returns new empty executor client
+//NewHealthServicesClient returns new empty healthServices client
 func NewHealthServicesClient(grpcClient client.Client) HealthServicesClient {
 	return &healthServicesClient{
 		grpcClient: grpcClient,
@@ -46,6 +46,7 @@ func (e *healthServicesClient) connectClient(executorConfig config.OctaviusExecu
 	return err
 }
 
+// StartPing is used to start a continuous ping on the controller at specified time intervals
 func (e *healthServicesClient) StartPing(executorConfig config.OctaviusExecutorConfig) {
 	err := e.connectClient(executorConfig)
 	if err != nil {
@@ -64,7 +65,7 @@ func (e *healthServicesClient) StartPing(executorConfig config.OctaviusExecutorC
 					log.Fatal(err.Error())
 					return
 				}
-				if !res.Recieved {
+				if !res.Received {
 					log.Error(errors.New("ping not acknowledeged by control plane"), "")
 					return
 				}

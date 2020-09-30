@@ -16,7 +16,7 @@ type registrationExecution struct {
 	executorRepo executorRepo.Repository
 }
 
-// NewRegistrationExec creates a new instance of executor respository
+// NewRegistrationExec creates a new instance of executor repository
 func NewRegistrationExec(executorRepo executorRepo.Repository) RegistrationExecution {
 	return &registrationExecution{
 		executorRepo: executorRepo,

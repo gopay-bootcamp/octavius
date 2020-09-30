@@ -92,11 +92,11 @@ func TestUpdateExecutorStatus(t *testing.T) {
 	executorRepoMock.On("UpdateExecutorHealth", "executor/status/exec 1", "idle").Return(nil)
 	res, err := testExec.UpdatePingStatus(ctx, &request, 20*time.Second)
 	_, ok := getActiveExecutorMap(testExec.(*healthExecution)).Get("exec 1")
-	assert.Equal(t, res.Recieved, true)
+	assert.Equal(t, res.Received, true)
 	assert.Nil(t, err)
 	assert.Equal(t, true, ok)
 	pingTimeOut := 20 * time.Second
 	res, err = testExec.UpdatePingStatus(ctx, &request, pingTimeOut)
-	assert.Equal(t, res.Recieved, true)
+	assert.Equal(t, res.Received, true)
 	assert.Nil(t, err)
 }

@@ -20,7 +20,7 @@ type jobServicesServer struct {
 	idgen    idgen.RandomIdGenerator
 }
 
-// JobServiceServer used to create a new job service
+// NewJobServiceServer used to create a new job service
 func NewJobServiceServer(exec job.JobExecution, idgen idgen.RandomIdGenerator) protofiles.JobServiceServer {
 	return &jobServicesServer{
 		procExec: exec,
@@ -95,13 +95,13 @@ func (e *jobServicesServer) PostExecutionData(ctx context.Context, executionData
 	}
 
 	ctx = context.WithValue(ctx, util.ContextKeyUUID, uuid)
-	log.Info(fmt.Sprintf("request id: %v, recieved execution data: %+v", uuid, executionData))
+	log.Info(fmt.Sprintf("request id: %v, received execution data: %+v", uuid, executionData))
 	err = e.procExec.SaveJobExecutionData(ctx, executionData)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while saving job execution logs", uuid, executionData.ExecutorID))
-		return &protofiles.Acknowledgement{Recieved: true}, err
+		return &protofiles.Acknowledgement{Received: true}, err
 	}
-	return &protofiles.Acknowledgement{Recieved: true}, nil
+	return &protofiles.Acknowledgement{Received: true}, nil
 }
 
 func (e *jobServicesServer) PostExecutorStatus(ctx context.Context, stat *protofiles.Status) (*protofiles.Acknowledgement, error) {
@@ -114,7 +114,7 @@ func (e *jobServicesServer) PostExecutorStatus(ctx context.Context, stat *protof
 	err = e.procExec.PostExecutorStatus(ctx, stat.ID, stat)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("request id: %v, executor id: %s, error while saving executor status", uuid, stat.ID))
-		return &protofiles.Acknowledgement{Recieved: true}, err
+		return &protofiles.Acknowledgement{Received: true}, err
 	}
-	return &protofiles.Acknowledgement{Recieved: true}, nil
+	return &protofiles.Acknowledgement{Received: true}, nil
 }

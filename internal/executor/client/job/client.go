@@ -50,6 +50,7 @@ func (g *GrpcClient) SendExecutionContext(executionData *protofiles.ExecutionCon
 	return g.client.PostExecutionData(ctx, executionData)
 }
 
+// PostExecutorStatus sends the executor status to controller
 func (g *GrpcClient) PostExecutorStatus(stat *protofiles.Status) (*protofiles.Acknowledgement, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), g.connectionTimeoutSecs)
 	defer cancel()

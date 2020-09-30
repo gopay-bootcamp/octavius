@@ -18,7 +18,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "OCTAVIUS",
 	Short: "Welcome to the octavius cli",
-	Long:  `Easily automate your work using ocatvius' multi-processing capabilities`,
+	Long:  `Easily automate your work using octavius' multi-processing capabilities`,
 }
 
 // Execute function executes the root command of Octavius Cli

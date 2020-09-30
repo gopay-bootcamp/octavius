@@ -74,7 +74,7 @@ func TestStartPing(t *testing.T) {
 	testhealthServicesClient := testClient.(*healthServicesClient)
 	testhealthServicesClient.id = "test id"
 	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
-	mockGrpcClient.On("Ping", &protofiles.Ping{ID: "test id"}).Return(&protofiles.HealthResponse{Recieved: true}, nil)
+	mockGrpcClient.On("Ping", &protofiles.Ping{ID: "test id"}).Return(&protofiles.HealthResponse{Received: true}, nil)
 	testhealthServicesClient.StartPing(testConfig)
 	time.Sleep(2 * time.Second)
 	mockGrpcClient.AssertExpectations(t)

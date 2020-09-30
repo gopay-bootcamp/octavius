@@ -15,5 +15,5 @@ message ExecutionContext{
 }
 
 message Acknowledgement {
-    bool recieved = 1;
+    bool received = 1;
 }

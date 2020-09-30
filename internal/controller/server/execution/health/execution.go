@@ -102,7 +102,7 @@ func (e *healthExecution) UpdatePingStatus(ctx context.Context, request *protofi
 	if executor, ok := e.activeExecutorMap.Get(executorID); ok {
 		executor.pingChan <- struct{}{}
 		executor.timer.Reset(pingTimeOut)
-		return &protofiles.HealthResponse{Recieved: true}, nil
+		return &protofiles.HealthResponse{Received: true}, nil
 	}
 	//if executor is not registered in database
 	_, err := e.executorRepo.GetExecutorInfo(ctx, request.ID)
@@ -126,7 +126,7 @@ func (e *healthExecution) UpdatePingStatus(ctx context.Context, request *protofi
 	}
 	e.activeExecutorMap.Put(executorID, &newActiveExecutor)
 	go startExecutorHealthCheck(e, e.activeExecutorMap, executorID)
-	return &protofiles.HealthResponse{Recieved: true}, nil
+	return &protofiles.HealthResponse{Received: true}, nil
 }
 
 func getActiveExecutorMap(e *healthExecution) *activeExecutorMap {

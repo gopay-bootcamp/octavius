@@ -38,7 +38,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 func (s *server) Check(ctx context.Context, ping *protofiles.Ping) (*protofiles.HealthResponse, error) {
 	return &protofiles.HealthResponse{
-		Recieved: true,
+		Received: true,
 	}, nil
 }
 
@@ -80,5 +80,5 @@ func TestPing(t *testing.T) {
 	testPing := &protofiles.Ping{}
 	res, err := testClient.Ping(testPing)
 	assert.Nil(t, err)
-	assert.Equal(t, res.Recieved, true)
+	assert.Equal(t, res.Received, true)
 }

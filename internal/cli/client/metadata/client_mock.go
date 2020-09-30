@@ -17,7 +17,7 @@ func (m *MockGrpcClient) Describe(requestForDescribe *protobuf.RequestToDescribe
 	return args.Get(0).(*protobuf.Metadata), args.Error(1)
 }
 
-// CreateMetadata mock
+// Post mock
 func (m *MockGrpcClient) Post(metadataPostRequest *protobuf.RequestToPostMetadata) (*protobuf.MetadataName, error) {
 	args := m.Called(metadataPostRequest)
 	return args.Get(0).(*protobuf.MetadataName), args.Error(1)

@@ -17,7 +17,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// job services client interface
+// JobServicesClient interface
 type JobServicesClient interface {
 	connectClient(executorConfig config.OctaviusExecutorConfig) error
 	FetchJob() (*protofiles.Job, error)
@@ -39,13 +39,14 @@ type jobServicesClient struct {
 	statusLock            sync.RWMutex
 }
 
-//NewJobServicesClient returns new empty job services client client
+//NewJobServicesClient returns new empty job services client
 func NewJobServicesClient(grpcClient client.Client) JobServicesClient {
 	return &jobServicesClient{
 		grpcClient: grpcClient,
 	}
 }
 
+// ConfigureKubernetesClient is used to configure the k8s client from values taken from Config file
 func (e *jobServicesClient) ConfigureKubernetesClient(executorConfig config.OctaviusExecutorConfig) error {
 	var kubeConfig = config.OctaviusExecutorConfig{
 		KubeConfig:                   executorConfig.KubeConfig,
@@ -82,6 +83,8 @@ func (e *jobServicesClient) postExecutorStatus(stat string) (*protofiles.Acknowl
 	return e.grpcClient.PostExecutorStatus(&protofiles.Status{ID: e.id, Status: stat})
 }
 
+// StartKubernetesService is used to start a blocking kuberentes service that fetches jobs from executor 
+// at regular intervals
 func (e *jobServicesClient) StartKubernetesService(executorConfig config.OctaviusExecutorConfig) {
 
 	err := e.connectClient(executorConfig)
@@ -107,7 +110,7 @@ func (e *jobServicesClient) StartKubernetesService(executorConfig config.Octaviu
 			log.Fatal(err.Error())
 		}
 		e.statusLock.Unlock()
-		log.Info(fmt.Sprintf("recieved job from controller, job details: %+v", job))
+		log.Info(fmt.Sprintf("received job from controller, job details: %+v", job))
 
 		imageName := job.ImageName
 		executionArgs := job.JobData
@@ -119,8 +122,7 @@ func (e *jobServicesClient) StartKubernetesService(executorConfig config.Octaviu
 			Status:     constant.Created,
 			ExecutorID: e.id,
 		}
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
+		ctx:= context.Background()
 
 		log.Info("calling kubernets")
 		executionName, err := e.kubernetesClient.ExecuteJob(ctx, jobID, imageName, executionArgs)
@@ -221,6 +223,7 @@ func (e *jobServicesClient) startWatch(executionContext *protofiles.ExecutionCon
 	}
 }
 
+// FetchJob is used to fetch jobs from the controller
 func (e *jobServicesClient) FetchJob() (*protofiles.Job, error) {
 	start := &protofiles.ExecutorID{ID: e.id}
 	return e.grpcClient.FetchJob(start)

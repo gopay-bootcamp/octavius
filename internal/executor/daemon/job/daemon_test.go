@@ -49,7 +49,7 @@ func TestStartKubernetesServiceWithNoJob(t *testing.T) {
 
 	mockGrpcClient.On("FetchJob", &protofiles.ExecutorID{ID: "test id"}).Return(&protofiles.Job{HasJob: false}, nil)
 	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
-	mockGrpcClient.On("PostExecutorStatus", &protofiles.Status{ID: "test id", Status: "idle"}).Return(&protofiles.Acknowledgement{Recieved: true}, nil)
+	mockGrpcClient.On("PostExecutorStatus", &protofiles.Status{ID: "test id", Status: "idle"}).Return(&protofiles.Acknowledgement{Received: true}, nil)
 
 	go testJobServicesClient.StartKubernetesService(testConfig)
 	time.Sleep(2 * time.Second)
@@ -87,7 +87,7 @@ func TestStartKubernetesServiceCreationFailed(t *testing.T) {
 	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("", errors.New("test error"))
 	mockGrpcClient.On("SendExecutionContext", testExecutionContext).Return(&protofiles.Acknowledgement{}, nil)
 	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
-	mockGrpcClient.On("PostExecutorStatus", mock.Anything).Return(&protofiles.Acknowledgement{Recieved: true}, nil)
+	mockGrpcClient.On("PostExecutorStatus", mock.Anything).Return(&protofiles.Acknowledgement{Received: true}, nil)
 
 	go testJobServicesClient.StartKubernetesService(testConfig)
 	time.Sleep(2 * time.Second)
@@ -145,7 +145,7 @@ func TestStartKubernetesService(t *testing.T) {
 	stringReadCloser := ioutil.NopCloser(strings.NewReader(""))
 
 	mockGrpcClient.On("ConnectClient", "test host", time.Second).Return(nil)
-	mockGrpcClient.On("PostExecutorStatus", mock.Anything).Return(&protofiles.Acknowledgement{Recieved: true}, nil)
+	mockGrpcClient.On("PostExecutorStatus", mock.Anything).Return(&protofiles.Acknowledgement{Received: true}, nil)
 	mockGrpcClient.On("FetchJob", &protofiles.ExecutorID{ID: "test id"}).Return(testJob, nil)
 	mockKubeClient.On("ExecuteJob", "123", "test image", testArgs).Return("", nil)
 	mockKubeClient.On("WaitForReadyJob", "", time.Second).Return(nil)

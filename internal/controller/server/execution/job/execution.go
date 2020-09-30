@@ -32,7 +32,7 @@ type jobExecution struct {
 	scheduler   scheduler.Scheduler
 }
 
-// NewJobExec creates a new instance of job respository
+// NewJobExec creates a new instance of job repository
 func NewJobExec(jobRepo jobRepo.Repository, idGenerator idgen.RandomIdGenerator, scheduler scheduler.Scheduler) JobExecution {
 	return &jobExecution{
 		jobRepo:     jobRepo,

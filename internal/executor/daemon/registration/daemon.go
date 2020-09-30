@@ -3,10 +3,7 @@ package registration
 import (
 	client "octavius/internal/executor/client/registration"
 	"octavius/internal/executor/config"
-	"octavius/internal/pkg/constant"
-	"octavius/internal/pkg/kubernetes"
 	"octavius/internal/pkg/protofiles"
-	"sync"
 	"time"
 )
 
@@ -23,13 +20,9 @@ type registrationServicesClient struct {
 	grpcClient            client.Client
 	connectionTimeoutSecs time.Duration
 	pingInterval          time.Duration
-	kubernetesClient      kubernetes.KubeClient
-	kubeLogWaitTime       time.Duration
-	state                 string
-	statusLock            sync.RWMutex
 }
 
-//NewregistrationServicesClient returns new empty executor client
+//NewRegistrationServicesClient returns new empty executor client
 func NewRegistrationServicesClient(grpcClient client.Client) RegistrationServicesClient {
 	return &registrationServicesClient{
 		grpcClient: grpcClient,
@@ -42,7 +35,6 @@ func (e *registrationServicesClient) connectClient(executorConfig config.Octaviu
 	e.accessToken = executorConfig.AccessToken
 	e.connectionTimeoutSecs = executorConfig.ConnTimeOutSec
 	e.pingInterval = executorConfig.PingInterval
-	e.state = constant.IdleState
 	err := e.grpcClient.ConnectClient(e.cpHost, e.connectionTimeoutSecs)
 	if err != nil {
 		return err
@@ -50,6 +42,7 @@ func (e *registrationServicesClient) connectClient(executorConfig config.Octaviu
 	return nil
 }
 
+// RegisterClient is used to register the executor on the controller
 func (e *registrationServicesClient) RegisterClient(executorConfig config.OctaviusExecutorConfig) (bool, error) {
 	err := e.connectClient(executorConfig)
 	if err != nil {
