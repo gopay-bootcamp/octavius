@@ -153,11 +153,11 @@ go test -race ./...
 
 ## TODO
 
-While building the decentralised architecture for octavius we know some of the areas that can be improved and should be worked upon to make the application do what it should do, only better. We have added a list of TODO tasks into [laundrylist.md](./docs/imgs/laundrylist.md) to keep them organised.
+While building the decentralised architecture for octavius we know some of the areas that can be improved and should be worked upon to make the application do what it should do, only better. We have added a list of TODO tasks into [laundrylist.md](./docs/laundrylist.md) to keep them organised.
 
 ## Contribution Guidelines
 
-Contributions are welcomed! Please read the [contributing.md](./docs/imgs/contributing.md) before making one.
+Contributions are welcomed! Please read the [contributing.md](./docs/contributing.md) before making one.
 
 ## Troubleshoot
 
